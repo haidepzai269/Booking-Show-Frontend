@@ -6,7 +6,7 @@ import { Loader2, AlertCircle, CheckCircle2 } from "lucide-react";
 import AuthSplitLayout from "@/components/auth/AuthSplitLayout";
 import { useAuthStore } from "@/store/authStore";
 
-export default function MagicLoginPage() {
+function MagicLoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { verifyMagicLink, loading, error } = useAuthStore();
@@ -83,5 +83,21 @@ export default function MagicLoginPage() {
         )}
       </div>
     </AuthSplitLayout>
+  );
+}
+
+import { Suspense } from "react";
+
+export default function MagicLoginPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex items-center justify-center min-h-screen bg-black">
+          <Loader2 className="w-12 h-12 text-primary animate-spin" />
+        </div>
+      }
+    >
+      <MagicLoginContent />
+    </Suspense>
   );
 }

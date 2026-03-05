@@ -12,7 +12,7 @@ import {
 import AuthSplitLayout from "@/components/auth/AuthSplitLayout";
 import { useAuthStore } from "@/store/authStore";
 
-export default function ResetPasswordPage() {
+function ResetPasswordContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
@@ -154,5 +154,21 @@ export default function ResetPasswordPage() {
         </form>
       )}
     </AuthSplitLayout>
+  );
+}
+
+import { Suspense } from "react";
+
+export default function ResetPasswordPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex items-center justify-center min-h-screen bg-black">
+          <Loader2 className="w-12 h-12 text-primary animate-spin" />
+        </div>
+      }
+    >
+      <ResetPasswordContent />
+    </Suspense>
   );
 }

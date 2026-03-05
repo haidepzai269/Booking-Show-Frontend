@@ -47,7 +47,7 @@ const isNowShowing = (release_date: string) =>
   new Date(release_date) <= new Date();
 
 // ──── Main Component ─────────────────────────────────────────────────────────
-export default function MoviesPage() {
+function MoviesContent() {
   const [allMovies, setAllMovies] = useState<Movie[]>([]);
   const [genres, setGenres] = useState<Genre[]>([]);
   const [loading, setLoading] = useState(true);
@@ -459,6 +459,25 @@ export default function MoviesPage() {
         )}
       </AnimatePresence>
     </div>
+  );
+}
+
+import { Suspense } from "react";
+
+export default function MoviesPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-background text-foreground flex flex-col">
+          <Header />
+          <div className="flex-1 max-w-7xl mx-auto w-full px-4 lg:px-6 py-10">
+            <GridSkeleton />
+          </div>
+        </div>
+      }
+    >
+      <MoviesContent />
+    </Suspense>
   );
 }
 

@@ -53,7 +53,7 @@ type Step = 1 | 2 | 3;
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 const DEFAULT_EXPIRES_AT = new Date(Date.now() + 10 * 60 * 1000).toISOString();
 
-export default function Checkout() {
+function CheckoutContent() {
   const router = useRouter();
   const params = useParams();
   const searchParams = useSearchParams();
@@ -504,5 +504,21 @@ export default function Checkout() {
         </div>
       </div>
     </div>
+  );
+}
+
+import { Suspense } from "react";
+
+export default function Checkout() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center">
+          <Loader2 className="w-12 h-12 text-primary animate-spin" />
+        </div>
+      }
+    >
+      <CheckoutContent />
+    </Suspense>
   );
 }
