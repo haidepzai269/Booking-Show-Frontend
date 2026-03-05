@@ -1,0 +1,84 @@
+"use client";
+
+import { usePathname } from "next/navigation";
+import AdminSearchBar from "./AdminSearchBar";
+import AdminNotification from "./AdminNotification";
+import { useAuthStore } from "@/store/authStore";
+import { useSidebar } from "@/app/admin/layout";
+import { Menu, PanelLeftClose, PanelLeftOpen } from "lucide-react";
+
+const breadcrumbMap: Record<string, string> = {
+  "/admin": "Dashboard",
+  "/admin/movies": "Quản lý Phim",
+  "/admin/movies/create": "Tạo phim mới",
+  "/admin/showtimes": "Quản lý Suất chiếu",
+  "/admin/cinemas": "Quản lý Rạp",
+  "/admin/concessions": "Đồ ăn & Thức uống",
+  "/admin/promotions": "Khuyến mãi",
+  "/admin/orders": "Đơn hàng",
+  "/admin/users": "Người dùng",
+  "/admin/refunds": "Hoàn tiền",
+};
+
+function getBreadcrumb(pathname: string): string {
+  if (breadcrumbMap[pathname]) return breadcrumbMap[pathname];
+  const segments = pathname.split("/");
+  if (segments.includes("edit")) return "Chỉnh sửa phim";
+  if (segments.includes("create")) return "Tạo mới";
+  return "Admin";
+}
+
+export default function AdminHeader() {
+  const pathname = usePathname();
+  const { user } = useAuthStore();
+  const { mobileOpen, setMobileOpen, collapsed, setCollapsed } = useSidebar();
+  const pageName = getBreadcrumb(pathname);
+
+  return (
+    <header className="sticky top-0 z-20 h-16 bg-[#111111]/90 backdrop-blur-md border-b border-white/5 flex items-center px-4 gap-3">
+      {/* Mobile: Hamburger button */}
+      <button
+        onClick={() => setMobileOpen(!mobileOpen)}
+        className="md:hidden w-9 h-9 rounded-lg bg-white/5 flex items-center justify-center text-white/50 hover:text-white hover:bg-white/10 transition-all"
+        aria-label="Toggle sidebar"
+      >
+        <Menu size={18} />
+      </button>
+
+      {/* Tablet+: Collapse toggle button */}
+      <button
+        onClick={() => setCollapsed(!collapsed)}
+        className="hidden md:flex lg:hidden w-9 h-9 rounded-lg bg-white/5 items-center justify-center text-white/50 hover:text-white hover:bg-white/10 transition-all"
+        aria-label="Toggle sidebar collapse"
+      >
+        {collapsed ? <PanelLeftOpen size={18} /> : <PanelLeftClose size={18} />}
+      </button>
+
+      {/* Page Title / Breadcrumb */}
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2 text-sm text-white/40 truncate">
+          <span className="hidden sm:inline">Admin</span>
+          <span className="hidden sm:inline">/</span>
+          <span className="text-white font-medium truncate">{pageName}</span>
+        </div>
+      </div>
+
+      {/* Right side */}
+      <div className="flex items-center gap-2">
+        <AdminSearchBar />
+        <AdminNotification />
+        <div className="w-px h-6 bg-white/10 hidden sm:block" />
+        <div className="hidden sm:flex items-center gap-2.5 cursor-pointer">
+          <div className="w-8 h-8 bg-gradient-to-br from-[#e50914]/30 to-[#e50914]/10 rounded-full flex items-center justify-center">
+            <span className="text-[#e50914] text-xs font-bold uppercase">
+              {user?.fullName?.charAt(0) || "A"}
+            </span>
+          </div>
+          <span className="text-white/60 text-sm hidden md:block">
+            {user?.fullName}
+          </span>
+        </div>
+      </div>
+    </header>
+  );
+}
