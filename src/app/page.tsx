@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { apiClient } from "@/lib/api";
 import Header from "@/components/layout/Header";
+import TrailerModal from "@/components/movie-detail/TrailerModal";
 
 interface Genre {
   id: number;
@@ -48,6 +49,8 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [bannerTab, setBannerTab] = useState<"hot" | "bestseller">("hot");
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [selectedTrailer, setSelectedTrailer] = useState<string | null>(null);
+  const [isTrailerOpen, setIsTrailerOpen] = useState(false);
 
   useEffect(() => {
     const fetchHomeMovies = async () => {
@@ -143,11 +146,14 @@ export default function Home() {
           <div className="relative z-10 max-w-7xl mx-auto w-full px-4 md:px-6 flex flex-col md:flex-row justify-between items-center mt-24 md:mt-16 h-full pb-12 md:pb-0">
             <motion.div
               key={`info-${activeMovie.id}`}
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              className="max-w-2xl w-full bg-black/40 md:bg-black/40 backdrop-blur-xl border border-white/10 p-6 md:p-10 rounded-[2rem] shadow-2xl flex flex-col justify-start min-h-auto md:min-h-[440px]"
+              transition={{ duration: 0.8, delay: 0.2 }}
+              className="max-w-2xl w-full glass-card p-6 md:p-10 rounded-[2.5rem] shadow-2xl flex flex-col justify-start min-h-auto md:min-h-[440px] relative overflow-hidden group/card"
             >
+              {/* Subtle shimmer effect */}
+              <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover/card:animate-[shimmer_2.5s_infinite] transition-transform" />
+
               <div className="flex items-center gap-3 mb-4 text-primary font-bold tracking-widest text-[10px] md:text-sm uppercase">
                 <Star className="w-4 h-4 md:w-5 md:h-5 fill-primary" /> Tiêu
                 Điểm {bannerTab === "hot" ? "Hot" : "Bán Chạy"}
@@ -198,14 +204,15 @@ export default function Home() {
                 <Ticket className="w-5 h-5" /> ĐẶT VÉ NGAY
               </Link>
               {activeMovie.trailer_url && (
-                <a
-                  href={activeMovie.trailer_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                <button
+                  onClick={() => {
+                    setSelectedTrailer(activeMovie.trailer_url);
+                    setIsTrailerOpen(true);
+                  }}
                   className="w-full border border-white/20 bg-white/5 backdrop-blur-md text-white py-4 rounded-2xl font-black text-center flex items-center justify-center gap-2"
                 >
                   <Play className="w-5 h-5" /> XEM TRAILER
-                </a>
+                </button>
               )}
             </div>
           </div>
@@ -227,14 +234,15 @@ export default function Home() {
                 <Ticket className="w-5 h-5" /> Đặt Vé Ngay
               </Link>
               {activeMovie.trailer_url && (
-                <a
-                  href={activeMovie.trailer_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="border border-white/20 bg-black/40 backdrop-blur-md hover:bg-white/10 text-white px-8 py-4 rounded-full font-bold flex items-center gap-2 transition-all"
+                <button
+                  onClick={() => {
+                    setSelectedTrailer(activeMovie.trailer_url);
+                    setIsTrailerOpen(true);
+                  }}
+                  className="border border-white/20 bg-black/40 backdrop-blur-md hover:bg-white/10 text-white px-8 py-4 rounded-full font-bold flex items-center gap-2 transition-all hover:scale-105 active:scale-95"
                 >
                   <Play className="w-5 h-5" /> Trailer
-                </a>
+                </button>
               )}
             </motion.div>
 
@@ -274,7 +282,7 @@ export default function Home() {
 
           {/* Top Switcher - Adjust position for mobile */}
           <div className="absolute top-24 md:top-28 right-4 md:right-12 z-30 scale-75 md:scale-100 origin-right">
-            <div className="flex items-center gap-2 bg-black/40 backdrop-blur-md p-1 md:p-1.5 rounded-2xl border border-white/10">
+            <div className="flex items-center gap-2 glass-dark p-1 md:p-1.5 rounded-2xl">
               <button
                 onClick={() => setBannerTab("hot")}
                 className={`px-3 md:px-5 py-2 md:py-2.5 rounded-xl font-bold text-xs md:text-sm transition-all duration-300 flex items-center gap-2 ${
@@ -322,7 +330,14 @@ export default function Home() {
         {loading ? (
           <LoadingSkeleton />
         ) : (
-          <MovieGrid movies={hotMovies} badgeColor="primary" />
+          <MovieGrid
+            movies={hotMovies}
+            badgeColor="primary"
+            onPlayTrailer={(url) => {
+              setSelectedTrailer(url);
+              setIsTrailerOpen(true);
+            }}
+          />
         )}
       </div>
 
@@ -344,8 +359,21 @@ export default function Home() {
         {loading ? (
           <LoadingSkeleton />
         ) : (
-          <MovieGrid movies={bestSellingMovies} badgeColor="secondary" />
+          <MovieGrid
+            movies={bestSellingMovies}
+            badgeColor="secondary"
+            onPlayTrailer={(url) => {
+              setSelectedTrailer(url);
+              setIsTrailerOpen(true);
+            }}
+          />
         )}
+
+        <TrailerModal
+          isOpen={isTrailerOpen}
+          onClose={() => setIsTrailerOpen(false)}
+          trailerUrl={selectedTrailer || ""}
+        />
       </div>
     </div>
   );
@@ -373,9 +401,11 @@ function LoadingSkeleton() {
 function MovieGrid({
   movies,
   badgeColor = "primary",
+  onPlayTrailer,
 }: {
   movies: Movie[];
   badgeColor?: "primary" | "secondary";
+  onPlayTrailer: (url: string) => void;
 }) {
   const isPrimary = badgeColor === "primary";
   const badgeClass = isPrimary
@@ -404,7 +434,7 @@ function MovieGrid({
           transition={{ duration: 0.4, delay: index * 0.1 }}
           className="group relative flex flex-col cursor-pointer"
         >
-          <div className="relative aspect-[2/3] w-full overflow-hidden rounded-2xl bg-card border border-border">
+          <div className="relative aspect-[2/3] w-full overflow-hidden rounded-2xl bg-card border border-border glass-card group-hover:border-primary/50 transition-all duration-500">
             <img
               src={
                 movie.poster_url ||
@@ -413,44 +443,67 @@ function MovieGrid({
               alt={movie.title}
               className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent opacity-80" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/20 to-transparent opacity-90" />
 
             {/* View Ticket Overlay */}
-            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/40 backdrop-blur-sm z-10">
-              <Link
-                href={`/movies/${movie.id}`}
-                className={`${buttonBg} p-4 rounded-full transform translate-y-4 group-hover:translate-y-0 transition-all duration-300 ${shadowEffect}`}
-              >
-                <Ticket className="w-6 h-6" />
-              </Link>
+            <div className="absolute inset-0 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 bg-black/40 backdrop-blur-[2px] z-10">
+              <div className="flex gap-3 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
+                <Link
+                  href={`/movies/${movie.id}`}
+                  className={`${buttonBg} p-4 rounded-full ${shadowEffect} hover:scale-110 transition-transform`}
+                  title="Đặt vé"
+                >
+                  <Ticket className="w-6 h-6" />
+                </Link>
+                {movie.trailer_url && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onPlayTrailer(movie.trailer_url);
+                    }}
+                    className="bg-white/20 backdrop-blur-md text-white p-4 rounded-full border border-white/30 hover:bg-primary hover:border-primary transition-all hover:scale-110 shadow-xl"
+                    title="Xem Trailer"
+                  >
+                    <Play className="w-6 h-6 fill-current" />
+                  </button>
+                )}
+              </div>
             </div>
 
-            {/* Genre Tag */}
-            <div className="absolute top-4 right-4 z-10 flex flex-col gap-2">
+            {/* Genre and Trailer Tags */}
+            <div className="absolute top-4 right-4 z-10 flex flex-col items-end gap-2">
               {movie.genres && movie.genres.length > 0 ? (
                 <div
-                  className={`px-2 py-1 rounded-md text-xs font-bold bg-black/50 border backdrop-blur-md uppercase tracking-wider ${badgeClass}`}
+                  className={`px-2.5 py-1 rounded-lg text-[10px] font-black glass border uppercase tracking-wider ${badgeClass}`}
                 >
                   {movie.genres[0].name}
                 </div>
               ) : (
                 <div
-                  className={`px-2 py-1 rounded-md text-xs font-bold bg-black/50 border backdrop-blur-md uppercase tracking-wider ${badgeClass}`}
+                  className={`px-2.5 py-1 rounded-lg text-[10px] font-black glass border uppercase tracking-wider ${badgeClass}`}
                 >
                   2D PHỤ ĐỀ
                 </div>
               )}
+              {movie.trailer_url && (
+                <div className="px-2 py-1 rounded-md text-[9px] font-bold bg-primary/20 text-primary border border-primary/30 backdrop-blur-md uppercase shadow-lg">
+                  Trailer
+                </div>
+              )}
             </div>
 
-            <div className="absolute bottom-4 left-4 right-4 text-left z-10">
+            <div className="absolute bottom-4 left-4 right-4 text-left z-10 transform group-hover:-translate-y-1 transition-transform">
               <h3
-                className={`text-lg md:text-xl font-bold text-white mb-1 line-clamp-2 leading-tight transition-colors ${hoverTextClass}`}
+                className={`text-lg md:text-xl font-bold text-white mb-1 line-clamp-2 leading-tight transition-colors ${hoverTextClass} drop-shadow-md`}
               >
                 {movie.title}
               </h3>
-              <p className="text-xs text-gray-400 font-medium">
-                {movie.duration_minutes} Phút
-              </p>
+              <div className="flex items-center justify-between text-[10px] text-gray-400 font-bold uppercase tracking-widest">
+                <span>{movie.duration_minutes} Phút</span>
+                <span className="text-secondary flex items-center gap-1">
+                  <Star className="w-3 h-3 fill-secondary" /> 8.5
+                </span>
+              </div>
             </div>
           </div>
         </motion.div>

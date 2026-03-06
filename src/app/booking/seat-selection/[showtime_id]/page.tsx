@@ -11,6 +11,7 @@ import {
   Clock,
   Users,
   Eye,
+  X,
 } from "lucide-react";
 import { apiClient } from "@/lib/api";
 import { useAuthStore } from "@/store/authStore";
@@ -46,6 +47,7 @@ interface Showtime {
 }
 
 const SeatIcon = ({
+  status,
   isSelected,
   seatNumber,
   isVip,
@@ -55,69 +57,70 @@ const SeatIcon = ({
   seatNumber: number;
   isVip?: boolean;
 }) => {
-  let contentColor = "currentColor";
   let seatColor = "transparent";
-  let strokeColor = "currentColor";
+  let strokeColor = "rgba(255, 255, 255, 0.2)";
   let glowClass = "";
+  let iconOpacity = "opacity-100";
 
   if (isSelected) {
     strokeColor = "white";
-    seatColor = "rgba(225, 9, 20, 0.8)";
-    glowClass = "drop-shadow-[0_0_8px_rgba(229,9,20,0.8)]";
+    seatColor = "rgba(225, 9, 20, 0.9)";
+    glowClass = "drop-shadow-[0_0_12px_rgba(229,9,20,0.8)]";
   } else if (status === "LOCKED") {
-    strokeColor = "rgba(245, 158, 11, 0.4)";
-    contentColor = "rgba(245, 158, 11, 0.2)";
+    // Ghế đang bị khóa bởi người khác - Màu Amber nổi bật
+    strokeColor = "rgba(245, 158, 11, 0.8)";
+    seatColor = "rgba(245, 158, 11, 0.2)";
+    glowClass = "animate-pulse drop-shadow-[0_0_8px_rgba(245,158,11,0.5)]";
   } else if (status === "BOOKED") {
-    strokeColor = "rgba(59, 130, 246, 0.4)";
-    contentColor = "rgba(59, 130, 246, 0.2)";
+    // Ghế đã bán - Màu Xám vô hiệu hóa
+    strokeColor = "rgba(63, 63, 70, 0.4)";
+    seatColor = "rgba(39, 39, 42, 0.8)";
+    iconOpacity = "opacity-40";
   } else {
-    // Phân biệt màu stroke cho VIP
-    strokeColor = isVip ? "rgba(255, 215, 0, 0.4)" : "rgba(255, 255, 255, 0.2)";
-    contentColor = isVip
-      ? "rgba(255, 215, 0, 0.1)"
-      : "rgba(255, 255, 255, 0.1)";
+    // Ghế trống
+    strokeColor = isVip ? "rgba(234, 179, 8, 0.6)" : "rgba(255, 255, 255, 0.2)";
+    seatColor = isVip ? "rgba(234, 179, 8, 0.05)" : "rgba(255, 255, 255, 0.05)";
   }
 
   return (
     <div
-      className={`relative w-full h-full flex items-center justify-center transition-all duration-300 ${isSelected ? "scale-110" : "hover:scale-105"}`}
+      className={`relative w-full h-full flex items-center justify-center transition-all duration-500 ${isSelected ? "scale-110" : "hover:scale-105"} ${iconOpacity}`}
     >
+      {/* Vip Badge Pulse */}
       {isVip && !isSelected && status === "AVAILABLE" && (
         <div className="absolute -top-1 -right-1 z-20">
           <div className="w-2 h-2 bg-yellow-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(234,179,8,0.8)]"></div>
         </div>
       )}
+
+      {/* Locked Badge */}
+      {status === "LOCKED" && (
+        <div className="absolute -top-1 -right-1 z-20">
+          <Clock className="w-3 h-3 text-amber-500 animate-spin [animation-duration:3s]" />
+        </div>
+      )}
+
       <svg
         viewBox="0 0 40 40"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
-        className={`w-full h-full ${glowClass}`}
+        className={`w-full h-full transition-all duration-700 ${glowClass}`}
       >
         {/* Lưng ghế */}
         <path
           d="M8 12C8 9.79086 9.79086 8 12 8H28C30.2111 8 32 9.79086 32 12V24H8V12Z"
           fill={seatColor}
-          stroke={
-            isSelected
-              ? strokeColor
-              : isVip
-                ? "rgba(234,179,8,0.6)"
-                : strokeColor
-          }
-          strokeWidth={isVip ? "2" : "1.5"}
+          stroke={strokeColor}
+          strokeWidth={isSelected || isVip ? "2.5" : "1.5"}
+          className="transition-colors duration-500"
         />
         {/* Đệm ngồi */}
         <path
           d="M6 24C6 21.7909 7.79086 20 10 20H30C32.2091 20 34 21.7909 34 24V28C34 31.3137 31.3137 34 28 34H12C8.68629 34 6 31.3137 6 28V24Z"
           fill={seatColor}
-          stroke={
-            isSelected
-              ? strokeColor
-              : isVip
-                ? "rgba(234,179,8,0.6)"
-                : strokeColor
-          }
-          strokeWidth={isVip ? "2" : "1.5"}
+          stroke={strokeColor}
+          strokeWidth={isSelected || isVip ? "2.5" : "1.5"}
+          className="transition-colors duration-500"
         />
         {/* Tay vịn */}
         <rect
@@ -127,13 +130,7 @@ const SeatIcon = ({
           height="10"
           rx="2"
           fill={seatColor}
-          stroke={
-            isSelected
-              ? strokeColor
-              : isVip
-                ? "rgba(234,179,8,0.6)"
-                : strokeColor
-          }
+          stroke={strokeColor}
           strokeWidth="1.5"
         />
         <rect
@@ -143,20 +140,31 @@ const SeatIcon = ({
           height="10"
           rx="2"
           fill={seatColor}
-          stroke={
-            isSelected
-              ? strokeColor
-              : isVip
-                ? "rgba(234,179,8,0.6)"
-                : strokeColor
-          }
+          stroke={strokeColor}
           strokeWidth="1.5"
         />
       </svg>
       <span
-        className={`absolute inset-0 flex items-center justify-center text-[10px] font-black transition-colors duration-300 ${isSelected ? "text-white" : isVip && status === "AVAILABLE" ? "text-yellow-500/80" : "text-zinc-500"}`}
+        className={`absolute inset-0 flex items-center justify-center text-[10px] font-black transition-all duration-500 
+        ${
+          isSelected
+            ? "text-white scale-110"
+            : status === "BOOKED"
+              ? "text-zinc-600"
+              : status === "LOCKED"
+                ? "text-amber-500/80"
+                : isVip
+                  ? "text-yellow-500/70"
+                  : "text-zinc-500"
+        }`}
       >
-        {status === "BOOKED" ? "✕" : status === "LOCKED" ? "..." : seatNumber}
+        {status === "BOOKED" ? (
+          <X className="w-4 h-4 text-zinc-700" />
+        ) : status === "LOCKED" ? (
+          <span className="animate-pulse">...</span>
+        ) : (
+          seatNumber
+        )}
       </span>
     </div>
   );
@@ -527,7 +535,13 @@ export default function SeatSelection() {
             </div>
             Đang chọn
           </div>
-          <div className="flex gap-2 items-center opacity-40">
+          <div className="flex gap-2 items-center">
+            <div className="w-5 h-5 flex items-center justify-center text-amber-500">
+              <SeatIcon status="LOCKED" isSelected={false} seatNumber={0} />
+            </div>
+            Đang giữ
+          </div>
+          <div className="flex gap-2 items-center opacity-60">
             <div className="w-5 h-5 flex items-center justify-center">
               <SeatIcon status="BOOKED" isSelected={false} seatNumber={0} />
             </div>
