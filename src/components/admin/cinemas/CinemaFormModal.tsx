@@ -139,8 +139,8 @@ export default function CinemaFormModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-      <div className="bg-zinc-900 border border-zinc-800 rounded-2xl w-full max-w-xl overflow-hidden shadow-2xl">
-        <div className="p-6 border-b border-zinc-800 flex justify-between items-center">
+      <div className="bg-zinc-900 border border-zinc-800 rounded-2xl w-full max-w-xl max-h-[90vh] overflow-y-auto shadow-2xl custom-scrollbar">
+        <div className="p-6 border-b border-zinc-800 flex justify-between items-center sticky top-0 bg-zinc-900 z-10">
           <h2 className="text-xl font-bold text-white flex gap-2 items-center">
             <Building2 className="w-5 h-5 text-red-500" />
             {cinema ? "Chỉnh sửa rạp" : "Thêm rạp mới"}
@@ -326,7 +326,7 @@ export default function CinemaFormModal({
             </p>
           </div>
 
-          <div className="pt-4 flex justify-end gap-3">
+          <div className="pt-4 flex justify-end gap-3 sticky bottom-0 bg-zinc-900 border-t border-zinc-800 p-4 -mx-6 -mb-6 mt-6">
             <button
               type="button"
               onClick={onClose}

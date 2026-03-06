@@ -54,7 +54,7 @@ export default function Header() {
 
             {/* Desktop Search Bar */}
             <div className="flex-1 max-w-md hidden lg:block">
-              <SearchBar placeholder="Tìm kiếm phìm, rạp..." />
+              <SearchBar />
             </div>
           </div>
 

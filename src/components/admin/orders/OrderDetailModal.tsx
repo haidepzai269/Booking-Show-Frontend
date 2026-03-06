@@ -121,31 +121,31 @@ export default function OrderDetailModal({ isOpen, onClose, orderId }: Props) {
                 </h4>
                 <div className="flex gap-4">
                   <div className="w-20 h-28 bg-zinc-800 rounded-lg overflow-hidden shrink-0">
-                    {order.Showtime?.Movie?.poster_url && (
+                    {order.showtime?.movie?.poster_url && (
                       <img
-                        src={order.Showtime.Movie.poster_url}
+                        src={order.showtime.movie.poster_url}
                         className="w-full h-full object-cover"
                       />
                     )}
                   </div>
                   <div className="flex-1 space-y-2 text-sm text-zinc-300">
                     <p className="text-base font-bold text-white">
-                      {order.Showtime?.Movie?.title}
+                      {order.showtime?.movie?.title}
                     </p>
                     <p className="flex items-center gap-2">
                       <MapPin className="w-4 h-4 text-zinc-500" />{" "}
-                      {order.Showtime?.Room?.Cinema?.name} -{" "}
-                      {order.Showtime?.Room?.name}
+                      {order.showtime?.room?.cinema?.name} -{" "}
+                      {order.showtime?.room?.name}
                     </p>
                     <p className="flex items-center gap-2">
                       <Calendar className="w-4 h-4 text-zinc-500" />{" "}
-                      {new Date(order.Showtime?.start_time).toLocaleDateString(
+                      {new Date(order.showtime?.start_time).toLocaleDateString(
                         "vi-VN",
                       )}
                     </p>
                     <p className="flex items-center gap-2">
                       <Clock className="w-4 h-4 text-zinc-500" />{" "}
-                      {new Date(order.Showtime?.start_time).toLocaleTimeString(
+                      {new Date(order.showtime?.start_time).toLocaleTimeString(
                         "vi-VN",
                         { hour: "2-digit", minute: "2-digit" },
                       )}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Fragment } from "react";
 import {
   Plus,
   MapPin,
@@ -153,7 +153,7 @@ export default function CinemasPage() {
                 </tr>
               ) : (
                 cinemas.map((cinema) => (
-                  <optgroup key={cinema.id} className="contents relative group">
+                  <Fragment key={cinema.id}>
                     <tr
                       className="hover:bg-zinc-800/30 transition-colors cursor-pointer"
                       onClick={() => toggleExpand(cinema.id)}
@@ -236,7 +236,7 @@ export default function CinemasPage() {
                         </td>
                       </tr>
                     )}
-                  </optgroup>
+                  </Fragment>
                 ))
               )}
             </tbody>
