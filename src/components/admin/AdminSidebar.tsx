@@ -80,7 +80,7 @@ export default function AdminSidebar() {
   // Tablet  (768px+): cố định w-16, icon-only
   // Desktop (1024px+): cố định w-60, đầy đủ
   const asideBase =
-    "fixed left-0 top-0 h-screen bg-[#111111] border-r border-white/5 flex flex-col z-40 transition-all duration-300 ease-in-out";
+    "fixed left-0 top-0 h-screen bg-[var(--bg-sidebar)] border-r border-[var(--border-color)] flex flex-col z-40 transition-all duration-300 ease-in-out";
 
   // Mobile: ẩn bằng translateX
   const mobileClass = mobileOpen ? "translate-x-0" : "-translate-x-full";
@@ -94,21 +94,23 @@ export default function AdminSidebar() {
   return (
     <aside className={`${asideBase} w-60 ${mobileClass} ${desktopWidthClass}`}>
       {/* Logo */}
-      <div className="px-4 py-5 border-b border-white/5 flex items-center justify-between shrink-0">
+      <div className="px-4 py-5 border-b border-[var(--border-color)] flex items-center justify-between shrink-0">
         <Link
           href="/admin"
           className="flex items-center gap-2.5 group"
           onClick={() => setMobileOpen(false)}
         >
-          <div className="w-8 h-8 bg-gradient-to-br from-[#e50914] to-[#b80710] rounded-lg flex items-center justify-center shadow-lg shadow-red-900/30 shrink-0">
+          <div className="w-8 h-8 bg-gradient-to-br from-[var(--primary)] to-[var(--primary-hover)] rounded-lg flex items-center justify-center shadow-lg shadow-red-900/30 shrink-0">
             <Clapperboard size={16} className="text-white" />
           </div>
           {/* Label - ẩn khi tablet collapsed, hiện khi desktop full */}
-          <div className="overflow-hidden transition-all duration-300 hidden lg:block">
-            <p className="text-white font-bold text-sm leading-tight whitespace-nowrap">
+          <div
+            className={`overflow-hidden transition-all duration-300 hidden ${collapsed ? "" : "lg:block"}`}
+          >
+            <p className="text-[var(--text-primary)] font-bold text-sm leading-tight whitespace-nowrap">
               Booking Show
             </p>
-            <p className="text-white/40 text-xs">Admin Panel</p>
+            <p className="text-[var(--text-secondary)] text-xs">Admin Panel</p>
           </div>
         </Link>
 
@@ -127,7 +129,9 @@ export default function AdminSidebar() {
       {/* Navigation */}
       <nav className="flex-1 px-2 py-4 space-y-0.5 overflow-y-auto overflow-x-hidden">
         {/* Label section - chỉ hiện desktop full */}
-        <p className="text-white/30 text-[10px] font-semibold uppercase tracking-wider px-3 pb-2 hidden lg:block truncate opacity-100 transition-opacity duration-200">
+        <p
+          className={`text-[var(--text-secondary)]/50 text-[10px] font-semibold uppercase tracking-wider px-3 pb-2 hidden ${collapsed ? "" : "lg:block"} truncate opacity-100 transition-opacity duration-200`}
+        >
           Menu chính
         </p>
 
@@ -148,17 +152,19 @@ export default function AdminSidebar() {
                   onClick={() => setMobileOpen(false)}
                   className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-150 group ${
                     active
-                      ? "bg-[#e50914]/15 text-[#e50914] shadow-sm"
-                      : "text-white/50 hover:text-white hover:bg-white/5"
+                      ? "bg-[var(--primary)]/15 text-[var(--primary)] shadow-sm"
+                      : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-white/5"
                   }`}
                 >
                   <span
-                    className={`shrink-0 transition-colors ${active ? "text-[#e50914]" : "group-hover:text-white"}`}
+                    className={`shrink-0 transition-colors ${active ? "text-[var(--primary)]" : "group-hover:text-[var(--text-primary)]"}`}
                   >
                     {item.icon}
                   </span>
                   {/* Label - ẩn khi tablet icon-only, hiện khi desktop full hoặc mobile drawer */}
-                  <span className="text-sm font-medium flex-1 truncate lg:block hidden">
+                  <span
+                    className={`text-sm font-medium flex-1 truncate hidden ${collapsed ? "" : "lg:block"}`}
+                  >
                     {item.label}
                   </span>
                   {/* Mobile: luôn hiện label */}
@@ -168,7 +174,7 @@ export default function AdminSidebar() {
                   {active && (
                     <ChevronRight
                       size={14}
-                      className="text-[#e50914]/60 shrink-0 lg:block hidden"
+                      className="text-[var(--primary)]/60 shrink-0 lg:block hidden"
                     />
                   )}
                 </Link>
@@ -190,18 +196,22 @@ export default function AdminSidebar() {
       </nav>
 
       {/* User Profile + Logout */}
-      <div className="px-2 pb-4 border-t border-white/5 pt-3 shrink-0">
+      <div className="px-2 pb-4 border-t border-[var(--border-color)] pt-3 shrink-0">
         <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-white/3 mb-1 overflow-hidden">
-          <div className="w-8 h-8 bg-gradient-to-br from-[#e50914]/30 to-[#e50914]/10 rounded-full flex items-center justify-center shrink-0">
-            <span className="text-[#e50914] text-xs font-bold uppercase">
+          <div className="w-8 h-8 bg-gradient-to-br from-[var(--primary)]/30 to-[var(--primary)]/10 rounded-full flex items-center justify-center shrink-0">
+            <span className="text-[var(--primary)] text-xs font-bold uppercase">
               {user?.fullName?.charAt(0) || "A"}
             </span>
           </div>
-          <div className="flex-1 min-w-0 hidden lg:block">
-            <p className="text-white text-xs font-medium truncate">
+          <div
+            className={`flex-1 min-w-0 hidden ${collapsed ? "" : "lg:block"}`}
+          >
+            <p className="text-[var(--text-primary)] text-xs font-medium truncate">
               {user?.fullName || "Admin"}
             </p>
-            <p className="text-white/30 text-[10px] truncate">{user?.role}</p>
+            <p className="text-[var(--text-secondary)] text-[10px] truncate">
+              {user?.role}
+            </p>
           </div>
         </div>
         <button
@@ -209,7 +219,9 @@ export default function AdminSidebar() {
           className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-white/40 hover:text-red-400 hover:bg-red-500/10 transition-all duration-150 group"
         >
           <LogOut size={16} className="shrink-0 group-hover:text-red-400" />
-          <span className="text-sm hidden lg:block">Đăng xuất</span>
+          <span className={`text-sm hidden ${collapsed ? "" : "lg:block"}`}>
+            Đăng xuất
+          </span>
           <span className="text-sm lg:hidden md:hidden block">Đăng xuất</span>
         </button>
       </div>

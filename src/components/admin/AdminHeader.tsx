@@ -3,6 +3,7 @@
 import { usePathname } from "next/navigation";
 import AdminSearchBar from "./AdminSearchBar";
 import AdminNotification from "./AdminNotification";
+import { ThemeSelector } from "./ThemeSelector";
 import { useAuthStore } from "@/store/authStore";
 import { useSidebar } from "@/app/admin/layout";
 import { Menu, PanelLeftClose, PanelLeftOpen } from "lucide-react";
@@ -35,7 +36,7 @@ export default function AdminHeader() {
   const pageName = getBreadcrumb(pathname);
 
   return (
-    <header className="sticky top-0 z-20 h-16 bg-[#111111]/90 backdrop-blur-md border-b border-white/5 flex items-center px-4 gap-3">
+    <header className="sticky top-0 z-20 h-16 bg-[var(--bg-header)] backdrop-blur-md border-b border-[var(--border-color)] flex items-center px-4 gap-3">
       {/* Mobile: Hamburger button */}
       <button
         onClick={() => setMobileOpen(!mobileOpen)}
@@ -56,21 +57,24 @@ export default function AdminHeader() {
 
       {/* Page Title / Breadcrumb */}
       <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2 text-sm text-white/40 truncate">
+        <div className="flex items-center gap-2 text-sm text-[var(--text-secondary)] truncate">
           <span className="hidden sm:inline">Admin</span>
           <span className="hidden sm:inline">/</span>
-          <span className="text-white font-medium truncate">{pageName}</span>
+          <span className="text-[var(--text-primary)] font-medium truncate">
+            {pageName}
+          </span>
         </div>
       </div>
 
       {/* Right side */}
       <div className="flex items-center gap-2">
+        <ThemeSelector />
         <AdminSearchBar />
         <AdminNotification />
         <div className="w-px h-6 bg-white/10 hidden sm:block" />
         <div className="hidden sm:flex items-center gap-2.5 cursor-pointer">
-          <div className="w-8 h-8 bg-gradient-to-br from-[#e50914]/30 to-[#e50914]/10 rounded-full flex items-center justify-center">
-            <span className="text-[#e50914] text-xs font-bold uppercase">
+          <div className="w-8 h-8 bg-gradient-to-br from-[var(--primary)]/30 to-[var(--primary)]/10 rounded-full flex items-center justify-center">
+            <span className="text-[var(--primary)] text-xs font-bold uppercase">
               {user?.fullName?.charAt(0) || "A"}
             </span>
           </div>

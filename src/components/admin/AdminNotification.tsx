@@ -34,9 +34,9 @@ function ToastNotification({
   }, [onClose]);
 
   return (
-    <div className="flex items-start gap-3 bg-[#1a1a1a] border border-[#e50914]/30 rounded-xl p-4 shadow-2xl w-80 animate-slide-in-right">
-      <div className="w-9 h-9 bg-[#e50914]/20 rounded-lg flex items-center justify-center shrink-0 mt-0.5">
-        <Ticket size={16} className="text-[#e50914]" />
+    <div className="flex items-start gap-3 bg-[var(--bg-sidebar)] border border-[var(--primary)]/30 rounded-xl p-4 shadow-2xl w-80 animate-slide-in-right">
+      <div className="w-9 h-9 bg-[var(--primary)]/20 rounded-lg flex items-center justify-center shrink-0 mt-0.5">
+        <Ticket size={16} className="text-[var(--primary)]" />
       </div>
       <div className="flex-1 min-w-0">
         <p className="text-white text-sm font-medium leading-tight">
@@ -45,7 +45,7 @@ function ToastNotification({
         <p className="text-white/50 text-xs mt-0.5 truncate">
           📽️ {notif.movie_title}
         </p>
-        <p className="text-[#e50914] text-xs font-medium mt-1">
+        <p className="text-[var(--primary)] text-xs font-medium mt-1">
           +{notif.amount.toLocaleString("vi-VN")}đ
         </p>
       </div>
@@ -110,13 +110,13 @@ export default function AdminNotification() {
         >
           <Bell size={16} />
           {unreadCount > 0 && (
-            <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-[#e50914] rounded-full animate-pulse shadow-[0_0_6px_rgba(229,9,20,0.8)]" />
+            <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-[var(--primary)] rounded-full animate-pulse shadow-[0_0_6px_rgba(229,9,20,0.8)]" />
           )}
         </button>
 
         {/* Dropdown */}
         <div
-          className={`absolute right-0 mt-3 w-80 bg-[#1a1a1a] shadow-2xl rounded-xl z-50 overflow-hidden origin-top-right border border-white/10 transition-all duration-300 ease-out ${
+          className={`absolute right-0 mt-3 w-80 bg-[var(--bg-sidebar)] shadow-2xl rounded-xl z-50 overflow-hidden origin-top-right border border-[var(--border-color)] transition-all duration-300 ease-out ${
             isOpen
               ? "opacity-100 scale-100 pointer-events-auto translate-y-0"
               : "opacity-0 scale-95 pointer-events-none -translate-y-2"
@@ -127,7 +127,7 @@ export default function AdminNotification() {
             <h3 className="text-white font-medium text-sm">Thông báo</h3>
             <div className="flex items-center gap-2">
               {unreadCount > 0 && (
-                <span className="text-xs bg-[#e50914]/20 text-[#e50914] font-medium px-2 py-0.5 rounded-full">
+                <span className="text-xs bg-[var(--primary)]/20 text-[var(--primary)] font-medium px-2 py-0.5 rounded-full">
                   {unreadCount} mới
                 </span>
               )}
@@ -150,8 +150,8 @@ export default function AdminNotification() {
                   }`}
                 >
                   <div className="flex gap-3">
-                    <div className="w-8 h-8 bg-[#e50914]/15 rounded-lg flex items-center justify-center shrink-0 mt-0.5">
-                      <Ticket size={14} className="text-[#e50914]" />
+                    <div className="w-8 h-8 bg-[var(--primary)]/15 rounded-lg flex items-center justify-center shrink-0 mt-0.5">
+                      <Ticket size={14} className="text-[var(--primary)]" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm text-white/90 leading-snug">
@@ -159,7 +159,7 @@ export default function AdminNotification() {
                           {n.user_name}
                         </span>{" "}
                         vừa mua{" "}
-                        <span className="text-[#e50914] font-medium">
+                        <span className="text-[var(--primary)] font-medium">
                           {n.seats} vé
                         </span>
                       </p>
@@ -176,7 +176,7 @@ export default function AdminNotification() {
                       </div>
                     </div>
                     {!n.read && (
-                      <div className="w-2 h-2 rounded-full bg-[#e50914] mt-2 shrink-0" />
+                      <div className="w-2 h-2 rounded-full bg-[var(--primary)] mt-2 shrink-0" />
                     )}
                   </div>
                 </div>

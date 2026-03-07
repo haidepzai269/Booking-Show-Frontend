@@ -91,8 +91,16 @@ function MiniRevenueChart({ data }: { data: ChartData[] }) {
       >
         <defs>
           <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#e50914" stopOpacity="0.35" />
-            <stop offset="100%" stopColor="#e50914" stopOpacity="0" />
+            <stop
+              offset="0%"
+              stopColor="var(--chart-grad-start)"
+              stopOpacity="0.35"
+            />
+            <stop
+              offset="100%"
+              stopColor="var(--chart-grad-start)"
+              stopOpacity="0"
+            />
           </linearGradient>
           <filter id="glow">
             <feGaussianBlur stdDeviation="2.5" result="blur" />
@@ -102,8 +110,8 @@ function MiniRevenueChart({ data }: { data: ChartData[] }) {
             </feMerge>
           </filter>
           <linearGradient id="lineGrad" x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0%" stopColor="#ff6b6b" />
-            <stop offset="100%" stopColor="#e50914" />
+            <stop offset="0%" stopColor="var(--primary)" stopOpacity="0.6" />
+            <stop offset="100%" stopColor="var(--primary)" />
           </linearGradient>
         </defs>
 
@@ -115,7 +123,7 @@ function MiniRevenueChart({ data }: { data: ChartData[] }) {
             y1={PAD.top + chartH * (1 - t)}
             x2={PAD.left + chartW}
             y2={PAD.top + chartH * (1 - t)}
-            stroke="white"
+            stroke="var(--text-primary)"
             strokeOpacity="0.05"
             strokeDasharray="3 4"
           />
@@ -170,17 +178,17 @@ function MiniRevenueChart({ data }: { data: ChartData[] }) {
                   cx={pt.x}
                   cy={pt.y}
                   r={6}
-                  fill="#e50914"
+                  fill="var(--primary)"
                   fillOpacity="0.2"
                 />
                 <circle
                   cx={pt.x}
                   cy={pt.y}
                   r={3.5}
-                  fill="#e50914"
+                  fill="var(--primary)"
                   filter="url(#glow)"
                 />
-                <circle cx={pt.x} cy={pt.y} r={2} fill="white" />
+                <circle cx={pt.x} cy={pt.y} r={2} fill="var(--text-primary)" />
               </>
             )}
             {!pt.isToday && hoveredIdx !== i && (
@@ -193,14 +201,14 @@ function MiniRevenueChart({ data }: { data: ChartData[] }) {
               />
             )}
 
-            {/* Day label */}
             <text
               x={pt.x}
               y={H - 4}
               textAnchor="middle"
               fontSize="9"
-              fill={pt.isToday ? "#e50914" : "rgba(255,255,255,0.3)"}
+              fill={pt.isToday ? "var(--primary)" : "var(--text-secondary)"}
               fontWeight={pt.isToday ? "600" : "400"}
+              opacity={pt.isToday ? "1" : "0.5"}
             >
               {pt.dayLabel}
             </text>
@@ -224,8 +232,8 @@ function MiniRevenueChart({ data }: { data: ChartData[] }) {
                   width={tipW}
                   height={tipH}
                   rx="6"
-                  fill="#1a1a1a"
-                  stroke="#e50914"
+                  fill="var(--bg-sidebar)"
+                  stroke="var(--primary)"
                   strokeOpacity="0.4"
                   strokeWidth="0.8"
                 />
@@ -477,10 +485,12 @@ export default function AdminDashboardPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-white">Tổng quan</h1>
-          <p className="text-white/40 text-sm mt-0.5">{today}</p>
+          <h1 className="text-2xl font-bold text-[var(--text-primary)]">
+            Tổng quan
+          </h1>
+          <p className="text-[var(--text-secondary)] text-sm mt-0.5">{today}</p>
         </div>
-        <div className="flex items-center gap-2 text-sm text-white/40 bg-white/5 px-3 py-1.5 rounded-lg border border-white/5">
+        <div className="flex items-center gap-2 text-sm text-[var(--text-secondary)] bg-white/5 px-3 py-1.5 rounded-lg border border-[var(--border-color)]">
           <TrendingUp size={14} className="text-green-400" />
           <span>Cập nhật theo thời gian thực</span>
         </div>

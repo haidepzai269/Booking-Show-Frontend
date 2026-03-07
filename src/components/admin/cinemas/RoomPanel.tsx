@@ -4,6 +4,8 @@ import { useState, useEffect } from "react";
 import { Plus, Trash2, Loader2, Armchair, AlertCircle } from "lucide-react";
 import { apiClient } from "@/lib/api";
 
+import SeatDesignerModal from "./SeatDesignerModal";
+
 interface Room {
   id: number;
   name: string;
@@ -16,6 +18,7 @@ export default function RoomPanel({ cinemaId }: { cinemaId: number }) {
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
   const [newRoom, setNewRoom] = useState({ name: "", capacity: "" });
+  const [selectedRoomId, setSelectedRoomId] = useState<number | null>(null);
 
   const fetchRooms = async () => {
     try {
@@ -104,12 +107,21 @@ export default function RoomPanel({ cinemaId }: { cinemaId: number }) {
                     <span className="font-medium text-zinc-200">
                       {room.name}
                     </span>
-                    <button
-                      onClick={() => handleDeleteRoom(room.id)}
-                      className="text-zinc-500 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        onClick={() => setSelectedRoomId(room.id)}
+                        className="p-1.5 text-zinc-500 hover:text-blue-500 hover:bg-blue-500/10 rounded-lg transition-colors"
+                        title="Thiết kế sơ đồ ghế"
+                      >
+                        <Armchair className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => handleDeleteRoom(room.id)}
+                        className="p-1.5 text-zinc-500 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-colors"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
                   </div>
                   <div className="text-sm text-zinc-400">
                     Sức chứa:{" "}
@@ -171,6 +183,12 @@ export default function RoomPanel({ cinemaId }: { cinemaId: number }) {
           </form>
         </div>
       </div>
+
+      <SeatDesignerModal
+        isOpen={selectedRoomId !== null}
+        onClose={() => setSelectedRoomId(null)}
+        roomId={selectedRoomId}
+      />
     </div>
   );
 }

@@ -28,6 +28,9 @@ interface Seat {
   row_char: string;
   seat_number: number;
   type: string;
+  x?: number;
+  y?: number;
+  angle?: number;
 }
 
 interface Showtime {
@@ -337,9 +340,6 @@ export default function SeatSelection() {
       });
 
       if (res.success) {
-        // Khóa thành công, chuyển tới màn Thanh toán / Bắp nước
-        // Truyền State ghế sang trang Checkout qua URL Hoặc Session (ở đây truyền ID via searchParams tạm)
-        // Vì Backend đã lưu session Lock theo UserID, tới trang Order chỉ cần lấy lại danh sách ghế này.
         router.push(
           `/booking/checkout/${showtimeId}?seats=${selectedSeatIds.join(",")}`,
         );
@@ -348,7 +348,6 @@ export default function SeatSelection() {
           res.error ||
             "Có lỗi xảy ra, có thể ghế đã bị người khác thao tác trước.",
         );
-        // Nếu thất bại (409 Conflict), Backend sẽ báo ghế nào hỏng. Refresh lại trang cũng được
       }
     } catch (err: any) {
       if (err.response?.status === 401) {
@@ -363,6 +362,26 @@ export default function SeatSelection() {
     }
   };
 
+  const isSvgLayout = seats.length > 0 && seats.some((s) => s.x && s.x !== 0);
+
+  const calculateViewBox = (seats: Seat[]) => {
+    if (!isSvgLayout) return "0 0 1000 800";
+    let minX = Infinity,
+      minY = Infinity;
+    let maxX = -Infinity,
+      maxY = -Infinity;
+    seats.forEach((seat) => {
+      if (seat.x! < minX) minX = seat.x!;
+      if (seat.y! < minY) minY = seat.y!;
+      if (seat.x! > maxX) maxX = seat.x!;
+      if (seat.y! > maxY) maxY = seat.y!;
+    });
+    const padding = 60;
+    const width = maxX - minX + padding * 2;
+    const height = maxY - minY + padding * 2;
+    return `${minX - padding} ${minY - padding} ${width} ${height}`;
+  };
+
   if (loading)
     return (
       <div className="flex justify-center items-center py-40">
@@ -371,7 +390,7 @@ export default function SeatSelection() {
     );
 
   return (
-    <div className="w-full relative flex flex-col min-h-screen overflow-hidden selection:bg-primary/30">
+    <div className="w-full relative flex flex-col min-h-screen pb-32 overflow-hidden selection:bg-primary/30">
       {/* IMMERSIVE BACKGROUND LAYERS */}
       <div className="absolute inset-0 z-0 pointer-events-none">
         {/* Base Gradient */}
@@ -456,6 +475,48 @@ export default function SeatSelection() {
             <div className="text-center text-zinc-500 py-20 flex flex-col items-center gap-4">
               <Ticket className="w-12 h-12 opacity-20" />
               <p>Chưa có dữ liệu ghế cho suất chiếu này.</p>
+            </div>
+          ) : isSvgLayout ? (
+            <div className="w-full flex justify-center pb-4 transition-all duration-500 origin-top overflow-visible">
+              <svg
+                viewBox={calculateViewBox(seats)}
+                className="w-full max-w-[800px] h-auto overflow-visible cursor-grab active:cursor-grabbing"
+              >
+                {seats.map((seat) => {
+                  const isSelected = selectedSeatIds.includes(seat.id);
+                  const isLocked = seat.status === "LOCKED";
+                  const isBooked = seat.status === "BOOKED";
+
+                  return (
+                    <g
+                      key={seat.id}
+                      transform={`translate(${seat.x}, ${seat.y}) rotate(${seat.angle || 0})`}
+                    >
+                      <foreignObject
+                        x="-20"
+                        y="-20"
+                        width="40"
+                        height="40"
+                        className="overflow-visible"
+                      >
+                        <button
+                          disabled={isLocked || isBooked}
+                          onClick={() => toggleSeat(seat)}
+                          className="w-full h-full relative border-none outline-none overflow-visible"
+                          title={`Ghế ${seat.row_char}${seat.seat_number} - ${seat.price.toLocaleString("vi-VN")}đ`}
+                        >
+                          <SeatIcon
+                            status={seat.status}
+                            isSelected={isSelected}
+                            seatNumber={seat.seat_number}
+                            isVip={seat.type === "VIP"}
+                          />
+                        </button>
+                      </foreignObject>
+                    </g>
+                  );
+                })}
+              </svg>
             </div>
           ) : (
             <div className="flex flex-col gap-1.5 sm:gap-4 min-w-[max-content] mx-auto items-center pb-4 transition-all duration-500 md:scale-100 scale-[0.85] origin-top">
@@ -556,7 +617,7 @@ export default function SeatSelection() {
         )}
 
         {/* BOTTOM ACTION BAR STICKY */}
-        <div className="fixed bottom-0 left-0 right-0 bg-zinc-900/95 backdrop-blur-xl border-t border-zinc-800/50 z-50 transition-all duration-300">
+        <div className="fixed bottom-0 left-0 right-0 bg-zinc-900/95 backdrop-blur-xl border-t border-zinc-800/50 z-[100] transition-all duration-300">
           <div className="max-w-7xl mx-auto px-4 sm:px-8 py-4 sm:py-6 flex flex-col sm:flex-row items-center justify-between gap-4 sm:gap-6">
             <div className="flex flex-col items-center sm:items-start w-full sm:w-auto">
               <div className="text-zinc-500 text-[10px] sm:text-xs mb-1 uppercase font-bold tracking-widest">

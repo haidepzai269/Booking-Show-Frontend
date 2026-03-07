@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/authStore";
 import AdminSidebar from "@/components/admin/AdminSidebar";
 import AdminHeader from "@/components/admin/AdminHeader";
+import { ThemeProvider } from "@/components/admin/ThemeProvider";
 
 // Context để share sidebar state
 interface SidebarContextType {
@@ -74,24 +75,26 @@ export default function AdminLayout({
     <SidebarContext.Provider
       value={{ mobileOpen, setMobileOpen, collapsed, setCollapsed }}
     >
-      <div className="min-h-screen bg-[#0d0d0d]">
-        {/* Backdrop mobile */}
-        {mobileOpen && (
+      <ThemeProvider>
+        <div className="min-h-screen bg-[var(--bg-main)]">
+          {/* Backdrop mobile */}
+          {mobileOpen && (
+            <div
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-30 md:hidden"
+              onClick={() => setMobileOpen(false)}
+            />
+          )}
+
+          <AdminSidebar />
+
           <div
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-30 md:hidden"
-            onClick={() => setMobileOpen(false)}
-          />
-        )}
-
-        <AdminSidebar />
-
-        <div
-          className={`flex flex-col min-h-screen transition-all duration-300 ${contentClass}`}
-        >
-          <AdminHeader />
-          <main className="flex-1 p-4 md:p-6 overflow-auto">{children}</main>
+            className={`flex flex-col min-h-screen transition-all duration-300 ${contentClass}`}
+          >
+            <AdminHeader />
+            <main className="flex-1 p-4 md:p-6 overflow-auto">{children}</main>
+          </div>
         </div>
-      </div>
+      </ThemeProvider>
     </SidebarContext.Provider>
   );
 }

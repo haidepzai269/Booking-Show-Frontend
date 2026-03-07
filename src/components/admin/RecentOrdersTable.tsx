@@ -25,7 +25,7 @@ const statusConfig: Record<string, { label: string; className: string }> = {
   },
   CANCELLED: {
     label: "Đã hủy",
-    className: "bg-red-500/15 text-red-400 border border-red-500/20",
+    className: "bg-red-500/15 text-red-400 border border-red-500/20", // Giữ nguyên đỏ cho trang thái hủy
   },
 };
 
@@ -63,23 +63,23 @@ export default function RecentOrdersTable({ orders }: RecentOrdersTableProps) {
     <div className="overflow-x-auto">
       <table className="w-full text-sm">
         <thead>
-          <tr className="border-b border-white/5">
-            <th className="text-left py-3 px-4 text-white/40 font-medium text-xs uppercase tracking-wider">
+          <tr className="border-b border-[var(--border-color)]">
+            <th className="text-left py-3 px-4 text-[var(--text-secondary)] font-medium text-xs uppercase tracking-wider">
               Mã đơn
             </th>
-            <th className="text-left py-3 px-4 text-white/40 font-medium text-xs uppercase tracking-wider">
+            <th className="text-left py-3 px-4 text-[var(--text-secondary)] font-medium text-xs uppercase tracking-wider">
               Khách hàng
             </th>
-            <th className="text-left py-3 px-4 text-white/40 font-medium text-xs uppercase tracking-wider hidden md:table-cell">
+            <th className="text-left py-3 px-4 text-[var(--text-secondary)] font-medium text-xs uppercase tracking-wider hidden md:table-cell">
               Phim
             </th>
-            <th className="text-right py-3 px-4 text-white/40 font-medium text-xs uppercase tracking-wider">
+            <th className="text-right py-3 px-4 text-[var(--text-secondary)] font-medium text-xs uppercase tracking-wider">
               Tổng tiền
             </th>
-            <th className="text-center py-3 px-4 text-white/40 font-medium text-xs uppercase tracking-wider">
+            <th className="text-center py-3 px-4 text-[var(--text-secondary)] font-medium text-xs uppercase tracking-wider">
               Trạng thái
             </th>
-            <th className="text-right py-3 px-4 text-white/40 font-medium text-xs uppercase tracking-wider hidden lg:table-cell">
+            <th className="text-right py-3 px-4 text-[var(--text-secondary)] font-medium text-xs uppercase tracking-wider hidden lg:table-cell">
               Thời gian
             </th>
           </tr>

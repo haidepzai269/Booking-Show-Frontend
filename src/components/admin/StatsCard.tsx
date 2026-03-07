@@ -15,10 +15,10 @@ interface StatsCardProps {
 
 const colorMap = {
   red: {
-    bg: "from-red-500/10 to-red-900/5",
-    border: "border-red-500/20",
-    icon: "bg-red-500/15 text-red-400",
-    glow: "shadow-red-500/10",
+    bg: "from-[var(--primary)]/10 to-[var(--primary)]/5",
+    border: "border-[var(--primary)]/20",
+    icon: "bg-[var(--primary)]/15 text-[var(--primary)]",
+    glow: "shadow-[var(--primary)]/10",
   },
   gold: {
     bg: "from-yellow-500/10 to-yellow-900/5",
@@ -122,8 +122,10 @@ export default function StatsCard({
           )}
         </div>
 
-        <p className="text-white/50 text-sm mb-1 font-medium">{title}</p>
-        <p className="text-white text-2xl font-bold tracking-tight">
+        <p className="text-[var(--text-secondary)] text-sm mb-1 font-medium">
+          {title}
+        </p>
+        <p className="text-[var(--text-primary)] text-2xl font-bold tracking-tight">
           {prefix}
           {typeof value === "number"
             ? displayValue.toLocaleString("vi-VN")

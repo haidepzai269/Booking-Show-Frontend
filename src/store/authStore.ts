@@ -7,6 +7,7 @@ interface User {
   email: string;
   role: string;
   fullName: string;
+  themePreference: string;
 }
 
 interface AuthState {
@@ -44,6 +45,7 @@ export const useAuthStore = create<AuthState>()(
               email: rawUser.email,
               fullName: rawUser.full_name,
               role: rawUser.role,
+              themePreference: rawUser.theme || 'dark',
             };
             set({ token: res.data.access_token, user, loading: false });
             return true;
@@ -79,6 +81,7 @@ export const useAuthStore = create<AuthState>()(
               email: rawUser.email,
               fullName: rawUser.full_name,
               role: rawUser.role,
+              themePreference: rawUser.theme || 'dark',
             };
             set({ token: res.data.access_token, user, loading: false });
             return true;
