@@ -23,6 +23,8 @@ import {
   CheckCircle2,
   AlertCircle,
 } from "lucide-react";
+import { motion } from "framer-motion";
+import MembershipCard from "@/components/profile/MembershipCard";
 
 interface ProfileData {
   user: {
@@ -31,6 +33,8 @@ interface ProfileData {
     email: string;
     phone: string;
     role: string;
+    rank: string;
+    total_spending: number;
     created_at: string;
   };
   total_orders: number;
@@ -79,7 +83,7 @@ function getRoleBadge(role: string) {
 
 export default function ProfilePage() {
   const router = useRouter();
-  const { user: authUser, setAuth, token } = useAuthStore();
+  const { user: authUser, setAuth, token, _hasHydrated } = useAuthStore();
 
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -92,13 +96,15 @@ export default function ProfilePage() {
   const [bannerPosters, setBannerPosters] = useState<string[]>([]);
 
   useEffect(() => {
+    if (!_hasHydrated) return; // Chờ Hydration xong mới kiểm tra Auth
+
     if (!authUser) {
       router.push("/login");
       return;
     }
     fetchProfile();
     fetchBannerPosters();
-  }, [authUser]);
+  }, [authUser, _hasHydrated]);
 
   const fetchBannerPosters = async () => {
     try {
@@ -198,6 +204,36 @@ export default function ProfilePage() {
     .toUpperCase()
     .slice(0, 2);
 
+  const getRankProgress = (currentSpending: number, currentRank: string) => {
+    const thresholds = [
+      { rank: "BRONZE", min: 0, max: 2000000 },
+      { rank: "SILVER", min: 2000000, max: 5000000 },
+      { rank: "GOLD", min: 5000000, max: 10000000 },
+      { rank: "PLATINUM", min: 10000000, max: 20000000 },
+      { rank: "DIAMOND", min: 20000000, max: Infinity },
+    ];
+
+    const currentIndex = thresholds.findIndex((t) => t.rank === currentRank);
+    if (currentIndex === -1 || currentIndex === thresholds.length - 1) {
+      return { percentage: 100, remaining: 0, nextRank: "MAX" };
+    }
+
+    const current = thresholds[currentIndex];
+    const next = thresholds[currentIndex + 1];
+    const percentage = Math.min(
+      100,
+      ((currentSpending - current.min) / (next.min - current.min)) * 100,
+    );
+    const remaining = next.min - currentSpending;
+
+    return { percentage, remaining, nextRank: next.rank };
+  };
+
+  const rankProgress = getRankProgress(
+    profile.user.total_spending,
+    profile.user.rank,
+  );
+
   return (
     <div className="min-h-screen bg-[#0a0a0a]">
       {/* ── HERO BANNER – Movie Poster Mosaic ────────────────────── */}
@@ -295,6 +331,48 @@ export default function ProfilePage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* LEFT: Stats */}
           <div className="lg:col-span-1 space-y-4">
+            {/* Membership Card */}
+            <MembershipCard
+              rank={profile.user.role === "ADMIN" ? "ADMIN" : profile.user.rank}
+              fullName={profile.user.full_name}
+              totalSpending={profile.user.total_spending}
+            />
+
+            {/* Rank Progress Bar - Only for Customers */}
+            {profile.user.role === "CUSTOMER" && (
+              <div className="bg-[#111] border border-white/[0.07] rounded-2xl p-5">
+                <div className="flex justify-between items-end mb-2">
+                  <span className="text-white/50 text-[10px] font-bold uppercase tracking-widest">
+                    Tiến trình thăng hạng
+                  </span>
+                  {rankProgress.nextRank !== "MAX" && (
+                    <span className="text-white/80 text-[10px] font-medium">
+                      {formatVND(rankProgress.remaining)} nữa để lên{" "}
+                      {rankProgress.nextRank}
+                    </span>
+                  )}
+                </div>
+                <div className="w-full h-2 bg-white/5 rounded-full overflow-hidden">
+                  <motion.div
+                    initial={{ width: 0 }}
+                    animate={{ width: `${rankProgress.percentage}%` }}
+                    transition={{ duration: 1, ease: "easeOut" }}
+                    className="h-full bg-gradient-to-r from-[#e50914] to-[#f5c518]"
+                  />
+                </div>
+                <div className="flex justify-between mt-2">
+                  <span className="text-[9px] text-white/40 uppercase font-bold">
+                    {profile.user.rank}
+                  </span>
+                  <span className="text-[9px] text-white/40 uppercase font-bold">
+                    {rankProgress.nextRank === "MAX"
+                      ? "DIAMOND"
+                      : rankProgress.nextRank}
+                  </span>
+                </div>
+              </div>
+            )}
+
             {/* Stats cards */}
             <div className="bg-[#111] border border-white/[0.07] rounded-2xl p-5">
               <h3 className="text-white/50 text-xs font-bold uppercase tracking-widest mb-4">

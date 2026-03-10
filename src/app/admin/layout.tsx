@@ -32,7 +32,7 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   const router = useRouter();
-  const { user, token } = useAuthStore();
+  const { user, token, _hasHydrated } = useAuthStore();
   const [mounted, setMounted] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
@@ -42,7 +42,8 @@ export default function AdminLayout({
   }, []);
 
   useEffect(() => {
-    if (!mounted) return;
+    if (!mounted || !_hasHydrated) return; // Chờ mount và hydration
+
     if (!token || !user) {
       router.replace("/login");
       return;
@@ -50,7 +51,7 @@ export default function AdminLayout({
     if (user.role !== "ADMIN" && user.role !== "CINEMA_MANAGER") {
       router.replace("/");
     }
-  }, [mounted, token, user, router]);
+  }, [mounted, token, user, router, _hasHydrated]);
 
   if (
     !mounted ||

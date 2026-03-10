@@ -8,6 +8,8 @@ interface User {
   role: string;
   fullName: string;
   themePreference: string;
+  rank?: string;
+  totalSpending?: number;
 }
 
 interface AuthState {
@@ -21,6 +23,8 @@ interface AuthState {
   verifyMagicLink: (token: string) => Promise<boolean>;
   resetPassword: (token: string, newPass: string) => Promise<{success: boolean, error?: string}>;
   logout: () => void;
+  _hasHydrated: boolean;
+  setHasHydrated: (state: boolean) => void;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -45,7 +49,9 @@ export const useAuthStore = create<AuthState>()(
               email: rawUser.email,
               fullName: rawUser.full_name,
               role: rawUser.role,
-              themePreference: rawUser.theme || 'dark',
+              themePreference: rawUser.theme_preference || 'dark',
+              rank: rawUser.rank || 'BRONZE',
+              totalSpending: rawUser.total_spending || 0,
             };
             set({ token: res.data.access_token, user, loading: false });
             return true;
@@ -81,7 +87,9 @@ export const useAuthStore = create<AuthState>()(
               email: rawUser.email,
               fullName: rawUser.full_name,
               role: rawUser.role,
-              themePreference: rawUser.theme || 'dark',
+              themePreference: rawUser.theme_preference || 'dark',
+              rank: rawUser.rank || 'BRONZE',
+              totalSpending: rawUser.total_spending || 0,
             };
             set({ token: res.data.access_token, user, loading: false });
             return true;
@@ -107,9 +115,14 @@ export const useAuthStore = create<AuthState>()(
         }
       },
       logout: () => set({ token: null, user: null }),
+      _hasHydrated: false,
+      setHasHydrated: (state) => set({ _hasHydrated: state }),
     }),
     {
-      name: 'auth-storage', // tên key trong localStorage
+      name: 'auth-storage',
+      onRehydrateStorage: () => (state) => {
+        state?.setHasHydrated(true);
+      },
     }
   )
 );

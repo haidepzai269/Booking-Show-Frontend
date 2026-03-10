@@ -81,6 +81,23 @@ export default function AdminHeader() {
           <span className="text-white/60 text-sm hidden md:block">
             {user?.fullName}
           </span>
+          {user?.rank && (
+            <span
+              className={`text-[9px] font-black px-1.5 py-0.5 rounded border uppercase ${
+                user.rank === "DIAMOND"
+                  ? "bg-cyan-500/20 text-cyan-400 border-cyan-500/30"
+                  : user.rank === "PLATINUM"
+                    ? "bg-slate-500/20 text-slate-300 border-slate-500/30"
+                    : user.rank === "GOLD"
+                      ? "bg-yellow-500/20 text-yellow-400 border-yellow-500/30"
+                      : user.rank === "SILVER"
+                        ? "bg-gray-400/20 text-gray-400 border-gray-400/30"
+                        : "bg-orange-500/20 text-orange-400 border-orange-500/30"
+              }`}
+            >
+              {user.rank}
+            </span>
+          )}
         </div>
       </div>
     </header>
