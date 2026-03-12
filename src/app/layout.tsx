@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Outfit } from "next/font/google";
 import "./globals.css";
 import Footer from "@/components/layout/Footer";
+import QuickBookingIsland from "@/components/layout/QuickBookingIsland";
+import AIChatbot from "@/components/layout/AIChatbot";
 
 const outfit = Outfit({
   variable: "--font-outfit",
@@ -26,6 +28,8 @@ export default function RootLayout({
         {/* TODO: Header */}
         <main className="flex-1 flex flex-col">{children}</main>
         <Footer />
+        <QuickBookingIsland />
+        <AIChatbot />
       </body>
     </html>
   );

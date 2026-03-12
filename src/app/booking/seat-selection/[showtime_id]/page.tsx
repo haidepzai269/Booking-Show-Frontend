@@ -456,95 +456,72 @@ export default function SeatSelection() {
       </div>
 
       <div className="flex-1 w-full flex flex-col items-center justify-center max-w-7xl mx-auto relative z-10 px-4 pt-4 pb-40 sm:pb-32">
-        {/* MÀN HÌNH CONG (IMPROVED GLOW) & STATS */}
-        <div className="w-full max-w-5xl mt-6 mb-12 sm:mb-20 relative flex flex-col items-center">
-          <div className="w-full max-w-4xl flex flex-col items-center group">
-            <div className="relative w-full">
-              <div className="absolute -top-10 left-1/2 -translate-x-1/2 w-[120%] h-40 bg-primary/20 blur-[100px] rounded-[100%] opacity-50 group-hover:opacity-80 transition-opacity duration-1000"></div>
-              <div className="w-full h-1.5 rounded-[50%] bg-zinc-100 shadow-[0_0_50px_rgba(255,255,255,0.8),0_0_20px_rgba(255,255,255,0.4)] relative z-10"></div>
-            </div>
-            <div className="text-zinc-500 font-black uppercase tracking-[0.8em] mt-6 flex items-center gap-3 text-[10px] opacity-50 group-hover:opacity-100 transition-all duration-700">
-              Màn Hình
+        {/* MÀN HÌNH CONG (CINEMA SCREEN WITH INTENSE GLOW) */}
+        <div className="w-full max-w-5xl mt-8 mb-16 sm:mb-24 relative flex flex-col items-center group">
+          {/* Ambient Light from Screen */}
+          <div className="absolute -top-12 left-1/2 -translate-x-1/2 w-[140%] h-[300px] bg-gradient-to-b from-white/10 via-white/5 to-transparent blur-[120px] rounded-full opacity-30 pointer-events-none"></div>
+          
+          <div className="w-full max-w-4xl flex flex-col items-center relative">
+            {/* The Curve Screen */}
+            <div className="relative w-full h-[150px] overflow-hidden flex flex-col items-center">
+                <div className="w-[120%] h-[300px] border-[12px] border-zinc-200/90 rounded-[100%] absolute -top-[260px] shadow-[0_30px_100px_rgba(255,255,255,0.4),0_10px_30px_rgba(255,255,255,0.2)] bg-white/5 backdrop-blur-sm"></div>
+                
+                {/* Visual "Màn Hình" text with glow */}
+                <div className="mt-16 relative flex flex-col items-center gap-2">
+                  <div className="text-zinc-200 font-black uppercase tracking-[1.5em] text-[10px] sm:text-xs drop-shadow-[0_0_10px_rgba(255,255,255,0.8)] animate-pulse">
+                    MÀN HÌNH
+                  </div>
+                  <div className="w-24 h-[1px] bg-gradient-to-r from-transparent via-zinc-200 to-transparent"></div>
+                </div>
             </div>
           </div>
         </div>
 
-        {/* LƯỚI GHẾ */}
-        <div className="w-full max-w-7xl overflow-x-auto px-4 pb-12 select-none no-scrollbar">
-          {seats.length === 0 ? (
-            <div className="text-center text-zinc-500 py-20 flex flex-col items-center gap-4">
-              <Ticket className="w-12 h-12 opacity-20" />
-              <p>Chưa có dữ liệu ghế cho suất chiếu này.</p>
-            </div>
-          ) : isSvgLayout ? (
-            <div className="w-full flex justify-center pb-4 transition-all duration-500 origin-top overflow-visible">
-              <svg
-                viewBox={calculateViewBox(seats)}
-                className="w-full max-w-[800px] h-auto overflow-visible cursor-grab active:cursor-grabbing"
-              >
-                {seats.map((seat) => {
-                  const isSelected = selectedSeatIds.includes(seat.id);
-                  const isLocked = seat.status === "LOCKED";
-                  const isBooked = seat.status === "BOOKED";
+        {/* LƯỚI GHẾ - 3D PERSPECTIVE WRAPPER */}
+        <div 
+          className="w-full max-w-7xl px-4 pb-24 select-none no-scrollbar overflow-visible"
+          style={{ perspective: "1200px" }}
+        >
+          <div 
+            className="w-full transition-all duration-1000 ease-out flex flex-col items-center"
+            style={{ 
+              transform: "rotateX(20deg) translateY(0px)",
+              transformStyle: "preserve-3d"
+            }}
+          >
+            {seats.length === 0 ? (
+              <div className="text-center text-zinc-500 py-20 flex flex-col items-center gap-4">
+                <Ticket className="w-12 h-12 opacity-20" />
+                <p>Chưa có dữ liệu ghế cho suất chiếu này.</p>
+              </div>
+            ) : isSvgLayout ? (
+              <div className="w-full flex justify-center pb-4 transition-all duration-500 origin-top overflow-visible">
+                <svg
+                  viewBox={calculateViewBox(seats)}
+                  className="w-full max-w-[800px] h-auto overflow-visible cursor-grab active:cursor-grabbing drop-shadow-[0_20px_50px_rgba(0,0,0,0.5)]"
+                >
+                  {seats.map((seat) => {
+                    const isSelected = selectedSeatIds.includes(seat.id);
+                    const isLocked = seat.status === "LOCKED";
+                    const isBooked = seat.status === "BOOKED";
 
-                  return (
-                    <g
-                      key={seat.id}
-                      transform={`translate(${seat.x}, ${seat.y}) rotate(${seat.angle || 0})`}
-                    >
-                      <foreignObject
-                        x="-20"
-                        y="-20"
-                        width="40"
-                        height="40"
-                        className="overflow-visible"
+                    return (
+                      <g
+                        key={seat.id}
+                        transform={`translate(${seat.x}, ${seat.y}) rotate(${seat.angle || 0})`}
                       >
-                        <button
-                          disabled={isLocked || isBooked}
-                          onClick={() => toggleSeat(seat)}
-                          className="w-full h-full relative border-none outline-none overflow-visible"
-                          title={`Ghế ${seat.row_char}${seat.seat_number} - ${seat.price.toLocaleString("vi-VN")}đ`}
+                        <foreignObject
+                          x="-20"
+                          y="-20"
+                          width="40"
+                          height="40"
+                          className="overflow-visible"
                         >
-                          <SeatIcon
-                            status={seat.status}
-                            isSelected={isSelected}
-                            seatNumber={seat.seat_number}
-                            isVip={seat.type === "VIP"}
-                          />
-                        </button>
-                      </foreignObject>
-                    </g>
-                  );
-                })}
-              </svg>
-            </div>
-          ) : (
-            <div className="flex flex-col gap-1.5 sm:gap-4 min-w-[max-content] mx-auto items-center pb-4 transition-all duration-500 md:scale-100 scale-[0.85] origin-top">
-              {sortedRows.map((row) => {
-                const rowSeats = (seatGrid[row] || []).sort(
-                  (a, b) => a.seat_number - b.seat_number,
-                );
-                return (
-                  <div
-                    key={row}
-                    className="flex items-center gap-1 sm:gap-4 group"
-                  >
-                    <div className="w-5 sm:w-8 text-center font-bold text-zinc-600 text-[9px] sm:text-xs group-hover:text-primary transition-colors">
-                      {row}
-                    </div>
-                    <div className="flex gap-0.5 sm:gap-2">
-                      {rowSeats.map((seat) => {
-                        const isSelected = selectedSeatIds.includes(seat.id);
-                        const isLocked = seat.status === "LOCKED";
-                        const isBooked = seat.status === "BOOKED";
-
-                        return (
                           <button
-                            key={seat.id}
                             disabled={isLocked || isBooked}
                             onClick={() => toggleSeat(seat)}
-                            className="w-7 h-7 sm:w-11 sm:h-11 relative flex items-center justify-center transition-all duration-300 outline-none"
-                            title={`Ghế ${row}${seat.seat_number} - ${seat.price.toLocaleString("vi-VN")}đ`}
+                            className="w-full h-full relative border-none outline-none overflow-visible group/seat"
+                            title={`Ghế ${seat.row_char}${seat.seat_number} - ${seat.price.toLocaleString("vi-VN")}đ`}
                           >
                             <SeatIcon
                               status={seat.status}
@@ -552,18 +529,75 @@ export default function SeatSelection() {
                               seatNumber={seat.seat_number}
                               isVip={seat.type === "VIP"}
                             />
+                            {/* Reflection on seat base */}
+                            {isSelected && (
+                              <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-4 h-1 bg-primary/40 blur-sm rounded-full"></div>
+                            )}
                           </button>
-                        );
-                      })}
+                        </foreignObject>
+                      </g>
+                    );
+                  })}
+                </svg>
+              </div>
+            ) : (
+              <div 
+                className="flex flex-col gap-2 sm:gap-5 min-w-[max-content] mx-auto items-center pb-4 transition-all duration-500 md:scale-100 scale-[0.85] origin-top"
+                style={{ transformStyle: "preserve-3d" }}
+              >
+                {sortedRows.map((row, rowIndex) => {
+                  const rowSeats = (seatGrid[row] || []).sort(
+                    (a, b) => a.seat_number - b.seat_number,
+                  );
+                  // Dynamic row perspective (hàng ở xa nhỏ hơn/mờ hơn nhẹ)
+                  const rowOpacity = 1 - (rowIndex * 0.02);
+                  
+                  return (
+                    <div
+                      key={row}
+                      className="flex items-center gap-2 sm:gap-6 group"
+                      style={{ 
+                        opacity: rowOpacity,
+                        transform: `translateZ(${rowIndex * -5}px)` 
+                      }}
+                    >
+                      <div className="w-6 sm:w-10 text-center font-black text-zinc-700 text-[10px] sm:text-sm group-hover:text-primary transition-colors tracking-tighter">
+                        {row}
+                      </div>
+                      <div className="flex gap-1 sm:gap-3">
+                        {rowSeats.map((seat) => {
+                          const isSelected = selectedSeatIds.includes(seat.id);
+                          const isLocked = seat.status === "LOCKED";
+                          const isBooked = seat.status === "BOOKED";
+
+                          return (
+                            <button
+                              key={seat.id}
+                              disabled={isLocked || isBooked}
+                              onClick={() => toggleSeat(seat)}
+                              className="w-8 h-8 sm:w-12 sm:h-12 relative flex items-center justify-center transition-all duration-300 outline-none hover:z-50"
+                              title={`Ghế ${row}${seat.seat_number} - ${seat.price.toLocaleString("vi-VN")}đ`}
+                              style={{ transformStyle: "preserve-3d" }}
+                            >
+                              <SeatIcon
+                                status={seat.status}
+                                isSelected={isSelected}
+                                seatNumber={seat.seat_number}
+                                isVip={seat.type === "VIP"}
+                              />
+                            </button>
+                          );
+                        })}
+                      </div>
+                      <div className="w-6 sm:w-10 text-center font-black text-zinc-700 text-[10px] sm:text-sm group-hover:text-primary transition-colors tracking-tighter">
+                        {row}
+                      </div>
                     </div>
-                    <div className="w-5 sm:w-8 text-center font-bold text-zinc-600 text-[9px] sm:text-xs group-hover:text-primary transition-colors">
-                      {row}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
+                  );
+                })}
+              </div>
+            )}
+          </div>
         </div>
 
         {/* CHÚ THÍCH & HIỂN THỊ LỖI */}

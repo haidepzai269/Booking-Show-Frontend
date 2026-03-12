@@ -5,10 +5,7 @@ import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   X,
-  Send,
   Bot,
-  User,
-  Loader2,
   Sparkles,
   HelpCircle,
   Info,
@@ -21,11 +18,6 @@ import { apiClient } from "@/lib/api";
 
 type Tab = "features" | "pricing" | "faqs" | "about" | "";
 
-interface ChatMessage {
-  role: "system" | "user" | "ai";
-  content: string;
-}
-
 interface FAQItem {
   question: string;
   answer: string;
@@ -33,32 +25,14 @@ interface FAQItem {
 
 export default function Footer() {
   const [activeTab, setActiveTab] = useState<Tab>("");
-  const [question, setQuestion] = useState("");
   const [expandedFaqId, setExpandedFaqId] = useState<number | null>(null);
   const [topFAQs, setTopFAQs] = useState<FAQItem[]>([
     {
       question: "Giá vé xem phim là bao nhiêu tiền?",
-      answer: "Chào bạn. Hiện tại hệ thống BookingShow...",
+      answer: "Chào bạn. Hiện tại hệ thống BookingShow có 2 mức giá: Vé ghế Standard là 80.000 VNĐ. Vé ghế đôi VIP Sweetbox là 150.000 VNĐ.",
     },
   ]);
-  const [chatHistory, setChatHistory] = useState<ChatMessage[]>([
-    {
-      role: "system",
-      content:
-        "Xin chào! Mình là trợ lý AI thông minh của BookingShow. Bạn có câu hỏi nào về giá vé, cách mua vé hay rạp phim không?",
-    },
-  ]);
-  const [isTyping, setIsTyping] = useState(false);
-  const chatEndRef = useRef<HTMLDivElement>(null);
-
-  // Auto scroll to bottom of chat
-  useEffect(() => {
-    if (activeTab === "faqs" && chatEndRef.current) {
-      chatEndRef.current.scrollIntoView({ behavior: "smooth" });
-    }
-  }, [chatHistory, activeTab]);
-
-  // Fetch top FAQs khi tab được mở
+  // Fetch top FAQs kể cả khi chưa mở tab (preload)
   useEffect(() => {
     if (activeTab === "faqs") {
       apiClient
@@ -76,53 +50,6 @@ export default function Footer() {
     setActiveTab(activeTab === tab ? "" : tab);
   };
 
-  const handleAskForm = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!question.trim()) return;
-
-    const userQ = question.trim();
-    setQuestion("");
-    setChatHistory((prev) => [...prev, { role: "user", content: userQ }]);
-    setIsTyping(true);
-
-    try {
-      const res = await apiClient.post<
-        any,
-        { success: boolean; data?: { answer: string }; error?: string }
-      >("/faq/ask", {
-        question: userQ,
-      });
-
-      if (res.success && res.data) {
-        setChatHistory((prev) => [
-          ...prev,
-          { role: "ai", content: res.data!.answer },
-        ]);
-      } else {
-        setChatHistory((prev) => [
-          ...prev,
-          {
-            role: "ai",
-            content:
-              res.error ||
-              "Xin lỗi, hiện tại tôi không thể trả lời câu hỏi này.",
-          },
-        ]);
-      }
-    } catch (err: any) {
-      setChatHistory((prev) => [
-        ...prev,
-        {
-          role: "ai",
-          content:
-            err.response?.data?.error ||
-            "Đã có lỗi kết nối với máy chủ AI. Xin thử lại sau.",
-        },
-      ]);
-    } finally {
-      setIsTyping(false);
-    }
-  };
 
   // NỘI DUNG CÁC TAB (TRỪ FAQs là chatbot)
   const renderTabContent = () => {
@@ -220,16 +147,22 @@ export default function Footer() {
                   <Bot className="w-6 h-6 text-primary" />
                 </div>
                 <h3 className="text-xl font-black text-white">
-                  AI FAQs Chatbot
+                  Câu Hỏi Nhanh
                 </h3>
               </div>
               <p className="text-gray-400 text-sm leading-relaxed mb-6">
-                Đừng mất thời gian tìm kiếm câu trả lời. Hãy hỏi trực tiếp trợ
-                lý ảo thông minh RAG của chúng tôi. AI được huấn luyện đầy đủ
-                các thông tin quy định, giá cả, và lịch chiếu.
+                Những thắc mắc phổ biến nhất được trả lời. Để trò chuyện trực tiếp với AI,
+                hãy nhấn vào nút 🤖 ở góc dưới bên phải màn hình!
               </p>
+              <div className="flex items-center gap-2 bg-primary/10 border border-primary/20 rounded-xl p-3 text-sm text-primary font-medium">
+                <Sparkles className="w-4 h-4 shrink-0" />
+                <span>Chatbot NOVA AI luôn sẵn sàng 24/7 phía dưới màn hình!</span>
+              </div>
+            </div>
+
+            <div className="md:w-2/3">
               <div className="space-y-2">
-                <p className="text-xs font-bold uppercase text-gray-600 tracking-wider flex items-center gap-1">
+                <p className="text-xs font-bold uppercase text-gray-600 tracking-wider flex items-center gap-1 mb-3">
                   <Pin className="w-3 h-3" /> Top câu hỏi phổ biến:
                 </p>
                 {topFAQs.map((faq, idx) => (
@@ -261,7 +194,7 @@ export default function Footer() {
                               faq.answer.replace(
                                 /\[\d+\]\s*/g,
                                 "",
-                              ) /* Loại bỏ mấy cái gạch đầu dòng do AI đánh số (nếu có) */
+                              )
                             }
                           </div>
                         </motion.div>
@@ -269,74 +202,6 @@ export default function Footer() {
                     </AnimatePresence>
                   </div>
                 ))}
-              </div>
-            </div>
-
-            {/* AI Chat Window */}
-            <div className="md:w-2/3 bg-black/40 rounded-2xl border border-white/10 overflow-hidden flex flex-col h-[400px]">
-              <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                {chatHistory.map((msg, i) => (
-                  <div
-                    key={i}
-                    className={`flex gap-3 ${msg.role === "user" ? "flex-row-reverse" : ""}`}
-                  >
-                    <div
-                      className={`shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${msg.role === "user" ? "bg-white/20" : "bg-primary/20"}`}
-                    >
-                      {msg.role === "user" ? (
-                        <User className="w-4 h-4 text-white" />
-                      ) : (
-                        <Bot className="w-4 h-4 text-primary" />
-                      )}
-                    </div>
-                    <div
-                      className={`p-3 rounded-2xl text-sm max-w-[80%] whitespace-pre-wrap ${msg.role === "user" ? "bg-white/10 text-white rounded-tr-sm" : "bg-primary/10 text-gray-200 border border-primary/20 rounded-tl-sm"}`}
-                    >
-                      {msg.content}
-                    </div>
-                  </div>
-                ))}
-                {isTyping && (
-                  <div className="flex gap-3">
-                    <div className="shrink-0 w-8 h-8 rounded-full flex items-center justify-center bg-primary/20">
-                      <Loader2 className="w-4 h-4 text-primary animate-spin" />
-                    </div>
-                    <div className="p-3 rounded-2xl text-sm bg-primary/10 text-gray-200 border border-primary/20 rounded-tl-sm flex items-center gap-1">
-                      <span
-                        className="w-2 h-2 bg-primary/60 rounded-full animate-bounce"
-                        style={{ animationDelay: "0ms" }}
-                      ></span>
-                      <span
-                        className="w-2 h-2 bg-primary/60 rounded-full animate-bounce"
-                        style={{ animationDelay: "150ms" }}
-                      ></span>
-                      <span
-                        className="w-2 h-2 bg-primary/60 rounded-full animate-bounce"
-                        style={{ animationDelay: "300ms" }}
-                      ></span>
-                    </div>
-                  </div>
-                )}
-                <div ref={chatEndRef}></div>
-              </div>
-              <div className="p-3 border-t border-white/10 bg-[#1c1d21]">
-                <form onSubmit={handleAskForm} className="flex gap-2 relative">
-                  <input
-                    type="text"
-                    value={question}
-                    onChange={(e) => setQuestion(e.target.value)}
-                    placeholder="Ví dụ: Giá vé VIP cuối tuần là bao nhiêu..."
-                    disabled={isTyping}
-                    className="w-full bg-black/50 border border-white/10 rounded-full py-3 pl-4 pr-12 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-primary/50 disabled:opacity-50"
-                  />
-                  <button
-                    type="submit"
-                    disabled={isTyping || !question.trim()}
-                    className="absolute right-1 top-1 w-10 h-10 bg-primary hover:bg-primary/90 rounded-full flex items-center justify-center text-white disabled:opacity-50 transition"
-                  >
-                    <Send className="w-4 h-4" />
-                  </button>
-                </form>
               </div>
             </div>
           </div>
