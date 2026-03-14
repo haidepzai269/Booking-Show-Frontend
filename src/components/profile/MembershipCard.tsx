@@ -116,7 +116,7 @@ const MembershipCard: React.FC<MembershipCardProps> = ({
       }}
       transition={{ type: "spring", stiffness: 300, damping: 20, mass: 1 }}
       style={{ 
-        background: config.bg,
+        backgroundImage: config.bg,
         transformStyle: "preserve-3d",
       }}
       className={`relative w-full max-w-md h-56 rounded-2xl p-7 ${config.border} border-2 ${config.glow} overflow-hidden flex flex-col justify-between group cursor-default transition-shadow duration-300`}
@@ -125,7 +125,7 @@ const MembershipCard: React.FC<MembershipCardProps> = ({
       <div 
         className="absolute inset-0 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-10"
         style={{
-          background: `radial-gradient(circle at ${mousePos.x}% ${mousePos.y}%, rgba(255,255,255,0.3) 0%, transparent 60%)`,
+          backgroundImage: `radial-gradient(circle at ${mousePos.x}% ${mousePos.y}%, rgba(255,255,255,0.3) 0%, transparent 60%)`,
           mixBlendMode: "overlay"
         }}
       />
@@ -135,7 +135,7 @@ const MembershipCard: React.FC<MembershipCardProps> = ({
         <div 
           className="absolute inset-0 pointer-events-none opacity-20 group-hover:opacity-40 transition-opacity duration-700 z-0"
           style={{
-            background: `linear-gradient(${mousePos.x + mousePos.y}deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #8b00ff)`,
+            backgroundImage: `linear-gradient(${mousePos.x + mousePos.y}deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #8b00ff)`,
             backgroundSize: "200% 200%",
             backgroundPosition: `${mousePos.x}% ${mousePos.y}%`,
             mixBlendMode: "color-dodge",
