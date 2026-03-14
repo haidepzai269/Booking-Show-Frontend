@@ -36,13 +36,13 @@ export default function QuickBookingIsland() {
     <AnimatePresence>
       {isVisible && (
         <motion.div
-          initial={{ y: 50, x: "-50%", scale: 0.8, opacity: 0 }}
+          initial={{ y: 50, x: "-50%", scale: 0, opacity: 0 }}
           animate={{ y: 0, x: "-50%", scale: 1, opacity: 1 }}
-          exit={{ y: 50, x: "-50%", scale: 0.8, opacity: 0 }}
+          exit={{ y: 50, x: "-50%", scale: 0, opacity: 0 }}
           transition={{ 
             type: "spring", 
-            stiffness: 260, 
-            damping: 26,
+            stiffness: 300, 
+            damping: 25,
             mass: 1
           }}
           className="fixed bottom-8 left-1/2 z-[90] w-fit min-w-[280px] origin-bottom"
@@ -50,7 +50,7 @@ export default function QuickBookingIsland() {
           <motion.div
             layout
             transition={{
-              layout: { type: "spring", stiffness: 260, damping: 26, mass: 1 }
+              layout: { type: "spring", stiffness: 300, damping: 25, mass: 1 }
             }}
             className={`
               bg-black/40 backdrop-blur-2xl border border-white/10 rounded-[2rem] 
