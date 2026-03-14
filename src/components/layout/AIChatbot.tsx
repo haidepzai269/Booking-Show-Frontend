@@ -249,6 +249,7 @@ export default function AIChatbot() {
         {/* Mobile Floating Trigger - Pill Style */}
         {!isOpen && isFloatingVisible && mounted && (
           <motion.div
+            key="chatbot-mobile-trigger"
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: 20, opacity: 0 }}
@@ -269,6 +270,7 @@ export default function AIChatbot() {
         {/* Desktop Floating Icon (Existing logic but ensuring it's hidden on mobile) */}
         {!isOpen && isFloatingVisible && (
           <motion.div
+            key="chatbot-desktop-trigger"
             initial={{ scale: 0, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0, opacity: 0 }}
@@ -303,6 +305,7 @@ export default function AIChatbot() {
       <AnimatePresence>
         {isOpen && (
           <motion.div
+            key="chatbot-window"
             initial={{ opacity: 0, y: 40, scale: 0.9 }}
             animate={{ 
               opacity: 1, 
