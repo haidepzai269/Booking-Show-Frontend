@@ -41,8 +41,7 @@ interface FAQItem {
 export default function AIChatbot() {
   const { t } = useTranslation();
   const { user } = useAuthStore();
-  const { isFloatingVisible, setFloatingVisible } = useChatStore();
-  const [isOpen, setIsOpen] = useState(false);
+  const { isFloatingVisible, setFloatingVisible, isOpen, setOpen } = useChatStore();
   const [isMinimized, setIsMinimized] = useState(false);
   const [question, setQuestion] = useState("");
   const [expandedFaqId, setExpandedFaqId] = useState<number | null>(null);
@@ -151,12 +150,12 @@ export default function AIChatbot() {
   }, [user, mounted, WELCOME_MESSAGE]);
 
   const handleOpen = () => {
-    setIsOpen(true);
+    setOpen(true);
     setIsMinimized(false);
   };
 
   const handleClose = () => {
-    setIsOpen(false);
+    setOpen(false);
     setIsMinimized(false);
   };
 
@@ -247,6 +246,27 @@ export default function AIChatbot() {
   return (
     <>
       <AnimatePresence>
+        {/* Mobile Floating Trigger - Pill Style */}
+        {!isOpen && isFloatingVisible && mounted && (
+          <motion.div
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 20, opacity: 0 }}
+            className="fixed bottom-3 left-1/2 -translate-x-1/2 z-[100] md:hidden"
+            onClick={handleOpen}
+          >
+            <div className="bg-black/60 backdrop-blur-xl border border-primary/30 py-2 px-4 rounded-full flex items-center gap-3 shadow-[0_0_20px_rgba(229,9,20,0.3)] group active:scale-95 transition-transform">
+              <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center shadow-lg shadow-primary/20">
+                <Bot className="w-3.5 h-3.5 text-white" />
+              </div>
+              <span className="text-[10px] font-black text-white uppercase tracking-widest whitespace-nowrap">
+                {t('footer.ai_suggestion', { defaultValue: 'Gợi ý đặt nhanh' })}
+              </span>
+            </div>
+          </motion.div>
+        )}
+
+        {/* Desktop Floating Icon (Existing logic but ensuring it's hidden on mobile) */}
         {!isOpen && isFloatingVisible && (
           <motion.div
             initial={{ scale: 0, opacity: 0 }}
@@ -254,7 +274,7 @@ export default function AIChatbot() {
             exit={{ scale: 0, opacity: 0 }}
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.95 }}
-            className="fixed bottom-6 right-6 z-50 w-16 h-16 rounded-full shadow-2xl flex items-center justify-center group cursor-pointer"
+            className="fixed bottom-3 right-6 z-50 w-16 h-16 rounded-full shadow-2xl items-center justify-center group cursor-pointer hidden md:flex"
             style={{
               background: "linear-gradient(135deg, #e50914 0%, #ff4d4d 100%)",
               boxShadow: "0 8px 32px rgba(229, 9, 20, 0.5)",
@@ -292,7 +312,7 @@ export default function AIChatbot() {
             }}
             exit={{ opacity: 0, y: 40, scale: 0.9 }}
             transition={{ type: "spring", damping: 25, stiffness: 300 }}
-            className="fixed bottom-6 right-6 z-50 w-[380px] flex flex-col overflow-hidden rounded-2xl"
+            className="fixed bottom-3 right-6 z-50 w-[380px] flex flex-col overflow-hidden rounded-2xl"
             style={{
               background: "rgba(20, 20, 28, 0.98)",
               backdropFilter: "blur(20px)",

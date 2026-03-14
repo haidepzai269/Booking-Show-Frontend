@@ -42,7 +42,8 @@
     "feature_3_desc": "Tích hợp ví ZaloPay, PayOS xử lý giao dịch tự nhiên.",
     "pricing_combo": "Giảm ngay 10% khi đặt trước Bắp và Nước ngọt.",
     "about_title": "Về",
-    "about_desc": "Hành trình ra rạp không chỉ đơn thuần là xem phim, mà là một trải nghiệm trọn vẹn."
+    "about_desc": "Hành trình ra rạp không chỉ đơn thuần là xem phim, mà là một trải nghiệm trọn vẹn.",
+    "ai_suggestion": "Gợi ý đặt nhanh"
   },
   "chatbot": {
     "online": "Trực Tuyến",

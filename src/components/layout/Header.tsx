@@ -25,7 +25,7 @@ import { useChatStore } from "@/store/chatStore";
 export default function Header() {
   const { t } = useTranslation();
   const { user, logout } = useAuthStore();
-  const { isFloatingVisible, setFloatingVisible } = useChatStore();
+  const { isFloatingVisible, setFloatingVisible, setOpen } = useChatStore();
   const [mounted, setMounted] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
@@ -340,27 +340,24 @@ export default function Header() {
                   </div>
                 </details>
 
-                {/* AI Chatbot Link (Mobile Menu - only visible if floating icon is dismissed) */}
-                <AnimatePresence>
-                  {!isFloatingVisible && (
-                    <motion.button
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      exit={{ opacity: 0, x: -20 }}
-                      onClick={() => {
-                        setFloatingVisible(true);
-                        setIsMenuOpen(false);
-                      }}
-                      className="flex items-center justify-between p-4 bg-primary/10 border border-primary/20 rounded-2xl text-primary font-bold mt-2"
-                    >
-                      <div className="flex items-center gap-3">
-                        <Bot className="w-5 h-5" />
-                        <span>MỞ TRỢ LÝ AI</span>
-                      </div>
-                      <ChevronDown className="w-4 h-4 -rotate-90 opacity-50" />
-                    </motion.button>
-                  )}
-                </AnimatePresence>
+                {/* AI Chatbot Link (Mobile Menu) */}
+                <button
+                  onClick={() => {
+                    setOpen(true);
+                    setIsMenuOpen(false);
+                  }}
+                  className="w-full flex items-center justify-between p-4 bg-primary/10 border border-primary/20 rounded-2xl mt-2 group active:scale-95 transition-all"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center shadow-lg shadow-primary/20">
+                      <Bot className="w-4 h-4 text-white" />
+                    </div>
+                    <span className="text-xs font-black text-white uppercase tracking-widest">
+                      {mounted ? t('footer.ai_suggestion', { defaultValue: 'Gợi ý đặt nhanh' }) : 'Gợi ý đặt nhanh'}
+                    </span>
+                  </div>
+                  <ChevronDown className="w-4 h-4 -rotate-90 text-primary opacity-50 group-hover:opacity-100 transition-opacity" />
+                </button>
               </div>
 
               {/* Account Info (Mobile) */}
