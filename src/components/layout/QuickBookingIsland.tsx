@@ -41,16 +41,16 @@ export default function QuickBookingIsland() {
           exit={{ y: 50, x: "-50%", scale: 0.8, opacity: 0 }}
           transition={{ 
             type: "spring", 
-            stiffness: 400, 
-            damping: 30,
-            mass: 0.8
+            stiffness: 260, 
+            damping: 26,
+            mass: 1
           }}
           className="fixed bottom-8 left-1/2 z-[90] w-fit min-w-[280px] origin-bottom"
         >
           <motion.div
             layout
             transition={{
-              layout: { type: "spring", stiffness: 400, damping: 30 }
+              layout: { type: "spring", stiffness: 260, damping: 26, mass: 1 }
             }}
             className={`
               bg-black/40 backdrop-blur-2xl border border-white/10 rounded-[2rem] 
