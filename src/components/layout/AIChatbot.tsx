@@ -246,26 +246,6 @@ export default function AIChatbot() {
   return (
     <>
       <AnimatePresence>
-        {/* Mobile Floating Trigger - Pill Style */}
-        {!isOpen && isFloatingVisible && mounted && (
-          <motion.div
-            key="chatbot-mobile-trigger"
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            exit={{ y: 20, opacity: 0 }}
-            className="fixed bottom-3 left-1/2 -translate-x-1/2 z-[100] md:hidden"
-            onClick={handleOpen}
-          >
-            <div className="bg-black/60 backdrop-blur-xl border border-primary/30 py-2 px-4 rounded-full flex items-center gap-3 shadow-[0_0_20px_rgba(229,9,20,0.3)] group active:scale-95 transition-transform">
-              <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center shadow-lg shadow-primary/20">
-                <Bot className="w-3.5 h-3.5 text-white" />
-              </div>
-              <span className="text-[10px] font-black text-white uppercase tracking-widest whitespace-nowrap">
-                {t('footer.ai_suggestion', { defaultValue: 'Gợi ý đặt nhanh' })}
-              </span>
-            </div>
-          </motion.div>
-        )}
 
         {/* Desktop Floating Icon (Existing logic but ensuring it's hidden on mobile) */}
         {!isOpen && isFloatingVisible && (
@@ -315,12 +295,13 @@ export default function AIChatbot() {
             }}
             exit={{ opacity: 0, y: 40, scale: 0.9 }}
             transition={{ type: "spring", damping: 25, stiffness: 300 }}
-            className="fixed bottom-3 right-6 z-50 w-[380px] flex flex-col overflow-hidden rounded-2xl"
+            className="fixed bottom-3 left-3 right-3 md:left-auto md:right-6 z-[120] w-auto md:w-[380px] flex flex-col overflow-hidden rounded-2xl"
             style={{
               background: "rgba(20, 20, 28, 0.98)",
               backdropFilter: "blur(20px)",
               border: "1px solid rgba(229, 9, 20, 0.3)",
               boxShadow: "0 32px 80px rgba(0,0,0,0.8)",
+              maxHeight: "calc(100vh - 40px)"
             }}
           >
             {/* Header */}

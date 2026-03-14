@@ -2,12 +2,14 @@
 
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Ticket, ChevronUp, MapPin, Calendar, Clock, Sparkles } from "lucide-react";
+import { Ticket, ChevronUp, MapPin, Calendar, Clock, Sparkles, Bot } from "lucide-react";
 import Link from "next/link";
+import { useChatStore } from "@/store/chatStore";
 
 export default function QuickBookingIsland() {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
+  const { setOpen, isOpen } = useChatStore();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -57,10 +59,16 @@ export default function QuickBookingIsland() {
             ) : (
               <div className="w-full space-y-4">
                 <div className="flex justify-between items-center mb-2">
-                   <div className="flex items-center gap-2">
-                       <Sparkles className="w-4 h-4 text-primary" />
-                       <span className="text-xs font-black text-white uppercase tracking-widest">Gợi ý đặt nhanh</span>
-                   </div>
+                   <motion.button 
+                     whileTap={{ scale: 0.95 }}
+                     onClick={() => setOpen(!isOpen)}
+                     className={`flex items-center gap-2 px-3 py-1.5 rounded-xl transition-all ${isOpen ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'bg-white/5 hover:bg-white/10'}`}
+                   >
+                       {isOpen ? <Bot className="w-4 h-4" /> : <Sparkles className="w-4 h-4 text-primary" />}
+                       <span className="text-xs font-black text-white uppercase tracking-widest">
+                         {isOpen ? 'Đang trò chuyện' : 'Gợi ý đặt nhanh'}
+                       </span>
+                   </motion.button>
                    <button 
                      onClick={() => setIsExpanded(false)}
                      className="text-[10px] font-bold text-white/40 hover:text-white transition-colors"
