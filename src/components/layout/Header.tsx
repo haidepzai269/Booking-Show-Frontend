@@ -14,13 +14,18 @@ import {
   Key,
   Menu,
   X,
+  Bot,
 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import SearchBar from "@/components/layout/SearchBar";
+import { useChatStore } from "@/store/chatStore";
 
 export default function Header() {
+  const { t } = useTranslation();
   const { user, logout } = useAuthStore();
+  const { isFloatingVisible, setFloatingVisible } = useChatStore();
   const [mounted, setMounted] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
@@ -66,7 +71,7 @@ export default function Header() {
             {/* Dropdown 1: Phim */}
             <div className="relative group h-full">
               <button className="flex items-center gap-1.5 text-sm font-bold text-gray-300 hover:text-white transition-colors py-8">
-                Phim{" "}
+                {mounted ? t('common.movies') : 'Phim'}{" "}
                 <ChevronDown className="w-4 h-4 opacity-50 transition-transform group-hover:rotate-180" />
               </button>
               <div className="absolute top-[80px] left-1/2 -translate-x-1/2 mt-0 w-56 bg-card border border-border rounded-xl shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 overflow-hidden before:absolute before:-top-4 before:left-0 before:w-full before:h-4">
@@ -75,19 +80,19 @@ export default function Header() {
                     href="/movies?status=now_showing"
                     className="px-3 py-2.5 text-sm text-gray-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors flex items-center gap-2"
                   >
-                    <Film className="w-4 h-4 text-primary" /> Phim đang chiếu
+                    <Film className="w-4 h-4 text-primary" /> {mounted ? t('common.now_showing') : 'Đang chiếu'}
                   </Link>
                   <Link
                     href="/movies?status=coming_soon"
                     className="px-3 py-2.5 text-sm text-gray-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors flex items-center gap-2"
                   >
-                    <Film className="w-4 h-4 text-gray-400" /> Phim sắp chiếu
+                    <Film className="w-4 h-4 text-gray-400" /> {mounted ? t('common.coming_soon') : 'Sắp chiếu'}
                   </Link>
                   <Link
                     href="/movies"
                     className="px-3 py-2.5 text-sm text-gray-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors flex items-center gap-2"
                   >
-                    <Film className="w-4 h-4 text-gray-400" /> Tìm kiếm phim
+                    <Film className="w-4 h-4 text-gray-400" /> {mounted ? t('common.search_movies') : 'Tìm kiếm phim'}
                   </Link>
                 </div>
               </div>
@@ -96,7 +101,7 @@ export default function Header() {
             {/* Dropdown 2: Rạp */}
             <div className="relative group h-full">
               <button className="flex items-center gap-1.5 text-sm font-bold text-gray-300 hover:text-white transition-colors py-8">
-                Rạp{" "}
+                {mounted ? t('common.cinemas') : 'Rạp'}{" "}
                 <ChevronDown className="w-4 h-4 opacity-50 transition-transform group-hover:rotate-180" />
               </button>
               <div className="absolute top-[80px] left-1/2 -translate-x-1/2 mt-0 w-56 bg-card border border-border rounded-xl shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 overflow-hidden before:absolute before:-top-4 before:left-0 before:w-full before:h-4">
@@ -105,13 +110,13 @@ export default function Header() {
                     href="/cinemas"
                     className="px-3 py-2.5 text-sm text-gray-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors flex items-center gap-2"
                   >
-                    <MapPin className="w-4 h-4 text-primary" /> Danh sách rạp
+                    <MapPin className="w-4 h-4 text-primary" /> {mounted ? t('common.cinema_list') : 'Danh sách rạp'}
                   </Link>
                   <Link
                     href="/cinemas"
                     className="px-3 py-2.5 text-sm text-gray-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors flex items-center gap-2"
                   >
-                    <MapPin className="w-4 h-4 text-blue-400" /> Tìm rạp gần bạn
+                    <MapPin className="w-4 h-4 text-blue-400" /> {mounted ? t('common.near_you') : 'Gần bạn'}
                   </Link>
                 </div>
               </div>
@@ -120,7 +125,7 @@ export default function Header() {
             {/* Dropdown 3: Ưu đãi */}
             <div className="relative group h-full">
               <button className="flex items-center gap-1.5 text-sm font-bold text-gray-300 hover:text-white transition-colors py-8">
-                Ưu đãi{" "}
+                {mounted ? t('common.promotions') : 'Ưu đãi'}{" "}
                 <ChevronDown className="w-4 h-4 opacity-50 transition-transform group-hover:rotate-180" />
               </button>
               <div className="absolute top-[80px] left-1/2 -translate-x-1/2 mt-0 w-60 bg-card border border-border rounded-xl shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 overflow-hidden before:absolute before:-top-4 before:left-0 before:w-full before:h-4">
@@ -129,15 +134,13 @@ export default function Header() {
                     href="/promotions"
                     className="px-3 py-2.5 text-sm text-gray-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors flex items-center gap-2"
                   >
-                    <Gift className="w-4 h-4 text-primary" /> Mã giảm giá đang
-                    có
+                    <Gift className="w-4 h-4 text-primary" /> {mounted ? t('common.hot_promos') : 'Khuyến mãi hot'}
                   </Link>
                   <Link
                     href="/promotions/campaigns"
                     className="px-3 py-2.5 text-sm text-gray-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors flex items-center gap-2"
                   >
-                    <Ticket className="w-4 h-4 text-secondary" /> Chương trình
-                    khuyến mãi
+                    <Ticket className="w-4 h-4 text-secondary" /> {mounted ? t('common.campaigns') : 'Chiến dịch'}
                   </Link>
                 </div>
               </div>
@@ -148,6 +151,28 @@ export default function Header() {
 
           {/* Account & Mobile Menu Toggle */}
           <div className="flex items-center gap-2 lg:gap-4">
+            {/* AI Chatbot Icon (Header Version - Desktop Only) */}
+            <AnimatePresence>
+              {!isFloatingVisible && mounted && (
+                <motion.button
+                  layoutId="chatbot-icon-container"
+                  initial={{ scale: 0, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  exit={{ scale: 0, opacity: 0 }}
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                  onClick={() => setFloatingVisible(true)}
+                  className="hidden md:flex p-2 bg-primary/10 border border-primary/20 rounded-full hover:bg-primary/20 transition-colors group relative"
+                  title="Mở Chatbot"
+                >
+                  <motion.div layoutId="chatbot-icon">
+                    <Bot className="w-5 h-5 text-primary" />
+                  </motion.div>
+                  <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-green-500 border-2 border-[#0a0a0a] rounded-full animate-pulse" />
+                </motion.button>
+              )}
+            </AnimatePresence>
+
             {/* Account (Desktop & Mobile) */}
             <div className="relative group h-full">
               {!mounted ? (
@@ -196,25 +221,19 @@ export default function Header() {
                       href="/profile"
                       className="px-3 py-2.5 text-sm text-gray-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors flex items-center gap-2"
                     >
-                      <User className="w-4 h-4" /> Hồ sơ cá nhân
+                      <User className="w-4 h-4" /> Hồ sơ
                     </Link>
                     <Link
                       href="/orders/my"
                       className="px-3 py-2.5 text-sm text-gray-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors flex items-center gap-2"
                     >
-                      <History className="w-4 h-4" /> Lịch sử đơn hàng
+                      <History className="w-4 h-4" /> Lịch sử
                     </Link>
                     <Link
                       href="/profile/tickets"
                       className="px-3 py-2.5 text-sm text-gray-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors flex items-center gap-2"
                     >
                       <Ticket className="w-4 h-4" /> Vé của tôi
-                    </Link>
-                    <Link
-                      href="/reset-password"
-                      className="px-3 py-2.5 text-sm text-gray-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors flex items-center gap-2"
-                    >
-                      <Key className="w-4 h-4" /> Đổi mật khẩu
                     </Link>
                     <div className="h-px w-full bg-border my-1" />
                     <button
@@ -256,7 +275,7 @@ export default function Header() {
             <div className="p-6 flex flex-col gap-8">
               {/* Mobile Search Bar */}
               <SearchBar
-                placeholder="Tìm kiếm phìm..."
+                placeholder={t('common.search_movies')}
                 inputClassName="rounded-2xl py-4 pl-12 pr-10"
                 onClose={() => setIsMenuOpen(false)}
               />
@@ -264,11 +283,11 @@ export default function Header() {
               {/* Mobile Nav Links */}
               <div className="grid grid-cols-1 gap-1">
                 <span className="text-[10px] text-gray-500 uppercase tracking-[0.2em] font-bold mb-2 ml-2">
-                  Danh mục
+                  {t('common.categories')}
                 </span>
                 <details className="group">
                   <summary className="flex items-center justify-between p-4 bg-[#111] rounded-2xl text-white font-bold cursor-pointer list-none">
-                    PHIM{" "}
+                    {t('common.movies').toUpperCase()}{" "}
                     <ChevronDown className="w-4 h-4 group-open:rotate-180 transition-transform" />
                   </summary>
                   <div className="mt-2 pl-4 flex flex-col gap-1">
@@ -277,21 +296,21 @@ export default function Header() {
                       onClick={() => setIsMenuOpen(false)}
                       className="p-3 text-gray-400 hover:text-primary transition-colors flex items-center gap-3"
                     >
-                      <Film className="w-4 h-4" /> Phim đang chiếu
+                      <Film className="w-4 h-4" /> {t('common.now_showing')}
                     </Link>
                     <Link
                       href="/movies?status=coming_soon"
                       onClick={() => setIsMenuOpen(false)}
                       className="p-3 text-gray-400 hover:text-primary transition-colors flex items-center gap-3"
                     >
-                      <Film className="w-4 h-4" /> Phim sắp chiếu
+                      <Film className="w-4 h-4" /> {t('common.coming_soon')}
                     </Link>
                   </div>
                 </details>
 
                 <details className="group mt-2">
                   <summary className="flex items-center justify-between p-4 bg-[#111] rounded-2xl text-white font-bold cursor-pointer list-none">
-                    RẠP{" "}
+                    {t('common.cinemas').toUpperCase()}{" "}
                     <ChevronDown className="w-4 h-4 group-open:rotate-180 transition-transform" />
                   </summary>
                   <div className="mt-2 pl-4 flex flex-col gap-1">
@@ -300,14 +319,14 @@ export default function Header() {
                       onClick={() => setIsMenuOpen(false)}
                       className="p-3 text-gray-400 hover:text-primary transition-colors flex items-center gap-3"
                     >
-                      <MapPin className="w-4 h-4" /> Danh sách rạp
+                      <MapPin className="w-4 h-4" /> {t('common.cinema_list')}
                     </Link>
                   </div>
                 </details>
 
                 <details className="group mt-2">
                   <summary className="flex items-center justify-between p-4 bg-[#111] rounded-2xl text-white font-bold cursor-pointer list-none">
-                    ƯU ĐÃI{" "}
+                    {t('common.promotions').toUpperCase()}{" "}
                     <ChevronDown className="w-4 h-4 group-open:rotate-180 transition-transform" />
                   </summary>
                   <div className="mt-2 pl-4 flex flex-col gap-1">
@@ -316,22 +335,44 @@ export default function Header() {
                       onClick={() => setIsMenuOpen(false)}
                       className="p-3 text-gray-400 hover:text-primary transition-colors flex items-center gap-3"
                     >
-                      <Gift className="w-4 h-4" /> Khuyến mãi HOT
+                      <Gift className="w-4 h-4" /> {t('common.hot_promos')}
                     </Link>
                   </div>
                 </details>
+
+                {/* AI Chatbot Link (Mobile Menu - only visible if floating icon is dismissed) */}
+                <AnimatePresence>
+                  {!isFloatingVisible && (
+                    <motion.button
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: -20 }}
+                      onClick={() => {
+                        setFloatingVisible(true);
+                        setIsMenuOpen(false);
+                      }}
+                      className="flex items-center justify-between p-4 bg-primary/10 border border-primary/20 rounded-2xl text-primary font-bold mt-2"
+                    >
+                      <div className="flex items-center gap-3">
+                        <Bot className="w-5 h-5" />
+                        <span>MỞ TRỢ LÝ AI</span>
+                      </div>
+                      <ChevronDown className="w-4 h-4 -rotate-90 opacity-50" />
+                    </motion.button>
+                  )}
+                </AnimatePresence>
               </div>
 
               {/* Account Info (Mobile) */}
               {user ? (
                 <div className="flex flex-col gap-4">
                   <span className="text-[10px] text-gray-500 uppercase tracking-[0.2em] font-bold ml-2">
-                    Tài khoản
+                    {t('common.account')}
                   </span>
                   <div className="p-6 bg-primary/10 border border-primary/20 rounded-[2rem] flex items-center justify-between">
                     <div>
                       <p className="text-[10px] text-primary uppercase font-bold tracking-widest">
-                        Đã đăng nhập
+                        {t('common.logged_in')}
                       </p>
                       <p className="text-white font-black text-lg">
                         {user.fullName}
@@ -353,26 +394,26 @@ export default function Header() {
                       onClick={() => setIsMenuOpen(false)}
                       className="p-4 bg-[#111] rounded-2xl text-gray-300 flex items-center gap-3"
                     >
-                      <History className="w-5 h-5" /> Lịch sử đơn hàng
+                      <History className="w-5 h-5" /> {t('common.history')}
                     </Link>
                     <Link
                       href="/profile/tickets"
                       onClick={() => setIsMenuOpen(false)}
                       className="p-4 bg-[#111] rounded-2xl text-gray-300 flex items-center gap-3"
                     >
-                      <Ticket className="w-5 h-5" /> Vé của tôi
+                      <Ticket className="w-5 h-5" /> {t('common.tickets')}
                     </Link>
                   </div>
                 </div>
               ) : (
                 <div className="mt-4">
-                  <Link
-                    href="/login"
-                    onClick={() => setIsMenuOpen(false)}
-                    className="w-full bg-primary text-white py-4 rounded-2xl font-black text-center flex items-center justify-center gap-2 shadow-lg"
-                  >
-                    <User className="w-5 h-5" /> ĐĂNG NHẬP NGAY
-                  </Link>
+                    <Link
+                      href="/login"
+                      onClick={() => setIsMenuOpen(false)}
+                      className="w-full bg-primary text-white py-4 rounded-2xl font-black text-center flex items-center justify-center gap-2 shadow-lg"
+                    >
+                      <User className="w-5 h-5" /> {t('common.login_now').toUpperCase()}
+                    </Link>
                 </div>
               )}
 

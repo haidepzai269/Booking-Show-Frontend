@@ -241,8 +241,16 @@ function CheckoutContent() {
           });
 
           if (orderRes.success && orderRes.data?.id) {
-            setOrderId(orderRes.data.id);
+            const newOrderId = orderRes.data.id;
+            setOrderId(newOrderId);
             setExpiresAt(orderRes.data.expires_at || DEFAULT_EXPIRES_AT);
+
+            // ✅ Cập nhật URL: chuyển từ ?seats= sang ?order_id=
+            // Việc này giúp khi refresh trang, logic sẽ rơi vào nhánh "Load Order cũ" thay vì tạo tiếp đơn mới
+            router.replace(
+              `/booking/checkout/${showtimeId}?order_id=${newOrderId}`,
+              { scroll: false },
+            );
           } else {
             setGlobalError(
               orderRes.error ||

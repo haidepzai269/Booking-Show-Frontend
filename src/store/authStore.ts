@@ -7,7 +7,8 @@ interface User {
   email: string;
   role: string;
   fullName: string;
-  themePreference: string;
+  theme: string;
+  language: string;
   rank?: string;
   totalSpending?: number;
 }
@@ -49,7 +50,8 @@ export const useAuthStore = create<AuthState>()(
               email: rawUser.email,
               fullName: rawUser.full_name,
               role: rawUser.role,
-              themePreference: rawUser.theme_preference || 'dark',
+              theme: rawUser.theme || 'dark',
+              language: rawUser.language || 'vi',
               rank: rawUser.rank || 'BRONZE',
               totalSpending: rawUser.total_spending || 0,
             };
@@ -87,7 +89,8 @@ export const useAuthStore = create<AuthState>()(
               email: rawUser.email,
               fullName: rawUser.full_name,
               role: rawUser.role,
-              themePreference: rawUser.theme_preference || 'dark',
+              theme: rawUser.theme || 'dark',
+              language: rawUser.language || 'vi',
               rank: rawUser.rank || 'BRONZE',
               totalSpending: rawUser.total_spending || 0,
             };

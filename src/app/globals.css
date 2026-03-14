@@ -18,14 +18,28 @@
 }
 
 :root {
+  --background: #f8f9fa; /* Soft Off-white */
+  --foreground: #1a1a1b; /* Soft Dark Gray */
+}
+
+[class~="dark"] {
   --background: #0a0a0a;
   --foreground: #ededed;
 }
 
+/* Global Transition for body elements */
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans);
+}
+
+.neon-shadow-primary {
+  box-shadow: 0 0 15px rgba(229, 9, 20, 0.4);
+}
+
+.neon-shadow-secondary {
+  box-shadow: 0 0 15px rgba(245, 197, 24, 0.4);
 }
 
 /* Hide scrollbar for everywhere */

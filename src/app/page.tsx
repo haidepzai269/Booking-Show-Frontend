@@ -116,8 +116,11 @@ export default function Home() {
 
       {/* HERO CAROUSEL SECTION */}
       {loading ? (
-        <div className="w-full h-[60vh] md:h-[70vh] bg-card animate-pulse flex items-center justify-center">
-          <LoadingSpinner />
+        <div className="w-full h-[60vh] md:h-[70vh] bg-background flex items-center justify-center">
+           <div className="max-w-7xl mx-auto w-full px-4 md:px-6 flex flex-col md:flex-row justify-between items-center gap-8">
+              <div className="w-full md:w-2/3 h-80 md:h-[440px] bg-card/40 rounded-[2.5rem] animate-pulse"></div>
+              <div className="hidden md:block w-1/3 h-[440px] bg-card/20 rounded-[2.5rem] animate-pulse"></div>
+           </div>
         </div>
       ) : activeMovie ? (
         <div className="w-full min-h-[60vh] md:h-[70vh] relative flex items-center overflow-hidden group">
