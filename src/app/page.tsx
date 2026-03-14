@@ -437,23 +437,29 @@ function MovieGrid({
           transition={{ duration: 0.4, delay: index * 0.1 }}
           className="group relative flex flex-col cursor-pointer"
         >
-          <div className="relative aspect-[2/3] w-full overflow-hidden rounded-2xl bg-card border border-border glass-card group-hover:border-primary/50 transition-all duration-500">
-            <img
+          <div className="relative aspect-[2/3] w-full overflow-hidden rounded-2xl bg-card border border-white/5 glass-card group-hover:border-primary/50 transition-all duration-700 shadow-2xl">
+            {/* Parallax Image */}
+            <motion.img
+              whileHover={{ scale: 1.15, y: -10 }}
+              transition={{ duration: 0.6, ease: "easeOut" }}
               src={
                 movie.poster_url ||
                 "https://images.unsplash.com/photo-1440404653325-ab127d49abc1?q=80&w=2070&auto=format&fit=crop"
               }
               alt={movie.title}
-              className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+              className="w-full h-full object-cover"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/20 to-transparent opacity-90" />
+            
+            {/* Living Gradient Overlay */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-transparent opacity-60 group-hover:opacity-100 transition-opacity duration-500" />
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-transparent to-secondary/10 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
 
             {/* View Ticket Overlay */}
-            <div className="absolute inset-0 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 bg-black/40 backdrop-blur-[2px] z-10">
-              <div className="flex gap-3 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
+            <div className="absolute inset-0 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-500 bg-black/40 backdrop-blur-[2px] z-10">
+              <div className="flex gap-4 transform translate-y-8 group-hover:translate-y-0 transition-all duration-500 ease-out">
                 <Link
                   href={`/movies/${movie.id}`}
-                  className={`${buttonBg} p-4 rounded-full ${shadowEffect} hover:scale-110 transition-transform`}
+                  className={`${buttonBg} p-4 rounded-full ${shadowEffect} hover:scale-125 transition-all shadow-primary/30`}
                   title="Đặt vé"
                 >
                   <Ticket className="w-6 h-6" />
@@ -464,7 +470,7 @@ function MovieGrid({
                       e.stopPropagation();
                       onPlayTrailer(movie.trailer_url);
                     }}
-                    className="bg-white/20 backdrop-blur-md text-white p-4 rounded-full border border-white/30 hover:bg-primary hover:border-primary transition-all hover:scale-110 shadow-xl"
+                    className="bg-white/10 backdrop-blur-xl text-white p-4 rounded-full border border-white/20 hover:bg-primary hover:border-primary transition-all hover:scale-125 shadow-xl"
                     title="Xem Trailer"
                   >
                     <Play className="w-6 h-6 fill-current" />
@@ -473,41 +479,46 @@ function MovieGrid({
               </div>
             </div>
 
+            {/* Floating Info Badge */}
+            <div className="absolute top-4 left-4 z-10 opacity-0 group-hover:opacity-100 transform -translate-x-4 group-hover:translate-x-0 transition-all duration-500">
+               <div className="flex items-center gap-1.5 px-2 py-1 bg-black/60 backdrop-blur-md rounded-lg border border-white/10">
+                  <Star className="w-3 h-3 fill-secondary text-secondary" />
+                  <span className="text-[10px] font-black text-white">8.5</span>
+               </div>
+            </div>
+
             {/* Genre and Trailer Tags */}
-            <div className="absolute top-4 right-4 z-10 flex flex-col items-end gap-2">
+            <div className="absolute top-4 right-4 z-10 flex flex-col items-end gap-2 transform translate-x-4 group-hover:translate-x-0 transition-all duration-500">
               {movie.genres && movie.genres.length > 0 ? (
                 <div
-                  className={`px-2.5 py-1 rounded-lg text-[10px] font-black glass border uppercase tracking-wider ${badgeClass}`}
+                  className={`px-2.5 py-1 rounded-lg text-[10px] font-black glass border uppercase tracking-wider ${badgeClass} shadow-lg`}
                 >
                   {movie.genres[0].name}
                 </div>
               ) : (
                 <div
-                  className={`px-2.5 py-1 rounded-lg text-[10px] font-black glass border uppercase tracking-wider ${badgeClass}`}
+                  className={`px-2.5 py-1 rounded-lg text-[10px] font-black glass border uppercase tracking-wider ${badgeClass} shadow-lg`}
                 >
                   2D PHỤ ĐỀ
                 </div>
               )}
-              {movie.trailer_url && (
-                <div className="px-2 py-1 rounded-md text-[9px] font-bold bg-primary/20 text-primary border border-primary/30 backdrop-blur-md uppercase shadow-lg">
-                  Trailer
-                </div>
-              )}
             </div>
 
-            <div className="absolute bottom-4 left-4 right-4 text-left z-10 transform group-hover:-translate-y-1 transition-transform">
+            <div className="absolute bottom-6 left-5 right-5 text-left z-10 transform translate-y-2 group-hover:translate-y-0 transition-all duration-500">
               <h3
-                className={`text-lg md:text-xl font-bold text-white mb-1 line-clamp-2 leading-tight transition-colors ${hoverTextClass} drop-shadow-md`}
+                className={`text-lg md:text-xl font-black text-white mb-2 line-clamp-2 leading-tight transition-colors ${hoverTextClass} drop-shadow-[0_2px_10px_rgba(0,0,0,0.8)] uppercase italic tracking-tighter`}
               >
                 {movie.title}
               </h3>
-              <div className="flex items-center justify-between text-[10px] text-gray-400 font-bold uppercase tracking-widest">
-                <span>{movie.duration_minutes} Phút</span>
-                <span className="text-secondary flex items-center gap-1">
-                  <Star className="w-3 h-3 fill-secondary" /> 8.5
+              <div className="flex items-center justify-between text-[10px] text-gray-400 font-black uppercase tracking-[0.2em]">
+                <span className="flex items-center gap-1">
+                   <Clock className="w-3 h-3 text-primary" /> {movie.duration_minutes} Phút
                 </span>
               </div>
             </div>
+            
+            {/* Inner Border Glow */}
+            <div className="absolute inset-0 border border-white/5 rounded-2xl group-hover:border-primary/30 transition-colors pointer-events-none" />
           </div>
         </motion.div>
       ))}
