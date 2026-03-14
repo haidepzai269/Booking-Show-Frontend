@@ -24,12 +24,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({
   const { user } = useAuthStore();
   const [currentTheme, setCurrentTheme] = useState<ThemeType>("dark");
 
-  useEffect(() => {
-    if (user?.themePreference) {
-      setCurrentTheme(user.themePreference as ThemeType);
-    }
-  }, [user?.themePreference]);
-
+  // Theme logic simplified - always dark after settings removal
   useEffect(() => {
     const themeData = themes[currentTheme];
     const root = document.documentElement;
@@ -58,18 +53,6 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const setTheme = async (theme: ThemeType) => {
     setCurrentTheme(theme);
-    try {
-      await apiClient.patch("/users/theme", { theme });
-      // Update local store if needed (authStore usually persists, but we might want to update the user object)
-      if (user) {
-        useAuthStore.getState().setAuth(useAuthStore.getState().token!, {
-          ...user,
-          themePreference: theme,
-        });
-      }
-    } catch (err) {
-      console.error("Failed to update theme on server", err);
-    }
   };
 
   return (

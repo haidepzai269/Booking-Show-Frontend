@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { useTheme } from 'next-themes';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Sun, Moon, Monitor, CheckCircle2, Globe, Sparkles } from 'lucide-react';
-import { useSettingsStore } from '@/store/settingsStore';
+import { useSettingsStore } from '../settingsStore';
 import { useAuthStore } from '@/store/authStore';
 import { apiClient } from '@/lib/api';
 import { clsx, type ClassValue } from 'clsx';

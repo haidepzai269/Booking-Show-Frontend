@@ -76,6 +76,40 @@ export default function AIChatbot() {
     setSessionId(sId);
   }, []);
 
+  const lastFetchedRef = useRef<string | null>(null);
+
+  // Tải lịch sử chat
+  useEffect(() => {
+    if (sessionId && mounted) {
+      const cacheKey = `${sessionId}-${user?.id || 'guest'}`;
+      if (lastFetchedRef.current === cacheKey) return;
+
+      const fetchHistory = async () => {
+        try {
+          const res = await apiClient.get<any, { success: boolean; data: any[] }>(
+            `/chat/history?session_id=${sessionId}`,
+          );
+          if (res.success && res.data && res.data.length > 0) {
+            setChatHistory([
+              WELCOME_MESSAGE,
+              ...res.data.map((msg: any) => ({
+                id: msg.id || Math.random().toString(),
+                role: (msg.role === "assistant" ? "ai" : msg.role) as "user" | "ai",
+                content: msg.content,
+                timestamp: new Date(msg.created_at || Date.now()),
+              })),
+            ]);
+            lastFetchedRef.current = cacheKey;
+          }
+        } catch (error) {
+          console.error("Failed to fetch chat history:", error);
+        }
+      };
+      
+      fetchHistory();
+    }
+  }, [sessionId, user, mounted, WELCOME_MESSAGE]);
+
   // Auto scroll
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });

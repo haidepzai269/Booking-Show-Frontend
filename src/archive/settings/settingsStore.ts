@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import i18n from '../lib/i18n';
+import i18n from '@/lib/i18n';
 import { apiClient } from '@/lib/api';
 
 interface SettingsState {
