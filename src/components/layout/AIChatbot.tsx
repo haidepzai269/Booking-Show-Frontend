@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   X,
@@ -48,19 +48,26 @@ export default function AIChatbot() {
   const [topFAQs, setTopFAQs] = useState<FAQItem[]>([]);
   const [activeTab, setActiveTab] = useState<"chat" | "faq">("chat");
   
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const WELCOME_MESSAGE: ChatMessage = {
+  const WELCOME_MESSAGE: ChatMessage = useMemo(() => ({
     id: "welcome",
     role: "system",
     content: t('chatbot.welcome_msg', { defaultValue: "Xin chào! 👋 Mình là **NOVA** — Trợ lý AI thông minh của **BookingShow**!\n\nMình có thể giúp bạn:\n• 🎬 Tìm phim đang chiếu\n• 💰 Tư vấn giá vé & combo\n• 🎫 Hướng dẫn đặt vé\n• ❓ Giải đáp mọi thắc mắc" }),
     timestamp: new Date(),
-  };
+  }), [t]);
 
-  const [chatHistory, setChatHistory] = useState<ChatMessage[]>([WELCOME_MESSAGE]);
+  const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
+  
   const [isTyping, setIsTyping] = useState(false);
   const [hasNewMessage, setHasNewMessage] = useState(false);
   const [sessionId, setSessionId] = useState("");
   const [mounted, setMounted] = useState(false);
+
+  // Initialize chat history with welcome message once
+  useEffect(() => {
+    if (mounted && chatHistory.length === 0) {
+      setChatHistory([WELCOME_MESSAGE]);
+    }
+  }, [mounted, WELCOME_MESSAGE, chatHistory.length]);
   
   const chatEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -107,7 +114,8 @@ export default function AIChatbot() {
       
       fetchHistory();
     }
-  }, [sessionId, user, mounted, WELCOME_MESSAGE]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sessionId, user, mounted]);
 
   // Auto scroll
   useEffect(() => {
@@ -141,13 +149,14 @@ export default function AIChatbot() {
 
   // Xử lý tự động xóa chat khi đăng xuất (Logout)
   useEffect(() => {
-    if (mounted && !user) {
+    if (mounted && !user && chatHistory.length > 1) {
       setChatHistory([WELCOME_MESSAGE]);
       const newSid = uuidv4();
       localStorage.setItem("chat_session_id", newSid);
       setSessionId(newSid);
+      lastFetchedRef.current = null;
     }
-  }, [user, mounted, WELCOME_MESSAGE]);
+  }, [user, mounted, WELCOME_MESSAGE, chatHistory.length]);
 
   const handleOpen = () => {
     setOpen(true);
