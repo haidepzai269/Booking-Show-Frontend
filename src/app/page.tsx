@@ -13,7 +13,10 @@ import {
   TrendingUp,
   ChevronLeft,
   ChevronRight,
+  Sparkles,
+  Zap,
 } from "lucide-react";
+import { useMotionValue, useTransform, useSpring } from "framer-motion";
 import { apiClient } from "@/lib/api";
 import Header from "@/components/layout/Header";
 import TrailerModal from "@/components/movie-detail/TrailerModal";
@@ -32,12 +35,22 @@ interface Movie {
   poster_url: string;
   trailer_url: string;
   genres: Genre[];
+  rating?: number;
+}
+
+interface Campaign {
+  id: number;
+  title: string;
+  description: string;
+  thumbnail_url: string;
+  type: string;
 }
 
 interface HomeMoviesData {
   featured: Movie | null;
   hot: Movie[];
   best_selling: Movie[];
+  coming_soon: Movie[];
 }
 
 export default function Home() {
@@ -45,43 +58,66 @@ export default function Home() {
     featured: null,
     hot: [],
     best_selling: [],
+    coming_soon: [],
   });
+  const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [loading, setLoading] = useState(true);
   const [bannerTab, setBannerTab] = useState<"hot" | "bestseller">("hot");
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [mounted, setMounted] = useState(false);
   const [selectedTrailer, setSelectedTrailer] = useState<string | null>(null);
   const [isTrailerOpen, setIsTrailerOpen] = useState(false);
 
   useEffect(() => {
-    const fetchHomeMovies = async () => {
+    const fetchHomeData = async () => {
       try {
-        const res = await apiClient.get<
-          any,
-          { success: boolean; data: HomeMoviesData }
-        >("/movies/home");
-        if (res.success && res.data) {
-          setData(res.data);
+        const [movieRes, campaignRes] = await Promise.all([
+          apiClient.get<any, { success: boolean; data: HomeMoviesData }>("/movies/home"),
+          apiClient.get<any, { data: Campaign[] }>("/campaigns?limit=4")
+        ]);
+
+        if (movieRes.success && movieRes.data) {
+          setData(movieRes.data);
+        }
+        if (campaignRes.data) {
+          setCampaigns(campaignRes.data);
         }
       } catch (error) {
-        console.error("Failed to fetch home movies:", error);
+        console.error("Failed to fetch home data:", error);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchHomeMovies();
+    fetchHomeData();
+    setMounted(true);
   }, []);
 
   const {
     featured: featuredMovie,
     hot: hotMovies,
     best_selling: bestSellingMovies,
+    coming_soon: comingSoonMovies,
   } = data;
 
   const displayMovies =
     bannerTab === "hot" ? hotMovies.slice(0, 4) : bestSellingMovies.slice(0, 4);
   const activeMovie =
     displayMovies.length > 0 ? displayMovies[currentSlide] : null;
+
+  // Parallax Mouse Effect for Hero
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    const { clientX, clientY } = e;
+    const { innerWidth, innerHeight } = window;
+    mouseX.set(clientX / innerWidth - 0.5);
+    mouseY.set(clientY / innerHeight - 0.5);
+  };
+
+  const bannerX = useSpring(useTransform(mouseX, [-0.5, 0.5], [20, -20]), { stiffness: 100, damping: 30 });
+  const bannerY = useSpring(useTransform(mouseY, [-0.5, 0.5], [10, -10]), { stiffness: 100, damping: 30 });
 
   const nextSlide = useCallback(() => {
     if (displayMovies.length > 0) {
@@ -110,7 +146,13 @@ export default function Home() {
   }, [bannerTab]);
 
   return (
-    <div className="w-full h-full flex flex-col pb-20 bg-background text-foreground">
+    <div 
+      className="w-full h-full flex flex-col pb-20 bg-background text-foreground relative overflow-hidden"
+      onMouseMove={handleMouseMove}
+    >
+      {/* Animated Background Particles */}
+      <StarfieldBackground />
+
       {/* HEADER */}
       <Header />
 
@@ -127,10 +169,11 @@ export default function Home() {
           <AnimatePresence mode="wait">
             <motion.div
               key={activeMovie.id}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.8 }}
+              initial={{ opacity: 0, scale: 1.1 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 1.05 }}
+              transition={{ duration: 1.2, ease: "easeOut" }}
+              style={{ x: bannerX, y: bannerY }}
               className="absolute inset-0 z-0"
             >
               <img
@@ -139,10 +182,10 @@ export default function Home() {
                   "https://images.unsplash.com/photo-1536440136628-849c177e76a1?q=80&w=2025&auto=format&fit=crop"
                 }
                 alt={activeMovie.title}
-                className="w-full h-full object-cover opacity-40 md:opacity-60"
+                className="w-full h-full object-cover opacity-40 md:opacity-50 scale-110"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-background via-background/80 md:via-background/60 to-transparent" />
-              <div className="absolute inset-0 bg-gradient-to-r from-background via-background/40 to-transparent hidden md:block" />
+              <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-r from-background via-transparent to-transparent hidden md:block" />
             </motion.div>
           </AnimatePresence>
 
@@ -191,9 +234,9 @@ export default function Home() {
                 </span>
                 <span className="flex items-center gap-2">
                   <Calendar className="w-3 h-3 md:w-4 md:h-4 text-primary" />{" "}
-                  {new Date(activeMovie.release_date).toLocaleDateString(
+                  {mounted ? new Date(activeMovie.release_date).toLocaleDateString(
                     "vi-VN",
-                  )}
+                  ) : "Đang tải..."}
                 </span>
               </div>
             </motion.div>
@@ -378,6 +421,199 @@ export default function Home() {
           trailerUrl={selectedTrailer || ""}
         />
       </div>
+
+      {/* PHIM SẮP CHIẾU SECTION */}
+      {comingSoonMovies && comingSoonMovies.length > 0 && (
+        <div className="max-w-7xl mx-auto w-full px-6 mt-20">
+          <motion.div 
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="flex items-end justify-between mb-10 border-b border-white/5 pb-4"
+          >
+            <h2 className="text-3xl font-black text-white uppercase tracking-tight flex items-center gap-3">
+              <Sparkles className="w-8 h-8 text-blue-400" /> Phim{" "}
+              <span className="text-blue-400">Sắp Chiếu</span>
+            </h2>
+            <Link
+              href="/movies"
+              className="text-white/40 hover:text-white text-sm font-semibold mb-1 transition-colors"
+            >
+              Xem tất cả &rarr;
+            </Link>
+          </motion.div>
+
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
+            {comingSoonMovies.map((movie, idx) => (
+               <motion.div
+                key={movie.id}
+                initial={{ opacity: 0, x: 20 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                transition={{ delay: idx * 0.1 }}
+                viewport={{ once: true }}
+                className="group relative overflow-hidden rounded-[2rem] bg-card/30 border border-white/5 h-40 md:h-56 flex items-center transition-all hover:border-blue-400/30"
+               >
+                 <div className="w-1/3 h-full overflow-hidden">
+                    <img 
+                      src={movie.poster_url} 
+                      alt={movie.title} 
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" 
+                    />
+                 </div>
+                 <div className="w-2/3 p-4 md:p-6 flex flex-col justify-between h-full">
+                    <div>
+                      <h4 className="text-white font-bold text-sm md:text-lg line-clamp-2 uppercase group-hover:text-blue-400 transition-colors">{movie.title}</h4>
+                      <p className="text-[10px] md:text-xs text-gray-500 mt-1 uppercase tracking-widest font-bold">Khởi chiếu: {mounted ? new Date(movie.release_date).toLocaleDateString('vi-VN') : "---"}</p>
+                    </div>
+                    <Link 
+                      href={`/movies/${movie.id}`}
+                      className="mt-2 text-[10px] md:text-xs font-black text-blue-400 flex items-center gap-1 group/link"
+                    >
+                      XEM CHI TIẾT <ChevronRight className="w-3 h-3 group-hover/link:translate-x-1 transition-transform" />
+                    </Link>
+                 </div>
+                 <div className="absolute top-4 right-4 text-blue-400/20 group-hover:text-blue-400/40 transition-colors">
+                    <Calendar className="w-12 h-12" />
+                 </div>
+               </motion.div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* PROMOTIONS SECTION */}
+      {campaigns && campaigns.length > 0 && (
+        <div className="max-w-7xl mx-auto w-full px-6 mt-20">
+          <motion.div 
+             initial={{ opacity: 0, y: 30 }}
+             whileInView={{ opacity: 1, y: 0 }}
+             viewport={{ once: true }}
+             className="flex items-end justify-between mb-10 border-b border-white/5 pb-4"
+          >
+            <h2 className="text-3xl font-black text-white uppercase tracking-tight flex items-center gap-3">
+              <Zap className="w-8 h-8 text-secondary" /> Ưu Đãi{" "}
+              <span className="text-secondary">& Sự Kiện</span>
+            </h2>
+          </motion.div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+             {campaigns.map((camp, idx) => (
+                <motion.div
+                  key={camp.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ delay: idx * 0.1 }}
+                  viewport={{ once: true }}
+                  className="group relative h-48 rounded-3xl overflow-hidden glass hover:border-secondary/40 transition-all cursor-pointer"
+                >
+                  <img src={camp.thumbnail_url} alt={camp.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 opacity-60 group-hover:opacity-80" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black to-transparent" />
+                  <div className="absolute bottom-6 left-6 right-6">
+                    <span className="px-2 py-0.5 bg-secondary text-black text-[10px] font-black rounded-md uppercase mb-2 inline-block">{camp.type}</span>
+                    <h5 className="text-white font-bold leading-tight group-hover:text-secondary transition-colors line-clamp-2 uppercase italic text-sm">{camp.title}</h5>
+                  </div>
+                </motion.div>
+             ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function TiltCard({ children, index }: { children: React.ReactNode, index: number }) {
+  const x = useMotionValue(0);
+  const y = useMotionValue(0);
+
+  const mouseXSpring = useSpring(x);
+  const mouseYSpring = useSpring(y);
+
+  const rotateX = useTransform(mouseYSpring, [-0.5, 0.5], ["10deg", "-10deg"]);
+  const rotateY = useTransform(mouseXSpring, [-0.5, 0.5], ["-10deg", "10deg"]);
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const width = rect.width;
+    const height = rect.height;
+    const mouseX = e.clientX - rect.left;
+    const mouseY = e.clientY - rect.top;
+    const xPct = mouseX / width - 0.5;
+    const yPct = mouseY / height - 0.5;
+    x.set(xPct);
+    y.set(yPct);
+  };
+
+  const handleMouseLeave = () => {
+    x.set(0);
+    y.set(0);
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 30 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ duration: 0.5, delay: index * 0.1 }}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      style={{
+        rotateX,
+        rotateY,
+        transformStyle: "preserve-3d",
+      }}
+      className="group relative flex flex-col cursor-pointer"
+    >
+      <div style={{ transform: "translateZ(50px)", transformStyle: "preserve-3d" }}>
+        {children}
+      </div>
+    </motion.div>
+  );
+}
+
+function StarfieldBackground() {
+  const [mounted, setMounted] = useState(false);
+  const [stars, setStars] = useState<{ x: string, y: string, opacity: number, scale: number, duration: number, delay: number }[]>([]);
+
+  useEffect(() => {
+    setMounted(true);
+    const generatedStars = [...Array(20)].map(() => ({
+      x: Math.random() * 100 + "%",
+      y: Math.random() * 100 + "%",
+      opacity: Math.random() * 0.5 + 0.2,
+      scale: Math.random() * 0.5 + 0.5,
+      duration: Math.random() * 10 + 10,
+      delay: Math.random() * 10
+    }));
+    setStars(generatedStars);
+  }, []);
+
+  if (!mounted) return <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden" />;
+
+  return (
+    <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
+      {stars.map((star, i) => (
+        <motion.div
+           key={i}
+           initial={{ 
+             x: star.x, 
+             y: star.y, 
+             opacity: star.opacity,
+             scale: star.scale
+           }}
+           animate={{ 
+             y: ["-10%", "110%"],
+             opacity: [0, 0.5, 0]
+           }}
+           transition={{ 
+             duration: star.duration, 
+             repeat: Infinity, 
+             ease: "linear",
+             delay: star.delay
+           }}
+           className="absolute w-[2px] h-[2px] bg-white rounded-full blur-[1px]"
+        />
+      ))}
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(229,9,20,0.05),transparent_70%)]" />
     </div>
   );
 }
@@ -430,13 +666,7 @@ function MovieGrid({
   return (
     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 md:gap-8">
       {movies.map((movie, index) => (
-        <motion.div
-          key={movie.id}
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.4, delay: index * 0.1 }}
-          className="group relative flex flex-col cursor-pointer"
-        >
+        <TiltCard key={`${movie.id}-${index}`} index={index}>
           <div className="relative aspect-[2/3] w-full overflow-hidden rounded-2xl bg-card border border-white/5 glass-card group-hover:border-primary/50 transition-all duration-700 shadow-2xl">
             {/* Parallax Image */}
             <motion.img
@@ -479,11 +709,13 @@ function MovieGrid({
               </div>
             </div>
 
-            {/* Floating Info Badge */}
+             {/* Floating Info Badge */}
             <div className="absolute top-4 left-4 z-10 opacity-0 group-hover:opacity-100 transform -translate-x-4 group-hover:translate-x-0 transition-all duration-500">
                <div className="flex items-center gap-1.5 px-2 py-1 bg-black/60 backdrop-blur-md rounded-lg border border-white/10">
                   <Star className="w-3 h-3 fill-secondary text-secondary" />
-                  <span className="text-[10px] font-black text-white">8.5</span>
+                  <span className="text-[10px] font-black text-white">
+                    {movie.rating ? movie.rating.toFixed(1) : "8.5"}
+                  </span>
                </div>
             </div>
 
@@ -520,7 +752,7 @@ function MovieGrid({
             {/* Inner Border Glow */}
             <div className="absolute inset-0 border border-white/5 rounded-2xl group-hover:border-primary/30 transition-colors pointer-events-none" />
           </div>
-        </motion.div>
+        </TiltCard>
       ))}
     </div>
   );

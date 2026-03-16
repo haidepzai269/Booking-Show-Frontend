@@ -15,6 +15,7 @@ import {
   Menu,
   X,
   Bot,
+  Download,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useEffect, useState } from "react";
@@ -28,6 +29,32 @@ export default function Header() {
   const { isFloatingVisible, setFloatingVisible, setOpen } = useChatStore();
   const [mounted, setMounted] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+
+  useEffect(() => {
+    const handleBeforeInstallPrompt = (e: any) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+    };
+
+    window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+
+    return () => {
+      window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+    };
+  }, []);
+
+  const handleInstallApp = async () => {
+    if (!deferredPrompt) {
+      alert("Ứng dụng đã được cài đặt hoặc trình duyệt của bạn không hỗ trợ tính năng này.");
+      return;
+    }
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    if (outcome === "accepted") {
+      setDeferredPrompt(null);
+    }
+  };
 
   useEffect(() => {
     setMounted(true);
@@ -403,7 +430,16 @@ export default function Header() {
                   </div>
                 </div>
               ) : (
-                <div className="mt-4">
+                 <div className="mt-4 flex flex-col gap-2">
+                    <button
+                      onClick={() => {
+                        handleInstallApp();
+                        setIsMenuOpen(false);
+                      }}
+                      className="w-full bg-white/10 hover:bg-white/20 text-white py-4 rounded-2xl font-black text-center flex items-center justify-center gap-2 border border-white/10 transition-all border-dashed"
+                    >
+                      <Download className="w-5 h-5 text-primary" /> TẢI XUỐNG ỨNG DỤNG
+                    </button>
                     <Link
                       href="/login"
                       onClick={() => setIsMenuOpen(false)}

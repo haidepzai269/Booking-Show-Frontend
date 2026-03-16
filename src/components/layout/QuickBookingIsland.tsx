@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { usePathname } from "next/navigation";
 import {
   Ticket,
   ChevronUp,
@@ -18,8 +19,28 @@ export default function QuickBookingIsland() {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
   const { setOpen, isOpen } = useChatStore();
+  const pathname = usePathname();
+
+  // Danh sách các route ẩn QuickBookingIsland
+  const hiddenRoutes = [
+    "/admin",
+    "/login",
+    "/register",
+    "/forgot-password",
+    "/booking",
+    "/checkout",
+    "/payment",
+    "/profile",
+    "/promotions/campaigns"
+  ];
+
+  const shouldHide = hiddenRoutes.some(route => pathname.startsWith(route));
 
   useEffect(() => {
+    if (shouldHide) {
+      setIsVisible(false);
+      return;
+    }
     const handleScroll = () => {
       if (window.scrollY > 300) {
         setIsVisible(true);
@@ -31,6 +52,8 @@ export default function QuickBookingIsland() {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  if (shouldHide) return null;
 
   return (
     <AnimatePresence>
