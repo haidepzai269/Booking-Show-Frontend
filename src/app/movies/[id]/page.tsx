@@ -7,6 +7,7 @@ import { MapPin } from "lucide-react";
 import { apiClient } from "@/lib/api";
 import { motion } from "framer-motion";
 import Header from "@/components/layout/Header";
+import { ApiResponse } from "@/types/api";
 
 // Import Custom Components
 import MovieBanner from "@/components/movie-detail/MovieBanner";
@@ -87,24 +88,24 @@ export default function MovieDetail() {
             .catch(() => ({ data: null })), // Bỏ qua nếu lỗi
         ]);
 
-        const mData = (movieRes as any).data || movieRes;
-        const sData = (showtimesRes as any).data || showtimesRes;
-        const eData = (extraRes as any).data || extraRes;
+        const movieData = movieRes as unknown as ApiResponse<Movie>;
+        const showtimesData = showtimesRes as unknown as ApiResponse<Showtime[]>;
+        const extraData = extraRes as unknown as ApiResponse<ExtraInfo>;
 
-        if (mData.data) setMovie(mData.data);
-        if (eData?.data) {
-          setExtraInfo(eData.data);
+        if (movieData.data) setMovie(movieData.data);
+        if (extraData?.data) {
+          setExtraInfo(extraData.data);
           setIsLoadingExtra(false);
         } else {
           setIsLoadingExtra(false);
         }
-        if (sData.data) {
-          setShowtimes(sData.data);
+        if (showtimesData.data) {
+          setShowtimes(showtimesData.data);
 
           // Lấy ngày đầu tiên có lịch chiếu làm default
-          if (sData.data.length > 0) {
+          if (showtimesData.data.length > 0) {
             const defaultDate = format(
-              new Date(sData.data[0].start_time),
+              new Date(showtimesData.data[0].start_time),
               "yyyy-MM-dd",
             );
             setSelectedDate(defaultDate);

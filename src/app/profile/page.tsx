@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/authStore";
 import { apiClient } from "@/lib/api";
 import Link from "next/link";
+import { ApiResponse, User as UserType } from "@/types/api";
 import {
   User,
   Mail,
@@ -137,7 +138,7 @@ export default function ProfilePage() {
       const res = await apiClient.get<{ success: boolean; data: any[]; pagination: any }>(
         `/orders/my?page=${targetPage}&limit=10`
       );
-      const responseData = (res as any).data || res;
+      const responseData = res as unknown as ApiResponse<any>;
       if (responseData.success) {
         if (append) {
           setOrders(prev => [...prev, ...responseData.data]);
@@ -163,7 +164,7 @@ export default function ProfilePage() {
       const res = await apiClient.get<{ success: boolean; data: { hot: Movie[]; best_selling: Movie[] } }>(
         "/movies/home"
       );
-      const responseData = (res as any).data || res;
+      const responseData = res as unknown as ApiResponse<any>;
       if (responseData.success && responseData.data) {
         const all = [...(responseData.data.hot || []), ...(responseData.data.best_selling || [])];
         const unique = Array.from(new Map(all.map((m) => [m.id, m])).values());

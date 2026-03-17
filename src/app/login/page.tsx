@@ -10,6 +10,7 @@ import OAuthButtons from "@/components/auth/OAuthButtons";
 import { useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { apiClient } from "@/lib/api";
+import { ApiResponse } from "@/types/api";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -37,7 +38,7 @@ export default function LoginPage() {
       } }>("/users/me", {
         headers: { Authorization: `Bearer ${token}` }
       }).then((res) => {
-        const responseData = (res as any).data || res;
+        const responseData = res as unknown as ApiResponse<any>;
         if (responseData.success && responseData.data) {
           const rawUser = responseData.data;
           const user = {

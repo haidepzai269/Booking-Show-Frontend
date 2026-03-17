@@ -14,6 +14,7 @@ import {
   PlayCircle,
 } from "lucide-react";
 import { apiClient } from "@/lib/api";
+import { ApiResponse } from "@/types/api";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/authStore";
@@ -258,7 +259,7 @@ export default function MyOrdersPage() {
           "/orders/my"
         );
         // Kiểm tra đúng kiểu trả về của apiClient (thường axios bọc trong data)
-        const responseData = (res as any).data || res;
+        const responseData = res as unknown as ApiResponse<any>;
         if (responseData.success && responseData.data) {
           setOrders(responseData.data);
         }

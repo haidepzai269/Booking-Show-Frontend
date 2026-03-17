@@ -76,14 +76,14 @@ export default function Home() {
         apiClient.get<{ data: Campaign[] }>("/campaigns?limit=4")
       ]);
 
-      const mData = (movieRes as any).data || movieRes;
-      const cData = (campaignRes as any).data || campaignRes;
+      const movieData = movieRes as unknown as { success: boolean; data: HomeMoviesData };
+      const campaignData = campaignRes as unknown as { data: Campaign[] };
 
-      if (mData.success && mData.data) {
-        setData(mData.data);
+      if (movieData.success && movieData.data) {
+        setData(movieData.data);
       }
-      if (cData.data) {
-        setCampaigns(cData.data);
+      if (campaignData.data) {
+        setCampaigns(campaignData.data);
       }
     } catch (error) {
       console.error("Failed to fetch home data:", error);

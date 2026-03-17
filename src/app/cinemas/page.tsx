@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { apiClient } from "@/lib/api";
 import Link from "next/link";
+import { ApiResponse } from "@/types/api";
 import NextImage from "next/image";
 
 export interface Cinema {
@@ -48,7 +49,7 @@ export default function CinemasPage() {
         url += `?lat=${lat}&lng=${lng}`;
       }
       const res = await apiClient.get<{ success: boolean; data: Cinema[] }>(url);
-      const responseData = (res as any).data || res;
+      const responseData = res as unknown as ApiResponse<Cinema[]>;
       if (responseData.data) {
         setCinemas(responseData.data);
       }

@@ -6,6 +6,7 @@ import { Play, Star, Clock } from "lucide-react";
 import { motion } from "framer-motion";
 import { apiClient } from "@/lib/api";
 import NextImage from "next/image";
+import { ApiResponse } from "@/types/api";
 
 interface Movie {
   id: number;
@@ -26,7 +27,7 @@ export default function RelatedMovies({ currentMovie }: { currentMovie: Movie })
     const fetchRelated = async () => {
       try {
         const res = await apiClient.get<{ success: boolean; data: Movie[] }>("/movies/");
-        const responseData = (res as any).data || res;
+        const responseData = res as unknown as ApiResponse<Movie[]>;
         if (responseData.success && responseData.data) {
           // Lọc loại trừ phim hiện tại
           const others = responseData.data.filter((m: Movie) => m.id !== currentMovie.id);

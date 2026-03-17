@@ -83,8 +83,8 @@ function MoviesContent() {
           apiClient.get<{ success: boolean; data: Movie[] }>("/movies/"),
           apiClient.get<{ success: boolean; data: Genre[] }>("/genres/"),
         ]);
-        const mData = (moviesRes as any).data || moviesRes;
-        const gData = (genresRes as any).data || genresRes;
+        const mData = moviesRes as unknown as { success: boolean; data: Movie[] };
+        const gData = genresRes as unknown as { success: boolean; data: Genre[] };
         if (mData.success && mData.data) setAllMovies(mData.data);
         if (gData.success && gData.data) setGenres(gData.data);
       } catch (e) {
