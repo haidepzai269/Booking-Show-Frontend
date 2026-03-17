@@ -6,13 +6,36 @@ import Link from "next/link";
 import { Mail, Lock, Loader2, ArrowRight } from "lucide-react";
 import AuthSplitLayout from "@/components/auth/AuthSplitLayout";
 import { useAuthStore } from "@/store/authStore";
+import OAuthButtons from "@/components/auth/OAuthButtons";
+import { useEffect } from "react";
+import { useSearchParams } from "next/navigation";
+import { apiClient } from "@/lib/api";
 
 export default function LoginPage() {
   const router = useRouter();
-  const { login, loading, error } = useAuthStore();
+  const searchParams = useSearchParams();
+  const { login, setAuth, loading, error } = useAuthStore();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+
+  // Xử lý login bằng token từ OAuth callback
+  useEffect(() => {
+    const token = searchParams.get("token");
+    if (token) {
+      // Gọi API lấy thông tin user me để hoàn tất login
+      apiClient.get<any>("/users/me", {
+        headers: { Authorization: `Bearer ${token}` }
+      }).then((res: any) => {
+        if (res.success) {
+          setAuth(token, res.data);
+          router.push("/");
+        }
+      }).catch(err => {
+        console.error("OAuth login failed", err);
+      });
+    }
+  }, [searchParams, setAuth, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -98,6 +121,8 @@ export default function LoginPage() {
           )}
         </button>
       </form>
+
+      <OAuthButtons />
 
       <div className="mt-8 text-center text-sm text-gray-400 font-medium">
         Chưa có tài khoản?{" "}

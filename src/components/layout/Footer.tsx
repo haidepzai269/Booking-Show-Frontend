@@ -54,7 +54,7 @@ export default function Footer() {
         return;
       }
       try {
-        const res = await apiClient.get<{subscribed: boolean, email?: string}>("/promotions/subscription-status");
+        const res = await apiClient.get("/promotions/subscription-status") as any;
         if (res.subscribed) {
           setIsSubscribed(true);
           setEmail(res.email || "");
@@ -140,8 +140,8 @@ export default function Footer() {
   return (
     <footer className="w-full bg-[#050505] relative overflow-hidden border-t border-white/5">
       {/* Decorative gradient elements */}
-      <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary/5 blur-[120px] rounded-full -translate-y-1/2" />
-      <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-blue-500/5 blur-[120px] rounded-full translate-y-1/2" />
+      <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary/5 blur-[120px] rounded-full -translate-y-1/2 pointer-events-none" />
+      <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-blue-500/5 blur-[120px] rounded-full translate-y-1/2 pointer-events-none" />
 
       {/* Tab content with Animation */}
       <AnimatePresence>

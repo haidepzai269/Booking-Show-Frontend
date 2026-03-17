@@ -7,6 +7,7 @@ import { Mail, Lock, User, Loader2, ArrowRight, CheckCircle2, AlertCircle, Finge
 import AuthSplitLayout from "@/components/auth/AuthSplitLayout";
 import { apiClient } from "@/lib/api";
 import { debounce } from "lodash";
+import OAuthButtons from "@/components/auth/OAuthButtons";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -208,6 +209,8 @@ export default function RegisterPage() {
           )}
         </button>
       </form>
+
+      <OAuthButtons />
 
       <div className="mt-8 text-center text-xs text-gray-500 font-bold uppercase tracking-widest">
         Đã có tài khoản?{" "}
