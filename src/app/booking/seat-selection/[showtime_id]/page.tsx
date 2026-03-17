@@ -291,7 +291,7 @@ export default function SeatSelection() {
         setLoading(true);
         // Fetch Seats
         const seatsRes = await apiClient.get<
-          any,
+          void,
           { success: boolean; data: Seat[] }
         >(`/showtimes/${showtimeId}/seats`);
         if (seatsRes.data) {
@@ -300,7 +300,7 @@ export default function SeatSelection() {
 
         // Fetch Showtime Details
         const showtimeRes = await apiClient.get<
-          any,
+          void,
           { success: boolean; data: Showtime }
         >(`/showtimes/${showtimeId}`);
         if (showtimeRes.data) {
@@ -416,7 +416,7 @@ export default function SeatSelection() {
 
     try {
       const res = await apiClient.post<
-        any,
+        { showtime_id: number; seat_ids: number[] },
         { success: boolean; error?: string; code?: string }
       >("/seats/lock", {
         showtime_id: parseInt(showtimeId),
@@ -433,12 +433,13 @@ export default function SeatSelection() {
             "Có lỗi xảy ra, có thể ghế đã bị người khác thao tác trước.",
         );
       }
-    } catch (err: any) {
-      if (err.response?.status === 401) {
+    } catch (err: unknown) {
+      const error = err as { response?: { status?: number; data?: { error?: string } } };
+      if (error.response?.status === 401) {
         setIsAuthModalOpen(true);
       } else {
         setErrorMsg(
-          err.response?.data?.error || "Không thể khóa ghế. Vui lòng thử lại.",
+          error.response?.data?.error || "Không thể khóa ghế. Vui lòng thử lại.",
         );
       }
     } finally {

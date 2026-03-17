@@ -128,11 +128,11 @@ export default function CinemaDetailPage() {
     const fetchCinema = async () => {
       try {
         const res = await apiClient.get<
-          any,
+          void,
           { success: boolean; data: Cinema }
         >(`/cinemas/${cinemaId}`);
         if (res.data) setCinema(res.data);
-      } catch (e) {
+      } catch (e: unknown) {
         console.error("cinema fetch error:", e);
       } finally {
         setLoading(false);
@@ -142,11 +142,11 @@ export default function CinemaDetailPage() {
     const fetchRooms = async () => {
       try {
         const res = await apiClient.get<
-          any,
+          void,
           { success: boolean; data: Room[] }
         >(`/cinemas/${cinemaId}/rooms`);
         if (res.data) setRooms(res.data);
-      } catch (e) {
+      } catch (e: unknown) {
         console.warn("rooms fetch error (route may not exist yet):", e);
       }
     };
@@ -162,7 +162,7 @@ export default function CinemaDetailPage() {
       try {
         const date = formatDateParam(days[dateIdx]);
         const res = await apiClient.get<
-          any,
+          void,
           { success: boolean; data: MovieItem[] }
         >(`/cinemas/${cinemaId}/movies?date=${date}`);
         if (res.data) setMovies(res.data);

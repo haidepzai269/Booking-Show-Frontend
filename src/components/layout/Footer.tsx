@@ -47,6 +47,30 @@ export default function Footer() {
     setMounted(true);
   }, []);
 
+  useEffect(() => {
+    const checkSubscription = async () => {
+      if (!user) {
+        setIsSubscribed(false);
+        return;
+      }
+      try {
+        const res = await apiClient.get<{subscribed: boolean, email?: string}>("/promotions/subscription-status");
+        if (res.subscribed) {
+          setIsSubscribed(true);
+          setEmail(res.email || "");
+        } else {
+          setIsSubscribed(false);
+        }
+      } catch (err) {
+        console.error("Failed to check newsletter subscription:", err);
+      }
+    };
+
+    if (mounted) {
+      checkSubscription();
+    }
+  }, [user, mounted]);
+
   if (pathname.startsWith("/admin")) return null;
 
   const toggleTab = (tab: string) => {
