@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Search, Loader2, Users, ShieldAlert } from "lucide-react";
 import { apiClient } from "@/lib/api";
 
@@ -22,7 +22,7 @@ export default function UsersPage() {
 
   const [savingId, setSavingId] = useState<number | null>(null);
 
-  const fetchUsers = async () => {
+  const fetchUsers = useCallback(async () => {
     try {
       setLoading(true);
       const res = (await apiClient.get(
@@ -37,11 +37,11 @@ export default function UsersPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [page, search, limit]);
 
   useEffect(() => {
     fetchUsers();
-  }, [page, search]);
+  }, [fetchUsers]);
 
   const handleRoleChange = async (id: number, newRole: string) => {
     if (!confirm(`Bạn chắc chắn muốn đổi quyền user này thành ${newRole}?`))

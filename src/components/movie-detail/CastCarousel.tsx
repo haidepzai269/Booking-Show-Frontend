@@ -4,16 +4,26 @@ import { useRef } from "react";
 import { useRouter } from "next/navigation";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { motion } from "framer-motion";
+import NextImage from "next/image";
 
 // Dùng Dummy Data vì API backend chưa hỗ trợ array cast thực sự
-const DUMMY_CAST = [
+interface CastMember {
+  id: number;
+  name: string;
+  character?: string;
+  role?: string;
+  profile_image?: string;
+  image?: string;
+}
+
+const DUMMY_CAST: CastMember[] = [
   {
     id: 1,
     name: "Cillian Murphy",
     role: "J. Robert Oppenheimer",
     image:
       "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?q=80&w=250&auto=format&fit=crop",
-  } as any,
+  },
   {
     id: 2,
     name: "Emily Blunt",
@@ -54,12 +64,7 @@ const DUMMY_CAST = [
 export default function CastCarousel({
   cast = [],
 }: {
-  cast?: {
-    id: number;
-    name: string;
-    character: string;
-    profile_image: string;
-  }[];
+  cast?: CastMember[];
 }) {
   const carouselRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
@@ -130,12 +135,12 @@ export default function CastCarousel({
                 } snap-start`}
               >
                 <div className="relative aspect-square mb-4 rounded-full overflow-hidden border-2 border-transparent group-hover:border-primary transition-colors duration-300">
-                  <img
-                    // @ts-ignore
-                    src={actor.profile_image || actor.image}
+                  <NextImage
+                    src={actor.profile_image || actor.image || ""}
                     alt={actor.name}
-                    className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500"
-                    loading="lazy"
+                    fill
+                    className="object-cover transform group-hover:scale-110 transition-transform duration-500"
+                    sizes="(max-width: 640px) 144px, 176px"
                   />
                   {actor.id && (
                     <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
@@ -150,7 +155,6 @@ export default function CastCarousel({
                     {actor.name}
                   </h4>
                   <p className="text-xs text-gray-500 truncate">
-                    {/* @ts-ignore */}
                     {actor.character || actor.role}
                   </p>
                 </div>

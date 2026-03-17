@@ -1,0 +1,511 @@
+﻿
+C:\Booking-show\booking-show-web\src\app\admin\layout.tsx
+  41:5  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Booking-show\booking-show-web\src\app\admin\layout.tsx:41:5
+  39 |
+  40 |   useEffect(() => {
+> 41 |     setMounted(true);
+     |     ^^^^^^^^^^ Avoid calling setState() directly within an effect
+  42 |   }, []);
+  43 |
+  44 |   useEffect(() => {  react-hooks/set-state-in-effect
+
+C:\Booking-show\booking-show-web\src\app\booking\seat-selection\[showtime_id]\page.tsx
+   7:3  warning  'Monitor' is defined but never used  @typescript-eslint/no-unused-vars
+  12:3  warning  'Users' is defined but never used    @typescript-eslint/no-unused-vars
+  13:3  warning  'Eye' is defined but never used      @typescript-eslint/no-unused-vars
+
+C:\Booking-show\booking-show-web\src\app\cinemas\[id]\page.tsx
+   10:3   warning  'ChevronLeft' is defined but never used                                                                                                                                                                                                                                                  @typescript-eslint/no-unused-vars
+   18:3   warning  'ChevronRight' is defined but never used                                                                                                                                                                                                                                                 @typescript-eslint/no-unused-vars
+  176:5   warning  React Hook useCallback has a missing dependency: 'days'. Either include it or remove the dependency array                                                                                                                                                                                react-hooks/exhaustive-deps
+  212:9   warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  427:29  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+C:\Booking-show\booking-show-web\src\app\cinemas\page.tsx
+  114:11  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  332:19  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+C:\Booking-show\booking-show-web\src\app\magic-login\page.tsx
+  18:7  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Booking-show\booking-show-web\src\app\magic-login\page.tsx:18:7
+  16 |     const token = searchParams.get("token");
+  17 |     if (!token) {
+> 18 |       setVerifying(false);
+     |       ^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  19 |       return;
+  20 |     }
+  21 |  react-hooks/set-state-in-effect
+
+C:\Booking-show\booking-show-web\src\app\movies\page.tsx
+   11:3   warning  'Star' is defined but never used                                                                                                                                                                                                                                                         @typescript-eslint/no-unused-vars
+   12:3   warning  'Flame' is defined but never used                                                                                                                                                                                                                                                        @typescript-eslint/no-unused-vars
+   20:3   warning  'TrendingUp' is defined but never used                                                                                                                                                                                                                                                   @typescript-eslint/no-unused-vars
+  222:15  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  673:11  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+C:\Booking-show\booking-show-web\src\app\orders\my\page.tsx
+   51:49  error    Error: Cannot call impure function during render
+
+`Date.now` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+C:\Booking-show\booking-show-web\src\app\orders\my\page.tsx:51:49
+  49 | }) {
+  50 |   const [remaining, setRemaining] = useState(
+> 51 |     Math.max(0, new Date(expiresAt).getTime() - Date.now()),
+     |                                                 ^^^^^^^^^^ Cannot call impure function
+  52 |   );
+  53 |   const hasExpiredFired = useRef(false);
+  54 |  react-hooks/purity
+  137:11  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                @typescript-eslint/no-explicit-any
+  231:23  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element                                                                                                                                                                                                                                                                                                                                                                                                                 @next/next/no-img-element
+
+C:\Booking-show\booking-show-web\src\app\payment\result\page.tsx
+   43:5   error    Error: Cannot access variable before it is declared
+
+`determineResult` is accessed before it is declared, which prevents the earlier access from updating when this value changes over time.
+
+C:\Booking-show\booking-show-web\src\app\payment\result\page.tsx:43:5
+  41 |
+  42 |   useEffect(() => {
+> 43 |     determineResult();
+     |     ^^^^^^^^^^^^^^^ `determineResult` accessed before it is declared
+  44 |   }, []);
+  45 |
+  46 |   const determineResult = async () => {
+
+C:\Booking-show\booking-show-web\src\app\payment\result\page.tsx:46:3
+   44 |   }, []);
+   45 |
+>  46 |   const determineResult = async () => {
+      |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>  47 |     // ΓöÇΓöÇ ─Éß╗ìc params tß╗½ URL ΓöÇΓöÇ
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>  48 |     const vnpCode = searchParams.get("vnp_ResponseCode"); // VNPay
+      ΓÇª
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 146 |     }
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 147 |   };
+      | ^^^^^ `determineResult` is declared here
+  148 |
+  149 |   if (status === "loading") {
+  150 |     return (  react-hooks/immutability
+   44:6   warning  React Hook useEffect has a missing dependency: 'determineResult'. Either include it or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     react-hooks/exhaustive-deps
+   95:31  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               @typescript-eslint/no-explicit-any
+   95:36  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               @typescript-eslint/no-explicit-any
+   99:31  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               @typescript-eslint/no-explicit-any
+   99:36  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               @typescript-eslint/no-explicit-any
+  107:43  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               @typescript-eslint/no-explicit-any
+  107:74  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               @typescript-eslint/no-explicit-any
+  116:15  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               @typescript-eslint/no-explicit-any
+  117:41  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               @typescript-eslint/no-explicit-any
+  121:29  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               @typescript-eslint/no-explicit-any
+  122:26  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               @typescript-eslint/no-explicit-any
+
+C:\Booking-show\booking-show-web\src\app\persons\[id]\page.tsx
+    8:28  warning  'Star' is defined but never used                                                                                                                                                                                                                                                         @typescript-eslint/no-unused-vars
+   41:25  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                 @typescript-eslint/no-explicit-any
+   44:25  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                 @typescript-eslint/no-explicit-any
+   44:56  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                 @typescript-eslint/no-explicit-any
+  109:15  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  209:48  warning  'idx' is defined but never used                                                                                                                                                                                                                                                          @typescript-eslint/no-unused-vars
+  217:27  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+C:\Booking-show\booking-show-web\src\app\profile\page.tsx
+   10:3   warning  'Mail' is defined but never used                                                                                                      @typescript-eslint/no-unused-vars
+   11:3   warning  'Phone' is defined but never used                                                                                                     @typescript-eslint/no-unused-vars
+   16:3   warning  'Edit2' is defined but never used                                                                                                     @typescript-eslint/no-unused-vars
+   17:3   warning  'Check' is defined but never used                                                                                                     @typescript-eslint/no-unused-vars
+   18:3   warning  'X' is defined but never used                                                                                                         @typescript-eslint/no-unused-vars
+   19:3   warning  'Key' is defined but never used                                                                                                       @typescript-eslint/no-unused-vars
+   20:3   warning  'History' is defined but never used                                                                                                   @typescript-eslint/no-unused-vars
+   21:3   warning  'Loader2' is defined but never used                                                                                                   @typescript-eslint/no-unused-vars
+   23:3   warning  'CheckCircle2' is defined but never used                                                                                              @typescript-eslint/no-unused-vars
+   24:3   warning  'AlertCircle' is defined but never used                                                                                               @typescript-eslint/no-unused-vars
+   97:10  warning  'editing' is assigned a value but never used                                                                                          @typescript-eslint/no-unused-vars
+   99:10  warning  'saveStatus' is assigned a value but never used                                                                                       @typescript-eslint/no-unused-vars
+  103:40  error    Unexpected any. Specify a different type                                                                                              @typescript-eslint/no-explicit-any
+  121:6   warning  React Hook useEffect has a missing dependency: 'router'. Either include it or remove the dependency array                             react-hooks/exhaustive-deps
+  128:6   warning  React Hook useEffect has missing dependencies: 'fetchOrders' and 'orders.length'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+  137:39  error    Unexpected any. Specify a different type                                                                                              @typescript-eslint/no-explicit-any
+  137:70  error    Unexpected any. Specify a different type                                                                                              @typescript-eslint/no-explicit-any
+  137:89  error    Unexpected any. Specify a different type                                                                                              @typescript-eslint/no-explicit-any
+  164:9   error    Unexpected any. Specify a different type                                                                                              @typescript-eslint/no-explicit-any
+  231:9   warning  'handleCancel' is assigned a value but never used                                                                                     @typescript-eslint/no-unused-vars
+
+C:\Booking-show\booking-show-web\src\app\profile\tickets\page.tsx
+   18:10  warning  'vi' is defined but never used                                                                                                                                                                                                                                                           @typescript-eslint/no-unused-vars
+   60:61  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                 @typescript-eslint/no-explicit-any
+  143:23  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+C:\Booking-show\booking-show-web\src\app\promotions\campaigns\[id]\page.tsx
+  193:11  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+C:\Booking-show\booking-show-web\src\app\promotions\page.tsx
+  92:11  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+C:\Booking-show\booking-show-web\src\app\register\page.tsx
+   6:76  warning  'Fingerprint' is defined but never used                                                                     @typescript-eslint/no-unused-vars
+  28:29  warning  React Hook useCallback received a function whose dependencies are unknown. Pass an inline function instead  react-hooks/exhaustive-deps
+  40:41  error    Unexpected any. Specify a different type                                                                    @typescript-eslint/no-explicit-any
+  75:40  error    Unexpected any. Specify a different type                                                                    @typescript-eslint/no-explicit-any
+  86:19  error    Unexpected any. Specify a different type                                                                    @typescript-eslint/no-explicit-any
+
+C:\Booking-show\booking-show-web\src\app\tickets\[id]\page.tsx
+   67:70  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                 @typescript-eslint/no-explicit-any
+   73:21  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                 @typescript-eslint/no-explicit-any
+  191:13  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  286:15  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+C:\Booking-show\booking-show-web\src\archive\settings\app\page.tsx
+  36:10  warning  'saving' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  43:50  error    Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
+
+C:\Booking-show\booking-show-web\src\archive\settings\settingsStore.ts
+  34:30  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  34:52  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  35:33  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Booking-show\booking-show-web\src\components\admin\AdminSearchBar.tsx
+  76:9  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Booking-show\booking-show-web\src\components\admin\ThemeProvider.tsx
+   6:10  warning  'apiClient' is defined but never used      @typescript-eslint/no-unused-vars
+  24:11  warning  'user' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Booking-show\booking-show-web\src\components\admin\ThemeSelector.tsx
+  4:21  warning  'themes' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Booking-show\booking-show-web\src\components\admin\cinemas\CinemaFormModal.tsx
+  326:47  error  `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+  326:68  error  `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+
+C:\Booking-show\booking-show-web\src\components\admin\cinemas\RoomPanel.tsx
+  42:6  warning  React Hook useEffect has a missing dependency: 'fetchRooms'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Booking-show\booking-show-web\src\components\admin\cinemas\SeatDesignerModal.tsx
+   43:10  warning  'dragStartPos' is assigned a value but never used                                                              @typescript-eslint/no-unused-vars
+   53:6   warning  React Hook useEffect has a missing dependency: 'fetchSeats'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+   58:39  error    Unexpected any. Specify a different type                                                                       @typescript-eslint/no-explicit-any
+  101:39  error    Unexpected any. Specify a different type                                                                       @typescript-eslint/no-explicit-any
+  162:17  error    'nx' is never reassigned. Use 'const' instead                                                                  prefer-const
+  163:17  error    'ny' is never reassigned. Use 'const' instead                                                                  prefer-const
+  219:9   warning  'toggleSeatSelection' is assigned a value but never used                                                       @typescript-eslint/no-unused-vars
+
+C:\Booking-show\booking-show-web\src\components\auth\AuthModal.tsx
+  16:10  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  44:40  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  59:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Booking-show\booking-show-web\src\components\auth\AuthSplitLayout.tsx
+  51:11  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+C:\Booking-show\booking-show-web\src\components\checkout\ConcessionStep.tsx
+  82:21  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+C:\Booking-show\booking-show-web\src\components\checkout\OrderSummaryCard.tsx
+   63:9   warning  'originalAmount' is assigned a value but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       @typescript-eslint/no-unused-vars
+   72:15  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   @next/next/no-img-element
+  214:12  error    Error: Cannot create components during render
+
+Components created during render will reset their state each time they are created. Declare components outside of render.
+
+C:\Booking-show\booking-show-web\src\components\checkout\OrderSummaryCard.tsx:214:12
+  212 |             ≡ƒôï T├│m Tß║»t ─É╞ín H├áng
+  213 |           </h3>
+> 214 |           <SummaryContent />
+      |            ^^^^^^^^^^^^^^ This component is created during render
+  215 |         </div>
+  216 |       </div>
+  217 |
+
+C:\Booking-show\booking-show-web\src\components\checkout\OrderSummaryCard.tsx:65:26
+   63 |   const originalAmount = seatTotal + concessionTotal;
+   64 |
+>  65 |   const SummaryContent = () => (
+      |                          ^^^^^^^
+>  66 |     <div className="space-y-4">
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>  67 |       {/* Showtime Info */}
+      ΓÇª
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 203 |     </div>
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 204 |   );
+      | ^^^^ The component is created during render here
+  205 |
+  206 |   return (
+  207 |     <>                                                                                                             react-hooks/static-components
+  246:14  error    Error: Cannot create components during render
+
+Components created during render will reset their state each time they are created. Declare components outside of render.
+
+C:\Booking-show\booking-show-web\src\components\checkout\OrderSummaryCard.tsx:246:14
+  244 |         {mobileExpanded && (
+  245 |           <div className="bg-zinc-900 border-t border-zinc-800 px-4 pt-4 pb-6 max-h-[60vh] overflow-y-auto">
+> 246 |             <SummaryContent />
+      |              ^^^^^^^^^^^^^^ This component is created during render
+  247 |           </div>
+  248 |         )}
+  249 |       </div>
+
+C:\Booking-show\booking-show-web\src\components\checkout\OrderSummaryCard.tsx:65:26
+   63 |   const originalAmount = seatTotal + concessionTotal;
+   64 |
+>  65 |   const SummaryContent = () => (
+      |                          ^^^^^^^
+>  66 |     <div className="space-y-4">
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>  67 |       {/* Showtime Info */}
+      ΓÇª
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 203 |     </div>
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 204 |   );
+      | ^^^^ The component is created during render here
+  205 |
+  206 |   return (
+  207 |     <>  react-hooks/static-components
+
+C:\Booking-show\booking-show-web\src\components\checkout\UrgencyBanner.tsx
+  39:5  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Booking-show\booking-show-web\src\components\checkout\UrgencyBanner.tsx:39:5
+  37 |
+  38 |   useEffect(() => {
+> 39 |     calcRemaining();
+     |     ^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  40 |     const interval = setInterval(calcRemaining, 1000);
+  41 |     return () => clearInterval(interval);
+  42 |   }, [calcRemaining]);  react-hooks/set-state-in-effect
+
+C:\Booking-show\booking-show-web\src\components\checkout\VoucherStep.tsx
+  50:9   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  56:24  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  68:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  69:34  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  74:31  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  78:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Booking-show\booking-show-web\src\components\layout\AIChatbot.tsx
+   18:3   warning  'Minus' is defined but never used                                                                                          @typescript-eslint/no-unused-vars
+   95:43  error    Unexpected any. Specify a different type                                                                                   @typescript-eslint/no-explicit-any
+   95:74  error    Unexpected any. Specify a different type                                                                                   @typescript-eslint/no-explicit-any
+  101:37  error    Unexpected any. Specify a different type                                                                                   @typescript-eslint/no-explicit-any
+  136:14  error    Unexpected any. Specify a different type                                                                                   @typescript-eslint/no-explicit-any
+  201:11  error    Unexpected any. Specify a different type                                                                                   @typescript-eslint/no-explicit-any
+  224:21  error    Unexpected any. Specify a different type                                                                                   @typescript-eslint/no-explicit-any
+  238:5   warning  React Hook useCallback has an unnecessary dependency: 'WELCOME_MESSAGE'. Either exclude it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Booking-show\booking-show-web\src\components\layout\Footer.tsx
+   19:3   warning  'Send' is defined but never used          @typescript-eslint/no-unused-vars
+   27:3   warning  'XCircle' is defined but never used       @typescript-eslint/no-unused-vars
+   57:79  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  240:60  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  248:39  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Booking-show\booking-show-web\src\components\layout\Header.tsx
+  14:3   warning  'Key' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              @typescript-eslint/no-unused-vars
+  32:56  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     @typescript-eslint/no-explicit-any
+  35:43  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     @typescript-eslint/no-explicit-any
+  60:5   error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Booking-show\booking-show-web\src\components\layout\Header.tsx:60:5
+  58 |
+  59 |   useEffect(() => {
+> 60 |     setMounted(true);
+     |     ^^^^^^^^^^ Avoid calling setState() directly within an effect
+  61 |   }, []);
+  62 |
+  63 |   // ─É├│ng menu khi resize l├¬n m├án h├¼nh lß╗¢n  react-hooks/set-state-in-effect
+
+C:\Booking-show\booking-show-web\src\components\layout\Providers.tsx
+   6:10  warning  'useAuthStore' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        @typescript-eslint/no-unused-vars
+  12:5   error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Booking-show\booking-show-web\src\components\layout\Providers.tsx:12:5
+  10 |
+  11 |   useEffect(() => {
+> 12 |     setMounted(true);
+     |     ^^^^^^^^^^ Avoid calling setState() directly within an effect
+  13 |   }, []);
+  14 |
+  15 |   return (  react-hooks/set-state-in-effect
+
+C:\Booking-show\booking-show-web\src\components\layout\QuickBookingIsland.tsx
+  41:7  error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Booking-show\booking-show-web\src\components\layout\QuickBookingIsland.tsx:41:7
+  39 |   useEffect(() => {
+  40 |     if (shouldHide) {
+> 41 |       setIsVisible(false);
+     |       ^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  42 |       return;
+  43 |     }
+  44 |     const handleScroll = () => {  react-hooks/set-state-in-effect
+  61:6  warning  React Hook useEffect has a missing dependency: 'shouldHide'. Either include it or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           react-hooks/exhaustive-deps
+
+C:\Booking-show\booking-show-web\src\components\layout\SearchBar.tsx
+   49:39  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                 @typescript-eslint/no-explicit-any
+  178:25  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+C:\Booking-show\booking-show-web\src\components\movie-detail\CastCarousel.tsx
+   16:8   error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                 @typescript-eslint/no-explicit-any
+  133:19  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  134:21  error    Use "@ts-expect-error" instead of "@ts-ignore", as "@ts-ignore" will do nothing if the following line is error-free                                                                                                                                                                      @typescript-eslint/ban-ts-comment
+  153:22  error    Use "@ts-expect-error" instead of "@ts-ignore", as "@ts-ignore" will do nothing if the following line is error-free                                                                                                                                                                      @typescript-eslint/ban-ts-comment
+
+C:\Booking-show\booking-show-web\src\components\movie-detail\MovieBanner.tsx
+  35:9   warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  57:13  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+C:\Booking-show\booking-show-web\src\components\movie-detail\RelatedMovies.tsx
+   5:16  warning  'Ticket' is defined but never used                                                                                                                                                                                                                                                       @typescript-eslint/no-unused-vars
+  18:73  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                 @typescript-eslint/no-explicit-any
+  28:11  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                 @typescript-eslint/no-explicit-any
+  38:46  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                 @typescript-eslint/no-explicit-any
+  88:17  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+C:\Booking-show\booking-show-web\src\components\movie-detail\TrailerModal.tsx
+  21:5  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Booking-show\booking-show-web\src\components\movie-detail\TrailerModal.tsx:21:5
+  19 |
+  20 |   useEffect(() => {
+> 21 |     setMounted(true);
+     |     ^^^^^^^^^^ Avoid calling setState() directly within an effect
+  22 |   }, []);
+  23 |
+  24 |   // Lock body scroll when modal is open  react-hooks/set-state-in-effect
+
+C:\Booking-show\booking-show-web\src\components\profile\ProfileSkeleton.tsx
+  4:10  warning  'motion' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Booking-show\booking-show-web\src\components\settings\BookingHistory.tsx
+   56:49   error    Error: Cannot call impure function during render
+
+`Date.now` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+C:\Booking-show\booking-show-web\src\components\settings\BookingHistory.tsx:56:49
+  54 | }) {
+  55 |   const [remaining, setRemaining] = useState(
+> 56 |     Math.max(0, new Date(expiresAt).getTime() - Date.now()),
+     |                                                 ^^^^^^^^^^ Cannot call impure function
+  57 |   );
+  58 |   const hasExpiredFired = useRef(false);
+  59 |                                                                                                                                                                                                                                                                                                                                                              react-hooks/purity
+  140:49   error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            @typescript-eslint/no-explicit-any
+  164:117  error    Error: Cannot call impure function during render
+
+`Date.now` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+C:\Booking-show\booking-show-web\src\components\settings\BookingHistory.tsx:164:117
+  162 |             const room = order.showtime?.room;
+  163 |             const isPending = order.status === "PENDING";
+> 164 |             const isExpired = isPending && (expiredOrderIds.has(order.id) || new Date(order.expires_at).getTime() < Date.now());
+      |                                                                                                                     ^^^^^^^^^^ Cannot call impure function
+  165 |
+  166 |             return (
+  167 |               <div key={order.id} className="glass-card rounded-3xl p-6 flex flex-col md:flex-row gap-6 group hover:border-white/20 transition-all relative overflow-hidden">  react-hooks/purity
+  170:19   warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             @next/next/no-img-element
+
+C:\Booking-show\booking-show-web\src\components\settings\ProfileSection.tsx
+  43:15  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+C:\Booking-show\booking-show-web\src\components\settings\SettingsSidebar.tsx
+  5:8   warning  'Link' is defined but never used         @typescript-eslint/no-unused-vars
+  6:10  warning  'usePathname' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Booking-show\booking-show-web\src\hooks\useAdminNotifications.ts
+  62:52  error  Error: Cannot access variable before it is declared
+
+`connect` is accessed before it is declared, which prevents the earlier access from updating when this value changes over time.
+
+C:\Booking-show\booking-show-web\src\hooks\useAdminNotifications.ts:62:52
+  60 |       es.close();
+  61 |       // Auto reconnect sau 5s
+> 62 |       reconnectTimerRef.current = setTimeout(() => connect(), 5000);
+     |                                                    ^^^^^^^ `connect` accessed before it is declared
+  63 |     };
+  64 |   }, [token]);
+  65 |
+
+C:\Booking-show\booking-show-web\src\hooks\useAdminNotifications.ts:27:3
+  25 |   const reconnectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  26 |
+> 27 |   const connect = useCallback(() => {
+     |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 28 |     if (!token || typeof window === "undefined") return;
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 29 |
+     ΓÇª
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 63 |     };
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 64 |   }, [token]);
+     | ^^^^^^^^^^^^^^^ `connect` is declared here
+  65 |
+  66 |   useEffect(() => {
+  67 |     connect();  react-hooks/immutability
+
+C:\Booking-show\booking-show-web\src\store\authStore.ts
+   42:44   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   42:104  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   64:23   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   72:44   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   75:23   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   84:44   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   84:104  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  103:23   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  111:44   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  114:23   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+Γ£û 162 problems (88 errors, 74 warnings)
+  2 errors and 0 warnings potentially fixable with the `--fix` option.
+
+

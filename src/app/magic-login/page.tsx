@@ -15,7 +15,9 @@ function MagicLoginContent() {
   useEffect(() => {
     const token = searchParams.get("token");
     if (!token) {
-      setVerifying(false);
+      requestAnimationFrame(() => {
+        setVerifying(false);
+      });
       return;
     }
 
@@ -26,7 +28,9 @@ function MagicLoginContent() {
           router.push("/");
         }, 2000);
       }
-      setVerifying(false);
+      requestAnimationFrame(() => {
+        setVerifying(false);
+      });
     };
 
     verify();

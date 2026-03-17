@@ -24,15 +24,26 @@ export default function LoginPage() {
     const token = searchParams.get("token");
     if (token) {
       // Gọi API lấy thông tin user me để hoàn tất login
-      apiClient.get<void, { success: boolean; data: any }>("/users/me", {
+      apiClient.get<{ success: boolean; data: {
+        id: number;
+        email: string;
+        full_name?: string;
+        fullName?: string;
+        role: string;
+        theme?: string;
+        language?: string;
+        rank?: string;
+        total_spending?: number;
+      } }>("/users/me", {
         headers: { Authorization: `Bearer ${token}` }
       }).then((res) => {
-        if (res.success && res.data) {
-          const rawUser = res.data;
+        const responseData = (res as any).data || res;
+        if (responseData.success && responseData.data) {
+          const rawUser = responseData.data;
           const user = {
             id: rawUser.id,
             email: rawUser.email,
-            fullName: rawUser.full_name || rawUser.fullName,
+            fullName: rawUser.full_name || rawUser.fullName || "",
             role: rawUser.role,
             theme: rawUser.theme || 'dark',
             language: rawUser.language || 'vi',

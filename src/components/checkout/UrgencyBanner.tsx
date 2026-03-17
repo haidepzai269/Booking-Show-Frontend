@@ -36,7 +36,9 @@ export default function UrgencyBanner({
   }, [expiresAt, onExpire]);
 
   useEffect(() => {
-    calcRemaining();
+    requestAnimationFrame(() => {
+      calcRemaining();
+    });
     const interval = setInterval(calcRemaining, 1000);
     return () => clearInterval(interval);
   }, [calcRemaining]);

@@ -1,9 +1,6 @@
 "use client";
 
-import React from "react";
 import { User, Shield, Ticket, CreditCard, ChevronRight } from "lucide-react";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
 
 const menuItems = [
   { id: "profile", label: "Hồ sơ cá nhân", icon: User, path: "/settings?tab=profile" },

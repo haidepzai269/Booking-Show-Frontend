@@ -11,7 +11,6 @@ import {
   Gift,
   Film,
   History,
-  Key,
   Menu,
   X,
   Bot,
@@ -23,18 +22,27 @@ import { motion, AnimatePresence } from "framer-motion";
 import SearchBar from "@/components/layout/SearchBar";
 import { useChatStore } from "@/store/chatStore";
 
+interface BeforeInstallPromptEvent extends Event {
+  readonly platforms: string[];
+  readonly userChoice: Promise<{
+    outcome: "accepted" | "dismissed";
+    platform: string;
+  }>;
+  prompt(): Promise<void>;
+}
+
 export default function Header() {
   const { t } = useTranslation();
   const { user, logout } = useAuthStore();
   const { isFloatingVisible, setFloatingVisible, setOpen } = useChatStore();
   const [mounted, setMounted] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
 
   useEffect(() => {
-    const handleBeforeInstallPrompt = (e: any) => {
+    const handleBeforeInstallPrompt = (e: Event) => {
       e.preventDefault();
-      setDeferredPrompt(e);
+      setDeferredPrompt(e as BeforeInstallPromptEvent);
     };
 
     window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
@@ -57,7 +65,7 @@ export default function Header() {
   };
 
   useEffect(() => {
-    setMounted(true);
+    requestAnimationFrame(() => setMounted(true));
   }, []);
 
   // Đóng menu khi resize lên màn hình lớn

@@ -12,6 +12,8 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { apiClient } from "@/lib/api";
+import { ApiResponse } from "@/types/api";
+import NextImage from "next/image";
 
 interface SearchMovie {
   id: number;
@@ -72,11 +74,10 @@ export default function AdminSearchBar() {
     if (!q || q.length < 2) return;
     setLoading(true);
     try {
-      const res = await apiClient.get<
-        any,
-        { success: boolean; data: SearchResults }
-      >(`/admin/search?q=${encodeURIComponent(q)}`);
-      if (res.success) {
+      const res = await apiClient.get<ApiResponse<SearchResults>>(
+        `/admin/search?q=${encodeURIComponent(q)}`,
+      ) as unknown as ApiResponse<SearchResults>;
+      if (res.success && res.data) {
         setResults(res.data);
         setShowDropdown(true);
       }
@@ -239,10 +240,11 @@ export default function AdminSearchBar() {
                     >
                       <div className="w-8 h-10 bg-white/5 rounded overflow-hidden shrink-0">
                         {m.poster && (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img
+                          <NextImage
                             src={m.poster}
                             alt={m.title}
+                            width={32}
+                            height={40}
                             className="w-full h-full object-cover"
                           />
                         )}

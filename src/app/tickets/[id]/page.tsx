@@ -14,6 +14,8 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { apiClient } from "@/lib/api";
+import { ApiResponse } from "@/types/api";
+import NextImage from "next/image";
 import { format } from "date-fns";
 import Header from "@/components/layout/Header";
 import { useAuthStore } from "@/store/authStore";
@@ -64,14 +66,16 @@ export default function TicketBoardingPass() {
   useEffect(() => {
     const fetchTicket = async () => {
       try {
-        const res = (await apiClient.get(`/tickets/${ticketId}`)) as any;
-        if (res?.success) {
+        const res = await apiClient.get<ApiResponse<TicketDetail>>(
+          `/tickets/${ticketId}`,
+        ) as unknown as ApiResponse<TicketDetail>;
+        if (res.success && res.data) {
           setTicket(res.data);
         } else {
-          setError(res?.error || "Không tìm thấy vé");
+          setError(res.error || "Không tìm thấy vé");
         }
-      } catch (err: any) {
-        setError(err.response?.data?.error || "Lỗi tải dữ liệu vé");
+      } catch (err: unknown) {
+        setError((err as any).response?.data?.error || "Lỗi tải dữ liệu vé");
       } finally {
         setLoading(false);
       }
@@ -188,14 +192,16 @@ export default function TicketBoardingPass() {
         >
           {/* TOP TICKET BANNER */}
           <div className="relative h-56 bg-card w-full">
-            <img
+            <NextImage
               src={
                 movie.poster_url ||
                 "https://images.unsplash.com/photo-1440404653325-ab127d49abc1"
               }
+              fill
               className="w-full h-full object-cover opacity-60"
               alt={movie.title}
               crossOrigin="anonymous"
+              priority
             />
             <div className="absolute inset-0 bg-gradient-to-t from-[#151515] via-[#151515]/80 to-transparent" />
 
@@ -283,11 +289,13 @@ export default function TicketBoardingPass() {
                   : "bg-white shadow-[0_8px_30px_rgba(0,0,0,0.06)] border border-gray-100 max-w-max mx-auto"
               }`}
             >
-              <img
+              <NextImage
                 src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(
                   ticket.qr_code_data,
                 )}&color=000000&bgcolor=ffffff`}
                 alt="QR Code"
+                width={160}
+                height={160}
                 className="w-40 h-40 mix-blend-multiply"
                 crossOrigin="anonymous"
               />

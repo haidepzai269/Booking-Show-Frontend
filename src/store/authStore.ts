@@ -1,17 +1,9 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { apiClient } from '@/lib/api';
+import { ApiResponse, User } from '@/types/api';
 
-interface User {
-  id: number;
-  email: string;
-  role: string;
-  fullName: string;
-  theme: string;
-  language: string;
-  rank?: string;
-  totalSpending?: number;
-}
+// Moved User to @/types/api
 
 interface AuthState {
   token: string | null;
@@ -39,10 +31,11 @@ export const useAuthStore = create<AuthState>()(
       login: async (email, password) => {
         set({ loading: true, error: null });
         try {
-          const res = await apiClient.post<any, {success: boolean, data?: {access_token: string, user: any}, error?: string}>("/auth/login", {
+          const res = await apiClient.post<ApiResponse<{access_token: string, user: any}>>("/auth/login", {
             email,
             password
-          });
+          }) as unknown as ApiResponse<{access_token: string, user: any}>;
+          
           if (res.success && res.data) {
             const rawUser = res.data.user;
             const user: User = {
@@ -61,19 +54,22 @@ export const useAuthStore = create<AuthState>()(
             set({ error: res.error || "Đăng nhập thất bại", loading: false });
             return false;
           }
-        } catch (err: any) {
-          set({ error: err.response?.data?.error || "Sai email hoặc mật khẩu.", loading: false });
+        } catch (err: unknown) {
+          const axiosError = err as { response?: { data?: { error?: string } } };
+          const error = axiosError.response?.data?.error || "Sai email hoặc mật khẩu.";
+          set({ error, loading: false });
           return false;
         }
       },
       requestMagicLink: async (email) => {
         set({ loading: true, error: null });
         try {
-          const res = await apiClient.post<any, {success: boolean, message?: string, error?: string}>("/auth/magic-link", { email });
+          const res = await apiClient.post<ApiResponse<void>>("/auth/magic-link", { email }) as unknown as ApiResponse<void>;
           set({ loading: false });
           return res;
-        } catch (err: any) {
-          const error = err.response?.data?.error || "Gửi yêu cầu thất bại.";
+        } catch (err: unknown) {
+          const axiosError = err as { response?: { data?: { error?: string } } };
+          const error = axiosError.response?.data?.error || "Gửi yêu cầu thất bại.";
           set({ error, loading: false });
           return { success: false, error };
         }
@@ -81,7 +77,7 @@ export const useAuthStore = create<AuthState>()(
       verifyMagicLink: async (token) => {
         set({ loading: true, error: null });
         try {
-          const res = await apiClient.post<any, {success: boolean, data?: {access_token: string, user: any}, error?: string}>("/auth/magic-link/verify", { token });
+          const res = await apiClient.post<ApiResponse<{access_token: string, user: any}>>("/auth/magic-link/verify", { token }) as unknown as ApiResponse<{access_token: string, user: any}>;
           if (res.success && res.data) {
             const rawUser = res.data.user;
             const user: User = {
@@ -100,19 +96,22 @@ export const useAuthStore = create<AuthState>()(
             set({ error: res.error || "Liên kết không hợp lệ hoặc đã hết hạn.", loading: false });
             return false;
           }
-        } catch (err: any) {
-          set({ error: err.response?.data?.error || "Xác thực thất bại.", loading: false });
+        } catch (err: unknown) {
+          const axiosError = err as { response?: { data?: { error?: string } } };
+          const error = axiosError.response?.data?.error || "Xác thực thất bại.";
+          set({ error, loading: false });
           return false;
         }
       },
       resetPassword: async (token, newPassword) => {
         set({ loading: true, error: null });
         try {
-          const res = await apiClient.post<any, {success: boolean, error?: string}>("/auth/reset-password", { token, new_password: newPassword });
+          const res = await apiClient.post<ApiResponse<void>>("/auth/reset-password", { token, new_password: newPassword }) as unknown as ApiResponse<void>;
           set({ loading: false });
           return res;
-        } catch (err: any) {
-          const error = err.response?.data?.error || "Đổi mật khẩu thất bại.";
+        } catch (err: unknown) {
+          const axiosError = err as { response?: { data?: { error?: string } } };
+          const error = axiosError.response?.data?.error || "Đổi mật khẩu thất bại.";
           set({ error, loading: false });
           return { success: false, error };
         }

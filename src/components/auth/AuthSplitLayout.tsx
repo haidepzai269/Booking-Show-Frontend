@@ -4,6 +4,7 @@ import React from "react";
 import Link from "next/link";
 import { Ticket } from "lucide-react";
 import { motion } from "framer-motion";
+import NextImage from "next/image";
 
 interface AuthSplitLayoutProps {
   children: React.ReactNode;
@@ -48,10 +49,12 @@ export default function AuthSplitLayout({
         className={`w-full md:w-1/2 relative h-64 md:h-screen order-1 ${reverse ? "md:order-1" : "md:order-2"}`}
       >
         <div className="absolute inset-0 z-0">
-          <img
+          <NextImage
             src={bannerImage}
             alt="Cinema Banner"
+            fill
             className="w-full h-full object-cover"
+            priority
           />
 
           {/* Dark overlay base layer */}

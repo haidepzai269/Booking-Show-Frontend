@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import {
   X,
   Save,
@@ -10,6 +10,7 @@ import {
   Move,
 } from "lucide-react";
 import { apiClient } from "@/lib/api";
+import { ApiResponse } from "@/types/api";
 
 interface Seat {
   id: number;
@@ -40,51 +41,46 @@ export default function SeatDesignerModal({ isOpen, onClose, roomId }: Props) {
     y2: number;
   } | null>(null);
   const [isSnapEnabled, setIsSnapEnabled] = useState(true);
-  const [dragStartPos, setDragStartPos] = useState({ x: 0, y: 0 });
   const [lastMousePos, setLastMousePos] = useState({ x: 0, y: 0 });
   const [isControlsCollapsed, setIsControlsCollapsed] = useState(false);
 
   const svgRef = useRef<SVGSVGElement>(null);
 
-  useEffect(() => {
-    if (isOpen && roomId) {
-      fetchSeats();
-    }
-  }, [isOpen, roomId]);
-
-  const fetchSeats = async () => {
+  const fetchSeats = useCallback(async () => {
+    if (!roomId) return;
     try {
       setLoading(true);
-      const res = await apiClient.get<any, { success: boolean; data: Seat[] }>(
+      const res = await apiClient.get<ApiResponse<Seat[]>>(
         `/admin/rooms/${roomId}/seats`,
-      );
-      if (res.success) {
-        let list = res.data || [];
-
-        // Kiểm tra xem có phải tất cả các ghế đang bị chồng lập tại (0,0) không
-        const isAllStacked =
-          list.length > 1 && list.every((s) => s.x === 0 && s.y === 0);
-
-        if (isAllStacked) {
-          // Tự động dàn thành lưới 15 cột nếu phát hiện dữ liệu lỗi (0,0)
-          list = list.map((s, i) => ({
-            ...s,
-            x: 100 + (i % 15) * 50,
-            y: 150 + Math.floor(i / 15) * 50,
-          }));
+      ) as unknown as ApiResponse<Seat[]>;
+      
+      if (res.success && res.data) {
+        // Nếu data rỗng hoặc toàn bộ seat là "hidden", khởi tạo grid mới
+        if (
+          res.data.length === 0 ||
+          res.data.every((s) => s.type === "hidden")
+        ) {
+          setSeats([]);
         } else {
-          // Nếu không phải chồng lấp, chỉ hạ thấp những cái quá cao để tránh bị Header che
-          list = list.map((s) => (s.y < 50 ? { ...s, y: s.y + 150 } : s));
+          const mapped = res.data.map((s, i) => ({
+            ...s,
+            id: s.id || i,
+          }));
+          setSeats(mapped);
         }
-
-        setSeats(list);
       }
     } catch (error) {
       console.error("Failed to fetch seats:", error);
     } finally {
       setLoading(false);
     }
-  };
+  }, [roomId]);
+
+  useEffect(() => {
+    if (isOpen && roomId) {
+      fetchSeats();
+    }
+  }, [isOpen, roomId, fetchSeats]);
 
   const handleSave = async () => {
     if (!roomId) return;
@@ -98,10 +94,11 @@ export default function SeatDesignerModal({ isOpen, onClose, roomId }: Props) {
           angle: s.angle,
         })),
       };
-      const res = await apiClient.put<any, { success: boolean }>(
+      const res = await apiClient.put<ApiResponse<void>>(
         `/admin/rooms/${roomId}/seats/layout`,
         payload,
-      );
+      ) as unknown as ApiResponse<void>;
+      
       if (res.success) {
         onClose();
       }
@@ -124,13 +121,11 @@ export default function SeatDesignerModal({ isOpen, onClose, roomId }: Props) {
   };
 
   const handleMouseDown = (e: React.MouseEvent, id?: number) => {
-    e.stopPropagation(); // Ngăn chặn bubbling lên SVG làm hỏng trạng thái kéo
+    e.stopPropagation(); 
     const pt = getSVGPoint(e);
-    setDragStartPos(pt);
     setLastMousePos(pt);
 
     if (id !== undefined) {
-      // Nhấn vào một ghế
       setDraggedSeatId(id);
       if (!selectedIds.includes(id)) {
         if (e.ctrlKey || e.shiftKey) {
@@ -140,7 +135,6 @@ export default function SeatDesignerModal({ isOpen, onClose, roomId }: Props) {
         }
       }
     } else {
-      // Nhấn vào nền trống -> Bắt đầu vẽ khung chọn
       if (!e.ctrlKey && !e.shiftKey) {
         setSelectedIds([]);
       }
@@ -152,20 +146,14 @@ export default function SeatDesignerModal({ isOpen, onClose, roomId }: Props) {
     const pt = getSVGPoint(e);
 
     if (draggedSeatId !== null) {
-      // Di chuyển ghế (hỗ trợ di chuyển cả nhóm)
       const dx = pt.x - lastMousePos.x;
       const dy = pt.y - lastMousePos.y;
 
       setSeats((prev) =>
         prev.map((s) => {
           if (selectedIds.includes(s.id)) {
-            let nx = s.x + dx;
-            let ny = s.y + dy;
-            if (isSnapEnabled && draggedSeatId === s.id) {
-              // Chỉ snap ghế đang cầm chính, các ghế khác đi theo offset
-              // nx = Math.round(nx / 20) * 20;
-              // ny = Math.round(ny / 20) * 20;
-            }
+            const nx = s.x + dx;
+            const ny = s.y + dy;
             return { ...s, x: nx, y: ny };
           }
           return s;
@@ -173,14 +161,12 @@ export default function SeatDesignerModal({ isOpen, onClose, roomId }: Props) {
       );
       setLastMousePos(pt);
     } else if (marquee) {
-      // Cập nhật khung chọn
       setMarquee((prev) => (prev ? { ...prev, x2: pt.x, y2: pt.y } : null));
     }
   };
 
   const handleMouseUp = () => {
     if (marquee) {
-      // Kết thúc chọn vùng
       const xMin = Math.min(marquee.x1, marquee.x2);
       const xMax = Math.max(marquee.x1, marquee.x2);
       const yMin = Math.min(marquee.y1, marquee.y2);
@@ -198,7 +184,6 @@ export default function SeatDesignerModal({ isOpen, onClose, roomId }: Props) {
     }
 
     if (draggedSeatId !== null && isSnapEnabled) {
-      // Kết thúc kéo -> Hít về lưới cho cả nhóm
       setSeats((prev) =>
         prev.map((s) => {
           if (selectedIds.includes(s.id)) {
@@ -216,12 +201,6 @@ export default function SeatDesignerModal({ isOpen, onClose, roomId }: Props) {
     setDraggedSeatId(null);
   };
 
-  const toggleSeatSelection = (id: number) => {
-    setSelectedIds((prev) =>
-      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id],
-    );
-  };
-
   const rotateSelected = (delta: number) => {
     setSeats((prev) =>
       prev.map((s) =>
@@ -234,10 +213,8 @@ export default function SeatDesignerModal({ isOpen, onClose, roomId }: Props) {
 
   const alignHorizontal = () => {
     if (selectedIds.length < 2) return;
-    const avgY =
-      seats
-        .filter((s) => selectedIds.includes(s.id))
-        .reduce((acc, s) => acc + s.y, 0) / selectedIds.length;
+    const selectedSeats = seats.filter((s) => selectedIds.includes(s.id));
+    const avgY = selectedSeats.reduce((acc, s) => acc + s.y, 0) / selectedSeats.length;
     setSeats((prev) =>
       prev.map((s) =>
         selectedIds.includes(s.id)
@@ -249,10 +226,8 @@ export default function SeatDesignerModal({ isOpen, onClose, roomId }: Props) {
 
   const alignVertical = () => {
     if (selectedIds.length < 2) return;
-    const avgX =
-      seats
-        .filter((s) => selectedIds.includes(s.id))
-        .reduce((acc, s) => acc + s.x, 0) / selectedIds.length;
+    const selectedSeats = seats.filter((s) => selectedIds.includes(s.id));
+    const avgX = selectedSeats.reduce((acc, s) => acc + s.x, 0) / selectedSeats.length;
     setSeats((prev) =>
       prev.map((s) =>
         selectedIds.includes(s.id)
@@ -285,7 +260,6 @@ export default function SeatDesignerModal({ isOpen, onClose, roomId }: Props) {
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
       <div className="bg-zinc-950 border border-zinc-800 rounded-2xl w-full max-w-6xl h-[90vh] flex flex-col overflow-hidden shadow-2xl">
-        {/* Header */}
         <div className="px-6 py-4 border-b border-zinc-800 flex justify-between items-center bg-zinc-900/50">
           <div className="flex items-center gap-6">
             <div>
@@ -299,7 +273,6 @@ export default function SeatDesignerModal({ isOpen, onClose, roomId }: Props) {
               </p>
             </div>
 
-            {/* Alignment Tools */}
             {selectedIds.length > 1 && (
               <div className="flex items-center gap-1 bg-zinc-800/50 p-1 rounded-xl border border-white/5">
                 <button
@@ -366,9 +339,7 @@ export default function SeatDesignerModal({ isOpen, onClose, roomId }: Props) {
           </div>
         </div>
 
-        {/* Canvas Area */}
         <div className="flex-1 overflow-hidden bg-[#0c0c0c] relative h-full">
-          {/* Grid Layer */}
           <div
             className="absolute inset-0 opacity-[0.03] pointer-events-none"
             style={{
@@ -391,7 +362,6 @@ export default function SeatDesignerModal({ isOpen, onClose, roomId }: Props) {
               onMouseUp={handleMouseUp}
               onMouseLeave={handleMouseUp}
             >
-              {/* Screen Representation */}
               <defs>
                 <linearGradient
                   id="screenGrad"
@@ -421,19 +391,17 @@ export default function SeatDesignerModal({ isOpen, onClose, roomId }: Props) {
                 Màn Hình
               </text>
 
-              {/* Selection Marquee */}
               {marquee && (
                 <rect
                   x={Math.min(marquee.x1, marquee.x2)}
                   y={Math.min(marquee.y1, marquee.y2)}
                   width={Math.abs(marquee.x2 - marquee.x1)}
                   height={Math.abs(marquee.y2 - marquee.y1)}
-                  className="fill-blue-500/10 stroke-blue-500 stroke-1 stroke-dasharray-[4,4]"
+                  className="fill-blue-500/10 stroke-blue-500 stroke-1"
                   strokeDasharray="4 4"
                 />
               )}
 
-              {/* Seats */}
               {seats.map((seat) => {
                 const isSelected = selectedIds.includes(seat.id);
                 return (
@@ -454,11 +422,6 @@ export default function SeatDesignerModal({ isOpen, onClose, roomId }: Props) {
                           ? "stroke-red-500 shadow-[0_0_15px_rgba(239,68,68,0.3)]"
                           : "stroke-zinc-800 group-hover:stroke-zinc-500"
                       }`}
-                      style={{
-                        filter: isSelected
-                          ? "drop-shadow(0 0 4px rgba(239,68,68,0.4))"
-                          : "none",
-                      }}
                     />
                     <text
                       textAnchor="middle"
@@ -476,7 +439,6 @@ export default function SeatDesignerModal({ isOpen, onClose, roomId }: Props) {
             </svg>
           )}
 
-          {/* Controls Footer */}
           <div className="absolute bottom-6 left-6 right-6 flex justify-between items-end pointer-events-none">
             <div
               className={`bg-zinc-900/90 border border-zinc-800 p-5 rounded-[24px] backdrop-blur-xl shadow-2xl pointer-events-auto transition-all duration-500 overflow-hidden ${
@@ -510,28 +472,12 @@ export default function SeatDesignerModal({ isOpen, onClose, roomId }: Props) {
                   </div>
                   <div className="grid grid-cols-2 gap-x-6 gap-y-2">
                     <div className="flex flex-col gap-0.5">
-                      <span className="text-[9px] text-zinc-500 font-bold uppercase">
-                        Kéo thả
-                      </span>
-                      <span className="text-[10px] text-zinc-300">
-                        Di chuyển khối
-                      </span>
+                      <span className="text-[9px] text-zinc-500 font-bold uppercase">Kéo thả</span>
+                      <span className="text-[10px] text-zinc-300">Di chuyển khối</span>
                     </div>
                     <div className="flex flex-col gap-0.5">
-                      <span className="text-[9px] text-zinc-500 font-bold uppercase">
-                        Phím tắt
-                      </span>
-                      <span className="text-[10px] text-zinc-300">
-                        Ctrl + Kéo để chọn thêm
-                      </span>
-                    </div>
-                    <div className="flex flex-col gap-0.5 mt-2">
-                      <span className="text-[9px] text-zinc-500 font-bold uppercase">
-                        Mẹo
-                      </span>
-                      <span className="text-[10px] text-zinc-300 italic">
-                        Quét chuột để chọn nhiều
-                      </span>
+                      <span className="text-[9px] text-zinc-500 font-bold uppercase">Phím tắt</span>
+                      <span className="text-[10px] text-zinc-300">Ctrl + Kéo để chọn thêm</span>
                     </div>
                   </div>
                 </>

@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Mail, Lock, User, Loader2, ArrowRight, CheckCircle2, AlertCircle, Fingerprint } from "lucide-react";
 import AuthSplitLayout from "@/components/auth/AuthSplitLayout";
 import { apiClient } from "@/lib/api";
+import { ApiResponse } from "@/types/api";
 import { debounce } from "lodash";
 import OAuthButtons from "@/components/auth/OAuthButtons";
 
@@ -37,14 +38,16 @@ export default function RegisterPage() {
       else setCheckingEmail(true);
 
       try {
-        const res = await apiClient.get<any>(
-          `/auth/check-availability?value=${value}&type=${type}`
-        );
+        const res = await apiClient.get<ApiResponse<{ available: boolean }>>(
+          `/auth/check-availability?value=${value}&type=${type}`,
+        ) as unknown as ApiResponse<{ available: boolean }>;
         
-        if (type === "fullname") {
-          setFullNameStatus(res.data.available ? "valid" : "invalid");
-        } else {
-          setEmailStatus(res.data.available ? "valid" : "invalid");
+        if (res.success && res.data) {
+          if (type === "fullname") {
+            setFullNameStatus(res.data.available ? "valid" : "invalid");
+          } else {
+            setEmailStatus(res.data.available ? "valid" : "invalid");
+          }
         }
       } catch (err) {
         console.error(`Error checking ${type} availability:`, err);
@@ -72,20 +75,20 @@ export default function RegisterPage() {
     setError("");
 
     try {
-      const res = await apiClient.post<any, { success: boolean; error?: string }>("/auth/register", {
+      const res = await apiClient.post<ApiResponse<void>>("/auth/register", {
         full_name: fullName,
         email: email,
         password: password,
-      });
+      }) as unknown as ApiResponse<void>;
 
       if (res.success) {
         router.push("/login?registered=true");
       } else {
         setError(res.error || "Đăng ký thất bại, vui lòng thử lại.");
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       setError(
-        err.response?.data?.error ||
+        (err as any).response?.data?.error ||
           "Đăng ký thất bại, vui lòng kiểm tra lại thông tin.",
       );
     } finally {

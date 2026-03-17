@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Calendar, MapPin, ChevronRight, Clock, Ticket, XCircle, CheckCircle2, PlayCircle } from "lucide-react";
 import { format } from "date-fns";
+import NextImage from "next/image";
 import Link from "next/link";
 
 interface OrderData {
@@ -52,10 +53,14 @@ function PendingCountdown({
   expiresAt: string;
   onExpire?: () => void;
 }) {
-  const [remaining, setRemaining] = useState(
-    Math.max(0, new Date(expiresAt).getTime() - Date.now()),
-  );
+  const [remaining, setRemaining] = useState(0);
   const hasExpiredFired = useRef(false);
+
+  useEffect(() => {
+    requestAnimationFrame(() => {
+      setRemaining(Math.max(0, new Date(expiresAt).getTime() - Date.now()));
+    });
+  }, [expiresAt]);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -101,6 +106,117 @@ interface BookingHistoryProps {
   onLoadMore?: () => void;
 }
 
+function BookingOrderCard({ 
+  order, 
+  expiredOrderIds, 
+  handleOrderExpired 
+}: { 
+  order: OrderData; 
+  expiredOrderIds: Set<string>;
+  handleOrderExpired: (id: string) => void;
+}) {
+  const cfg = STATUS_CONFIG[order.status];
+  const movie = order.showtime?.movie;
+  const room = order.showtime?.room;
+  const isPending = order.status === "PENDING";
+  const [isExpired, setIsExpired] = useState(false);
+
+  useEffect(() => {
+    const checkExpiry = () => {
+      const expired = isPending && (expiredOrderIds.has(order.id) || new Date(order.expires_at).getTime() < Date.now());
+      setIsExpired(expired);
+    };
+    checkExpiry();
+    // Re-check periodically if pending
+    if (isPending && !isExpired) {
+      const timer = setInterval(checkExpiry, 10000);
+      return () => clearInterval(timer);
+    }
+  }, [isPending, order.expires_at, order.id, expiredOrderIds, isExpired]);
+
+  return (
+    <div className="glass-card rounded-3xl p-6 flex flex-col md:flex-row gap-6 group hover:border-white/20 transition-all relative overflow-hidden">
+      {/* Poster */}
+      <div className="w-full md:w-32 h-48 md:h-44 rounded-2xl overflow-hidden shadow-2xl shrink-0 relative">
+        <NextImage 
+          src={movie?.poster_url || "https://images.unsplash.com/photo-1440404653325-ab127d49abc1"} 
+          alt={movie?.title || "Movie Poster"} 
+          fill
+          className="object-cover group-hover:scale-110 transition-transform duration-500" 
+        />
+      </div>
+
+      {/* Info */}
+      <div className="flex-1 flex flex-col justify-between py-1">
+        <div>
+          <div className="flex flex-wrap items-start justify-between gap-4 mb-4">
+            <h3 className="text-xl font-bold text-white group-hover:text-purple-400 transition-colors uppercase tracking-tight">
+              {movie?.title || "Không rõ phim"}
+            </h3>
+            <span className={`flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full border ${cfg.bg} ${cfg.color}`}>
+              {cfg.icon} {cfg.label}
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-3 gap-x-6">
+            <div className="flex items-center gap-3 text-gray-400">
+              <Calendar size={18} className="text-primary" />
+              <span className="text-sm font-medium">
+                {order.showtime ? format(new Date(order.showtime.start_time), "dd/MM/yyyy") : "---"}
+              </span>
+            </div>
+            <div className="flex items-center gap-3 text-gray-400">
+              <Clock size={18} className="text-primary" />
+              <span className="text-sm font-medium">
+                {order.showtime ? format(new Date(order.showtime.start_time), "HH:mm") : "---"}
+              </span>
+            </div>
+            <div className="flex items-center gap-3 text-gray-400 col-span-1 sm:col-span-2">
+              <MapPin size={18} className="text-primary" />
+              <span className="text-sm font-medium line-clamp-1">{room?.cinema?.name}</span>
+            </div>
+          </div>
+        </div>
+        
+        <div className="mt-8 flex flex-wrap items-center justify-between gap-6 pt-6 border-t border-white/5">
+          <div>
+            <span className="text-xs text-gray-500 uppercase tracking-widest font-bold">Tổng tiền</span>
+            <div className="flex items-baseline gap-1 mt-1">
+              <span className="text-2xl font-black text-white">{order.final_amount.toLocaleString("vi-VN")}</span>
+              <span className="text-sm font-bold text-white/50">VNĐ</span>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3">
+            {isPending && !isExpired && (
+              <PendingCountdown 
+                expiresAt={order.expires_at} 
+                onExpire={() => handleOrderExpired(order.id)} 
+              />
+            )}
+
+            {order.status === "COMPLETED" && (
+              <Link href="/profile/tickets">
+                <button className="flex items-center gap-2 bg-white text-black font-bold px-5 py-2.5 rounded-xl text-sm hover:bg-gray-200 transition-all transform active:scale-95 shadow-xl shadow-white/5">
+                  <Ticket size={18} /> Vé của tôi
+                </button>
+              </Link>
+            )}
+
+            {isPending && !isExpired && (
+              <Link href={`/booking/checkout/${order.showtime.id}?order_id=${order.id}`}>
+                <button className="flex items-center gap-2 bg-yellow-500 hover:bg-yellow-400 text-black font-bold px-5 py-2.5 rounded-xl text-sm transition-all transform active:scale-95">
+                  <PlayCircle size={18} /> Thanh toán tiếp
+                </button>
+              </Link>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function BookingHistory({ 
   orders, 
   hasMore, 
@@ -137,7 +253,7 @@ export default function BookingHistory({
         ].map((item) => (
           <button
             key={item.id}
-            onClick={() => setFilter(item.id as any)}
+            onClick={() => setFilter(item.id as "ALL" | "PENDING" | "COMPLETED" | "CANCELLED")}
             className={`px-6 py-2.5 rounded-xl text-sm font-bold transition-all border ${
               filter === item.id
                 ? "bg-white text-black border-white"
@@ -156,94 +272,14 @@ export default function BookingHistory({
             <p className="text-gray-500 font-medium">Không có đơn hàng nào trong mục này</p>
           </div>
         ) : (
-          filteredOrders.map((order) => {
-            const cfg = STATUS_CONFIG[order.status];
-            const movie = order.showtime?.movie;
-            const room = order.showtime?.room;
-            const isPending = order.status === "PENDING";
-            const isExpired = isPending && (expiredOrderIds.has(order.id) || new Date(order.expires_at).getTime() < Date.now());
-
-            return (
-              <div key={order.id} className="glass-card rounded-3xl p-6 flex flex-col md:flex-row gap-6 group hover:border-white/20 transition-all relative overflow-hidden">
-                {/* Poster */}
-                <div className="w-full md:w-32 h-48 md:h-44 rounded-2xl overflow-hidden shadow-2xl shrink-0">
-                  <img 
-                    src={movie?.poster_url || "https://images.unsplash.com/photo-1440404653325-ab127d49abc1"} 
-                    alt={movie?.title} 
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" 
-                  />
-                </div>
-
-                {/* Info */}
-                <div className="flex-1 flex flex-col justify-between py-1">
-                  <div>
-                    <div className="flex flex-wrap items-start justify-between gap-4 mb-4">
-                      <h3 className="text-xl font-bold text-white group-hover:text-purple-400 transition-colors uppercase tracking-tight">
-                        {movie?.title || "Không rõ phim"}
-                      </h3>
-                      <span className={`flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full border ${cfg.bg} ${cfg.color}`}>
-                        {cfg.icon} {cfg.label}
-                      </span>
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-3 gap-x-6">
-                      <div className="flex items-center gap-3 text-gray-400">
-                        <Calendar size={18} className="text-primary" />
-                        <span className="text-sm font-medium">
-                          {order.showtime ? format(new Date(order.showtime.start_time), "dd/MM/yyyy") : "---"}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-3 text-gray-400">
-                        <Clock size={18} className="text-primary" />
-                        <span className="text-sm font-medium">
-                          {order.showtime ? format(new Date(order.showtime.start_time), "HH:mm") : "---"}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-3 text-gray-400 col-span-1 sm:col-span-2">
-                        <MapPin size={18} className="text-primary" />
-                        <span className="text-sm font-medium line-clamp-1">{room?.cinema?.name}</span>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="mt-8 flex flex-wrap items-center justify-between gap-6 pt-6 border-t border-white/5">
-                    <div>
-                      <span className="text-xs text-gray-500 uppercase tracking-widest font-bold">Tổng tiền</span>
-                      <div className="flex items-baseline gap-1 mt-1">
-                        <span className="text-2xl font-black text-white">{order.final_amount.toLocaleString("vi-VN")}</span>
-                        <span className="text-sm font-bold text-white/50">VNĐ</span>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-3">
-                      {isPending && !isExpired && (
-                        <PendingCountdown 
-                          expiresAt={order.expires_at} 
-                          onExpire={() => handleOrderExpired(order.id)} 
-                        />
-                      )}
-
-                      {order.status === "COMPLETED" && (
-                        <Link href="/profile/tickets">
-                          <button className="flex items-center gap-2 bg-white text-black font-bold px-5 py-2.5 rounded-xl text-sm hover:bg-gray-200 transition-all transform active:scale-95 shadow-xl shadow-white/5">
-                            <Ticket size={18} /> Vé của tôi
-                          </button>
-                        </Link>
-                      )}
-
-                      {isPending && !isExpired && (
-                        <Link href={`/booking/checkout/${order.showtime.id}?order_id=${order.id}`}>
-                          <button className="flex items-center gap-2 bg-yellow-500 hover:bg-yellow-400 text-black font-bold px-5 py-2.5 rounded-xl text-sm transition-all transform active:scale-95">
-                            <PlayCircle size={18} /> Thanh toán tiếp
-                          </button>
-                        </Link>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            );
-          })
+          filteredOrders.map((order) => (
+            <BookingOrderCard 
+              key={order.id} 
+              order={order} 
+              expiredOrderIds={expiredOrderIds}
+              handleOrderExpired={handleOrderExpired}
+            />
+          ))
         )}
 
         {hasMore && (

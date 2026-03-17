@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import NextImage from "next/image";
 import { Camera, Edit2 } from "lucide-react";
 
 interface ProfileSectionProps {
@@ -40,9 +41,11 @@ export default function ProfileSection({ user, onUpdate, isSaving }: ProfileSect
         <div className="relative group">
           <div className="w-40 h-40 rounded-full bg-gradient-to-tr from-purple-600 to-pink-500 p-1">
             <div className="w-full h-full rounded-full bg-[#0f172a] flex items-center justify-center overflow-hidden border-4 border-[#0f172a]">
-              <img 
+              <NextImage 
                 src="https://api.dicebear.com/7.x/avataaars/svg?seed=Admin" 
                 alt="Avatar" 
+                width={160}
+                height={160}
                 className="w-full h-full object-cover"
               />
             </div>

@@ -24,52 +24,61 @@ export function useAdminNotifications() {
   const esRef = useRef<EventSource | null>(null);
   const reconnectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const connect = useCallback(() => {
-    if (!token || typeof window === "undefined") return;
+  // Use function declaration for hoisting/recursive calls
+  const connectSse = useCallback(() => {
+    function connect() {
+      if (!token || typeof window === "undefined") return;
 
-    // Đóng connection cũ nếu có
-    if (esRef.current) {
-      esRef.current.close();
+      // Đóng connection cũ nếu có
+      if (esRef.current) {
+        esRef.current.close();
+      }
+
+      const BASE_URL =
+        process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api/v1";
+      const url = `${BASE_URL}/admin/notifications/stream?token=${token}`;
+      const es = new EventSource(url);
+
+      esRef.current = es;
+
+      es.addEventListener("notification", (e) => {
+        try {
+          const data = JSON.parse(e.data) as Omit<
+            AdminNotification,
+            "id" | "read"
+          >;
+          const notif: AdminNotification = {
+            ...data,
+            id: `${data.order_id}-${Date.now()}`,
+            read: false,
+          };
+          setNotifications((prev) => {
+            const updated = [notif, ...prev];
+            return updated.slice(0, MAX_NOTIFICATIONS);
+          });
+          setToastQueue((prev) => [...prev, notif]);
+        } catch {
+          // ignore parse errors
+        }
+      });
+
+      es.onerror = () => {
+        es.close();
+        // Auto reconnect sau 5s
+        reconnectTimerRef.current = setTimeout(() => connect(), 5000);
+      };
     }
 
-    const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api/v1";
-    const url = `${BASE_URL}/admin/notifications/stream?token=${token}`;
-    const es = new EventSource(url);
-
-    esRef.current = es;
-
-    es.addEventListener("notification", (e) => {
-      try {
-        const data = JSON.parse(e.data) as Omit<AdminNotification, "id" | "read">;
-        const notif: AdminNotification = {
-          ...data,
-          id: `${data.order_id}-${Date.now()}`,
-          read: false,
-        };
-        setNotifications((prev) => {
-          const updated = [notif, ...prev];
-          return updated.slice(0, MAX_NOTIFICATIONS);
-        });
-        setToastQueue((prev) => [...prev, notif]);
-      } catch {
-        // ignore parse errors
-      }
-    });
-
-    es.onerror = () => {
-      es.close();
-      // Auto reconnect sau 5s
-      reconnectTimerRef.current = setTimeout(() => connect(), 5000);
-    };
+    connect();
   }, [token]);
 
   useEffect(() => {
-    connect();
+    connectSse();
     return () => {
       esRef.current?.close();
       if (reconnectTimerRef.current) clearTimeout(reconnectTimerRef.current);
     };
-  }, [connect]);
+  }, [connectSse]);
 
   const markAllRead = useCallback(() => {
     setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));

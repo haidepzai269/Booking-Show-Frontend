@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Plus, Pencil, Trash2, Tag, Loader2, AlertCircle } from "lucide-react";
+import { useState, useEffect, useCallback } from "react";
+import { Plus, Pencil, Trash2, Loader2, AlertCircle } from "lucide-react";
 import PromotionFormModal from "@/components/admin/promotions/PromotionFormModal";
 import { apiClient } from "@/lib/api";
 
@@ -29,7 +29,7 @@ export default function PromotionsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingPromo, setEditingPromo] = useState<Promotion | null>(null);
 
-  const fetchPromotions = async () => {
+  const fetchPromotions = useCallback(async () => {
     try {
       setLoading(true);
       const res = (await apiClient.get(
@@ -44,11 +44,11 @@ export default function PromotionsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [page, search, limit]);
 
   useEffect(() => {
     fetchPromotions();
-  }, [page, search]);
+  }, [fetchPromotions]);
 
   const handleDelete = async (id: number) => {
     if (!confirm("Vô hiệu hóa voucher này?")) return;

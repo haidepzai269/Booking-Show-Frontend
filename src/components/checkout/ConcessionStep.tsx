@@ -1,6 +1,7 @@
 "use client";
 
 import { Minus, Plus, Loader2 } from "lucide-react";
+import NextImage from "next/image";
 
 interface Concession {
   id: number;
@@ -77,12 +78,13 @@ export default function ConcessionStep({
                 `}
               >
                 {/* Thumbnail */}
-                <div className="w-16 h-16 sm:w-20 sm:h-20 flex-shrink-0 rounded-xl overflow-hidden bg-zinc-800">
+                <div className="w-16 h-16 sm:w-20 sm:h-20 flex-shrink-0 rounded-xl overflow-hidden bg-zinc-800 relative">
                   {c.image_url ? (
-                    <img
+                    <NextImage
                       src={c.image_url}
                       alt={c.name}
-                      className="w-full h-full object-cover"
+                      fill
+                      className="object-cover"
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-3xl">

@@ -38,7 +38,9 @@ export default function QuickBookingIsland() {
 
   useEffect(() => {
     if (shouldHide) {
-      setIsVisible(false);
+      requestAnimationFrame(() => {
+        setIsVisible(false);
+      });
       return;
     }
     const handleScroll = () => {
@@ -58,7 +60,7 @@ export default function QuickBookingIsland() {
     };
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  }, [shouldHide]);
 
   if (shouldHide) return null;
 

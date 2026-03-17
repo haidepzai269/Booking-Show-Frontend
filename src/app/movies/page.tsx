@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import { apiClient } from "@/lib/api";
 import Header from "@/components/layout/Header";
+import NextImage from "next/image";
 
 // ──── Types ──────────────────────────────────────────────────────────────────
 interface Genre {
@@ -79,11 +80,13 @@ function MoviesContent() {
     const fetchAll = async () => {
       try {
         const [moviesRes, genresRes] = await Promise.all([
-          apiClient.get<void, { success: boolean; data: Movie[] }>("/movies/"),
-          apiClient.get<void, { success: boolean; data: Genre[] }>("/genres/"),
+          apiClient.get<{ success: boolean; data: Movie[] }>("/movies/"),
+          apiClient.get<{ success: boolean; data: Genre[] }>("/genres/"),
         ]);
-        if (moviesRes.success && moviesRes.data) setAllMovies(moviesRes.data);
-        if (genresRes.success && genresRes.data) setGenres(genresRes.data);
+        const mData = (moviesRes as any).data || moviesRes;
+        const gData = (genresRes as any).data || genresRes;
+        if (mData.success && mData.data) setAllMovies(mData.data);
+        if (gData.success && gData.data) setGenres(gData.data);
       } catch (e) {
         console.error("Failed to load movies:", e);
       } finally {
@@ -219,13 +222,15 @@ function MoviesContent() {
               transition={{ duration: 0.7 }}
               className="absolute inset-0"
             >
-              <img
+              <NextImage
                 src={
                   activeBannerMovie.poster_url ||
                   "https://images.unsplash.com/photo-1536440136628-849c177e76a1?q=80&w=2025"
                 }
                 alt={activeBannerMovie.title}
-                className="w-full h-full object-cover opacity-40 md:opacity-50"
+                fill
+                className="object-cover opacity-40 md:opacity-50"
+                priority
               />
               <div className="absolute inset-0 bg-gradient-to-t from-background via-background/80 md:via-background/70 to-transparent" />
               <div className="absolute inset-0 bg-gradient-to-r from-background/90 md:from-background/80 via-transparent to-transparent hidden md:block" />
@@ -670,14 +675,14 @@ function MovieCard({ movie, index }: { movie: Movie; index: number }) {
       <Link href={`/movies/${movie.id}`}>
         {/* Poster */}
         <div className="relative aspect-[2/3] w-full overflow-hidden rounded-2xl bg-card border border-border">
-          <img
+          <NextImage
             src={
               movie.poster_url ||
               "https://images.unsplash.com/photo-1440404653325-ab127d49abc1?q=80&w=600"
             }
             alt={movie.title}
-            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-            loading="lazy"
+            fill
+            className="object-cover transition-transform duration-700 group-hover:scale-110"
           />
 
           {/* Overlay gradient */}

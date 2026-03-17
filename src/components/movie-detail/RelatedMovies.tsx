@@ -2,9 +2,10 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Play, Ticket, Star, Clock } from "lucide-react";
+import { Play, Star, Clock } from "lucide-react";
 import { motion } from "framer-motion";
 import { apiClient } from "@/lib/api";
+import NextImage from "next/image";
 
 interface Movie {
   id: number;
@@ -15,7 +16,7 @@ interface Movie {
   rating?: number;
 }
 
-export default function RelatedMovies({ currentMovie }: { currentMovie: any }) {
+export default function RelatedMovies({ currentMovie }: { currentMovie: Movie }) {
   const [relatedMovies, setRelatedMovies] = useState<Movie[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -24,18 +25,16 @@ export default function RelatedMovies({ currentMovie }: { currentMovie: any }) {
     // Tự filter dựa trên cùng thể loại hoặc ngẫu nhiên
     const fetchRelated = async () => {
       try {
-        const res = await apiClient.get<
-          any,
-          { success: boolean; data: Movie[] }
-        >("/movies/");
-        if (res.success && res.data) {
+        const res = await apiClient.get<{ success: boolean; data: Movie[] }>("/movies/");
+        const responseData = (res as any).data || res;
+        if (responseData.success && responseData.data) {
           // Lọc loại trừ phim hiện tại
-          const others = res.data.filter((m) => m.id !== currentMovie.id);
+          const others = responseData.data.filter((m: Movie) => m.id !== currentMovie.id);
 
           // Lọc phim cùng thể loại (ít nhất 1 điểm chung)
-          let matches = others.filter((m) =>
+          let matches = others.filter((m: Movie) =>
             m.genres?.some((g1) =>
-              currentMovie.genres?.some((g2: any) => g1.id === g2.id),
+              currentMovie.genres?.some((g2) => g1.id === g2.id),
             ),
           );
 
@@ -43,7 +42,7 @@ export default function RelatedMovies({ currentMovie }: { currentMovie: any }) {
           if (matches.length < 4) {
             matches = [
               ...matches,
-              ...others.filter((m) => !matches.includes(m)),
+              ...others.filter((m: Movie) => !matches.includes(m)),
             ];
           }
 
@@ -85,13 +84,15 @@ export default function RelatedMovies({ currentMovie }: { currentMovie: any }) {
           >
             <Link href={`/movies/${movie.id}`}>
               <div className="relative aspect-[2/3] w-full overflow-hidden">
-                <img
+                <NextImage
                   src={
                     movie.poster_url ||
                     "https://images.unsplash.com/photo-1440404653325-ab127d49abc1?q=80&w=600"
                   }
                   alt={movie.title}
-                  className="w-full h-full object-cover transform duration-700 group-hover:scale-110"
+                  fill
+                  className="object-cover transform duration-700 group-hover:scale-110"
+                  sizes="(max-width: 768px) 50vw, 25vw"
                 />
                 {/* Gradient Layer */}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />

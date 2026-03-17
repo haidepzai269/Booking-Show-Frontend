@@ -5,6 +5,7 @@ import { format } from "date-fns";
 import { Clock, Calendar, Play, Ticket, Star } from "lucide-react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import TrailerModal from "./TrailerModal";
+import NextImage from "next/image";
 
 interface Genre {
   id: number;
@@ -32,13 +33,15 @@ export default function MovieBanner({ movie }: { movie: Movie }) {
     <div className="relative w-full h-[60vh] md:h-[70vh] flex items-end overflow-hidden group">
       {/* Background w/ Parallax */}
       <motion.div style={{ y }} className="absolute inset-0 z-0">
-        <img
+        <NextImage
           src={
             movie.poster_url ||
             "https://images.unsplash.com/photo-1440404653325-ab127d49abc1?q=80&w=2070&auto=format&fit=crop"
           }
           alt={movie.title}
-          className="w-full h-full object-cover opacity-40 blur-[2px] scale-105"
+          fill
+          priority
+          className="object-cover opacity-40 blur-[2px] scale-105"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-background via-background/80 to-transparent" />
         <div className="absolute inset-0 bg-gradient-to-r from-background/90 via-background/40 to-transparent" />
@@ -53,14 +56,16 @@ export default function MovieBanner({ movie }: { movie: Movie }) {
           transition={{ duration: 0.6 }}
           className="hidden md:block shrink-0"
         >
-          <div className="relative w-56 lg:w-72 rounded-2xl overflow-hidden shadow-2xl border border-white/10 group-hover:shadow-[0_0_40px_rgba(255,255,255,0.1)] transition-all duration-500">
-            <img
+          <div className="relative w-56 lg:w-72 rounded-2xl overflow-hidden shadow-2xl border border-white/10 group-hover:shadow-[0_0_40px_rgba(255,255,255,0.1)] transition-all duration-500 aspect-[2/3]">
+            <NextImage
               src={
                 movie.poster_url ||
                 "https://images.unsplash.com/photo-1440404653325-ab127d49abc1?q=80&w=600"
               }
               alt={movie.title}
-              className="w-full h-auto object-cover transform scale-100 group-hover:scale-105 transition-transform duration-700"
+              fill
+              className="object-cover transform scale-100 group-hover:scale-105 transition-transform duration-700"
+              sizes="(max-width: 1024px) 224px, 288px"
             />
           </div>
         </motion.div>

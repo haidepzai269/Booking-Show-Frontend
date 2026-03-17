@@ -5,17 +5,14 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X, Mail, Lock, User as UserIcon, Loader2 } from "lucide-react";
 import { apiClient } from "@/lib/api";
 import { useAuthStore } from "@/store/authStore";
+import { ApiResponse } from "@/types/api";
 
 interface AuthModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-interface ApiResponse {
-  success: boolean;
-  data?: any;
-  error?: string;
-}
+// Local ApiResponse removed in favor of @/types/api
 
 export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
   const [isLogin, setIsLogin] = useState(true);
@@ -41,7 +38,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
         ? { email: formData.email, password: formData.password }
         : { ...formData, role: "USER" };
 
-      const res = await apiClient.post<any, ApiResponse>(endpoint, payload);
+      const res = await apiClient.post<ApiResponse<any>>(endpoint, payload) as unknown as ApiResponse<any>;
 
       if (res.success) {
         if (!isLogin) {
@@ -56,8 +53,9 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
       } else {
         setError(res.error || "Có lỗi xảy ra");
       }
-    } catch (err: any) {
-      setError(err.response?.data?.error || "Không thể kết nối Server.");
+    } catch (err: unknown) {
+      const errorMsg = (err as any).response?.data?.error || "Không thể kết nối Server.";
+      setError(errorMsg);
     } finally {
       setLoading(false);
     }

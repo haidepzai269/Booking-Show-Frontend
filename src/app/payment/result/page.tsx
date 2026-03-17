@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect, useState, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   CheckCircle,
@@ -30,6 +30,8 @@ interface OrderInfo {
   };
 }
 
+
+
 function PaymentResultContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -39,11 +41,7 @@ function PaymentResultContent() {
   const [ticketIds, setTicketIds] = useState<string[]>([]);
   const [errorMsg, setErrorMsg] = useState("");
 
-  useEffect(() => {
-    determineResult();
-  }, []);
-
-  const determineResult = async () => {
+  const determineResult = useCallback(async () => {
     // ── Đọc params từ URL ──
     const vnpCode = searchParams.get("vnp_ResponseCode"); // VNPay
     const vnpOrderId = searchParams.get("vnp_TxnRef"); // VNPay
@@ -92,11 +90,11 @@ function PaymentResultContent() {
         // Trong môi trường Localhost, Server VNPay không thể tự gọi IPN webhook về máy tính chúng ta.
         // Giải pháp: Frontend đóng vai trò kích hoạt IPN thủ công bằng cách chuyển toàn bộ Query URL về Backend
         if (vnpCode !== null) {
-          await apiClient.get<any, any>(
+          await apiClient.get<void, void>(
             `/payments/vnpay_return${window.location.search}`,
           );
         } else if (gateway === "ZALOPAY" || gateway === "PAYOS") {
-          await apiClient.get<any, any>(
+          await apiClient.get<void, void>(
             `/payments/check_status?gateway=${gateway}&order_id=${resolvedOrderId}`,
           );
         }
@@ -104,7 +102,7 @@ function PaymentResultContent() {
         // Poll tối đa 5 lần (7.5 giây) để đợi webhook xử lý xong
         let isCompleted = false;
         for (let i = 0; i < 5; i++) {
-          const res = await apiClient.get<any, { success: boolean; data: any }>(
+          const res = await apiClient.get<void, { success: boolean; data: OrderInfo & { status: string } }>(
             `/orders/${resolvedOrderId}`,
           );
 
@@ -112,14 +110,11 @@ function PaymentResultContent() {
             setOrderInfo(res.data);
             isCompleted = true;
             // Lấy vé của đơn này
-            const ticketRes = await apiClient.get<
-              any,
-              { success: boolean; data: any[] }
-            >("/tickets/my");
+            const ticketRes = await apiClient.get<void, { success: boolean; data: { id: string, order_id: string }[] }>("/tickets/my");
             if (ticketRes.success && ticketRes.data) {
               const myTickets = ticketRes.data
-                .filter((t: any) => t.order_id === resolvedOrderId)
-                .map((t: any) => t.id);
+                .filter((t) => t.order_id === resolvedOrderId)
+                .map((t) => t.id);
               setTicketIds(myTickets);
             }
             setStatus("success");
@@ -144,7 +139,11 @@ function PaymentResultContent() {
       // Không có orderId trong URL — vẫn báo thành công dựa vào gateway confirm
       setStatus("success");
     }
-  };
+  }, [searchParams]);
+
+  useEffect(() => {
+    requestAnimationFrame(() => determineResult());
+  }, [determineResult]);
 
   if (status === "loading") {
     return (

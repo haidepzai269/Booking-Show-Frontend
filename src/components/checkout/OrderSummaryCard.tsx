@@ -9,6 +9,7 @@ import {
   Clock,
   Armchair,
 } from "lucide-react";
+import NextImage from "next/image";
 
 interface LockedSeat {
   id: number;
@@ -49,31 +50,40 @@ interface OrderSummaryCardProps {
   finalAmount: number;
 }
 
-export default function OrderSummaryCard({
+function SummaryContent({
   showtime,
   seats,
   concessionItems,
-  promotionPreview,
   seatTotal,
   concessionTotal,
+  promotionPreview,
   discountAmount,
   finalAmount,
-}: OrderSummaryCardProps) {
-  const [mobileExpanded, setMobileExpanded] = useState(false);
-  const originalAmount = seatTotal + concessionTotal;
-
-  const SummaryContent = () => (
+}: {
+  showtime: ShowtimeInfo | null;
+  seats: LockedSeat[];
+  concessionItems: ConcessionItem[];
+  seatTotal: number;
+  concessionTotal: number;
+  promotionPreview: PromotionPreview | null;
+  discountAmount: number;
+  finalAmount: number;
+}) {
+  return (
     <div className="space-y-4">
       {/* Showtime Info */}
       {showtime && (
         <div className="space-y-2">
           <div className="flex items-start gap-3">
             {showtime.poster_url && (
-              <img
-                src={showtime.poster_url}
-                alt={showtime.movie_title}
-                className="w-12 h-16 object-cover rounded-lg flex-shrink-0"
-              />
+              <div className="relative w-12 h-16 flex-shrink-0">
+                <NextImage
+                  src={showtime.poster_url}
+                  alt={showtime.movie_title}
+                  fill
+                  className="object-cover rounded-lg"
+                />
+              </div>
             )}
             <div className="min-w-0">
               <h3 className="text-white font-black text-sm leading-tight line-clamp-2">
@@ -202,6 +212,30 @@ export default function OrderSummaryCard({
       </div>
     </div>
   );
+}
+
+export default function OrderSummaryCard({
+  showtime,
+  seats,
+  concessionItems,
+  promotionPreview,
+  seatTotal,
+  concessionTotal,
+  discountAmount,
+  finalAmount,
+}: OrderSummaryCardProps) {
+  const [mobileExpanded, setMobileExpanded] = useState(false);
+
+  const sharedProps = {
+    showtime,
+    seats,
+    concessionItems,
+    promotionPreview,
+    seatTotal,
+    concessionTotal,
+    discountAmount,
+    finalAmount,
+  };
 
   return (
     <>
@@ -211,7 +245,7 @@ export default function OrderSummaryCard({
           <h3 className="text-white font-black text-lg mb-5 uppercase tracking-tight">
             📋 Tóm Tắt Đơn Hàng
           </h3>
-          <SummaryContent />
+          <SummaryContent {...sharedProps} />
         </div>
       </div>
 
@@ -243,7 +277,7 @@ export default function OrderSummaryCard({
         {/* Expanded Content */}
         {mobileExpanded && (
           <div className="bg-zinc-900 border-t border-zinc-800 px-4 pt-4 pb-6 max-h-[60vh] overflow-y-auto">
-            <SummaryContent />
+            <SummaryContent {...sharedProps} />
           </div>
         )}
       </div>

@@ -100,7 +100,7 @@ export default function ProfilePage() {
     "idle",
   );
   const [form, setForm] = useState({ full_name: "", phone: "" });
-  const [orders, setOrders] = useState<any[]>([]);
+  const [orders, setOrders] = useState<any[]>([]); // Sẽ định nghĩa type cụ thể sau nếu cần, tạm thời giữ để tránh break UI phức tạp
   const [loadingOrders, setLoadingOrders] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const [page, setPage] = useState(1);
@@ -134,17 +134,18 @@ export default function ProfilePage() {
     else setLoadingOrders(true);
 
     try {
-      const res = await apiClient.get<any, { success: boolean, data: any[], pagination: any }>(
+      const res = await apiClient.get<{ success: boolean; data: any[]; pagination: any }>(
         `/orders/my?page=${targetPage}&limit=10`
       );
-      if (res.success) {
+      const responseData = (res as any).data || res;
+      if (responseData.success) {
         if (append) {
-          setOrders(prev => [...prev, ...res.data]);
+          setOrders(prev => [...prev, ...responseData.data]);
         } else {
-          setOrders(res.data);
+          setOrders(responseData.data);
         }
         setPage(targetPage);
-        setHasMore(res.data.length === 10);
+        setHasMore(responseData.data.length === 10);
       }
     } catch (err) {
       console.error("Failed to fetch orders", err);
@@ -157,15 +158,14 @@ export default function ProfilePage() {
   const handleLoadMore = () => {
     fetchOrders(page + 1, true);
   };
-
   const fetchBannerPosters = async () => {
     try {
-      const res = await apiClient.get<
-        any,
-        { success: boolean; data: { hot: Movie[]; best_selling: Movie[] } }
-      >("/movies/home");
-      if (res.success && res.data) {
-        const all = [...(res.data.hot || []), ...(res.data.best_selling || [])];
+      const res = await apiClient.get<{ success: boolean; data: { hot: Movie[]; best_selling: Movie[] } }>(
+        "/movies/home"
+      );
+      const responseData = (res as any).data || res;
+      if (responseData.success && responseData.data) {
+        const all = [...(responseData.data.hot || []), ...(responseData.data.best_selling || [])];
         const unique = Array.from(new Map(all.map((m) => [m.id, m])).values());
         setBannerPosters(
           unique
@@ -206,12 +206,13 @@ export default function ProfilePage() {
     setSaving(true);
     setSaveStatus("idle");
     try {
-      const res = (await apiClient.put("/users/me", {
+      const res = await apiClient.put<{ success: boolean }>("/users/me", {
         full_name: dataToSave.full_name,
         phone: dataToSave.phone,
-      })) as { success: boolean };
+      });
+      const responseData = (res as any).data || res;
 
-      if (res.success) {
+      if (responseData.success) {
         setSaveStatus("success");
         setEditing(false);
         // Cập nhật authStore để tên ở Header cũng cập nhật

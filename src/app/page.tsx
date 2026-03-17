@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { useMotionValue, useTransform, useSpring } from "framer-motion";
 import { apiClient } from "@/lib/api";
+import NextImage from "next/image";
 import Header from "@/components/layout/Header";
 import TrailerModal from "@/components/movie-detail/TrailerModal";
 
@@ -68,33 +69,35 @@ export default function Home() {
   const [selectedTrailer, setSelectedTrailer] = useState<string | null>(null);
   const [isTrailerOpen, setIsTrailerOpen] = useState(false);
 
-  useEffect(() => {
-    const fetchHomeData = async () => {
-      try {
-        const [movieRes, campaignRes] = await Promise.all([
-          apiClient.get<any, { success: boolean; data: HomeMoviesData }>("/movies/home"),
-          apiClient.get<any, { data: Campaign[] }>("/campaigns?limit=4")
-        ]);
+  const fetchHomeData = useCallback(async () => {
+    try {
+      const [movieRes, campaignRes] = await Promise.all([
+        apiClient.get<{ success: boolean; data: HomeMoviesData }>("/movies/home"),
+        apiClient.get<{ data: Campaign[] }>("/campaigns?limit=4")
+      ]);
 
-        if (movieRes.success && movieRes.data) {
-          setData(movieRes.data);
-        }
-        if (campaignRes.data) {
-          setCampaigns(campaignRes.data);
-        }
-      } catch (error) {
-        console.error("Failed to fetch home data:", error);
-      } finally {
-        setLoading(false);
+      const mData = (movieRes as any).data || movieRes;
+      const cData = (campaignRes as any).data || campaignRes;
+
+      if (mData.success && mData.data) {
+        setData(mData.data);
       }
-    };
-
-    fetchHomeData();
-    setMounted(true);
+      if (cData.data) {
+        setCampaigns(cData.data);
+      }
+    } catch (error) {
+      console.error("Failed to fetch home data:", error);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
+  useEffect(() => {
+    fetchHomeData();
+    setMounted(true);
+  }, [fetchHomeData]);
+
   const {
-    featured: featuredMovie,
     hot: hotMovies,
     best_selling: bestSellingMovies,
     coming_soon: comingSoonMovies,
@@ -176,13 +179,15 @@ export default function Home() {
               style={{ x: bannerX, y: bannerY }}
               className="absolute inset-0 z-0"
             >
-              <img
+              <NextImage
                 src={
                   activeMovie.poster_url ||
                   "https://images.unsplash.com/photo-1536440136628-849c177e76a1?q=80&w=2025&auto=format&fit=crop"
                 }
                 alt={activeMovie.title}
-                className="w-full h-full object-cover opacity-40 md:opacity-50 scale-110"
+                fill
+                priority
+                className="object-cover opacity-40 md:opacity-50 scale-110"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent" />
               <div className="absolute inset-0 bg-gradient-to-r from-background via-transparent to-transparent hidden md:block" />
@@ -453,11 +458,12 @@ export default function Home() {
                 viewport={{ once: true }}
                 className="group relative overflow-hidden rounded-[2rem] bg-card/30 border border-white/5 h-40 md:h-56 flex items-center transition-all hover:border-blue-400/30"
                >
-                 <div className="w-1/3 h-full overflow-hidden">
-                    <img 
+                 <div className="w-1/3 h-full overflow-hidden relative">
+                    <NextImage 
                       src={movie.poster_url} 
                       alt={movie.title} 
-                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" 
+                      fill
+                      className="object-cover group-hover:scale-110 transition-transform duration-700" 
                     />
                  </div>
                  <div className="w-2/3 p-4 md:p-6 flex flex-col justify-between h-full">
@@ -506,7 +512,7 @@ export default function Home() {
                   viewport={{ once: true }}
                   className="group relative h-48 rounded-3xl overflow-hidden glass hover:border-secondary/40 transition-all cursor-pointer"
                 >
-                  <img src={camp.thumbnail_url} alt={camp.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 opacity-60 group-hover:opacity-80" />
+                  <NextImage src={camp.thumbnail_url} alt={camp.title} fill className="object-cover group-hover:scale-105 transition-transform duration-700 opacity-60 group-hover:opacity-80" />
                   <div className="absolute inset-0 bg-gradient-to-t from-black to-transparent" />
                   <div className="absolute bottom-6 left-6 right-6">
                     <span className="px-2 py-0.5 bg-secondary text-black text-[10px] font-black rounded-md uppercase mb-2 inline-block">{camp.type}</span>
@@ -521,70 +527,29 @@ export default function Home() {
   );
 }
 
-function TiltCard({ children, index }: { children: React.ReactNode, index: number }) {
-  const x = useMotionValue(0);
-  const y = useMotionValue(0);
 
-  const mouseXSpring = useSpring(x);
-  const mouseYSpring = useSpring(y);
-
-  const rotateX = useTransform(mouseYSpring, [-0.5, 0.5], ["10deg", "-10deg"]);
-  const rotateY = useTransform(mouseXSpring, [-0.5, 0.5], ["-10deg", "10deg"]);
-
-  const handleMouseMove = (e: React.MouseEvent) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    const width = rect.width;
-    const height = rect.height;
-    const mouseX = e.clientX - rect.left;
-    const mouseY = e.clientY - rect.top;
-    const xPct = mouseX / width - 0.5;
-    const yPct = mouseY / height - 0.5;
-    x.set(xPct);
-    y.set(yPct);
-  };
-
-  const handleMouseLeave = () => {
-    x.set(0);
-    y.set(0);
-  };
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 30 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ duration: 0.5, delay: index * 0.1 }}
-      onMouseMove={handleMouseMove}
-      onMouseLeave={handleMouseLeave}
-      style={{
-        rotateX,
-        rotateY,
-        transformStyle: "preserve-3d",
-      }}
-      className="group relative flex flex-col cursor-pointer"
-    >
-      <div style={{ transform: "translateZ(50px)", transformStyle: "preserve-3d" }}>
-        {children}
-      </div>
-    </motion.div>
-  );
-}
 
 function StarfieldBackground() {
   const [mounted, setMounted] = useState(false);
   const [stars, setStars] = useState<{ x: string, y: string, opacity: number, scale: number, duration: number, delay: number }[]>([]);
 
   useEffect(() => {
-    setMounted(true);
-    const generatedStars = [...Array(20)].map(() => ({
-      x: Math.random() * 100 + "%",
-      y: Math.random() * 100 + "%",
-      opacity: Math.random() * 0.5 + 0.2,
-      scale: Math.random() * 0.5 + 0.5,
-      duration: Math.random() * 10 + 10,
-      delay: Math.random() * 10
-    }));
-    setStars(generatedStars);
+    const init = () => {
+      setMounted(true);
+      setStars([...Array(20)].map(() => ({
+        x: Math.random() * 100 + "%",
+        y: Math.random() * 100 + "%",
+        opacity: Math.random() * 0.5 + 0.2,
+        scale: Math.random() * 0.5 + 0.5,
+        duration: Math.random() * 10 + 10,
+        delay: Math.random() * 10
+      })));
+    };
+    
+    // Avoid synchronous setState in effect warning
+    if (typeof window !== "undefined") {
+      requestAnimationFrame(init);
+    }
   }, []);
 
   if (!mounted) return <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden" />;
@@ -618,11 +583,7 @@ function StarfieldBackground() {
   );
 }
 
-function LoadingSpinner() {
-  return (
-    <div className="w-12 h-12 border-4 border-card rounded-full border-t-primary animate-spin"></div>
-  );
-}
+
 
 function LoadingSkeleton() {
   return (
@@ -671,10 +632,11 @@ function MovieGrid({
             className="block w-full h-full relative overflow-hidden rounded-2xl bg-card border border-white/5 shadow-2xl z-30 transition-transform duration-500 group-hover:scale-[1.02] group-hover:border-primary/50"
           >
             {/* Poster Image */}
-            <img
+            <NextImage
               src={movie.poster_url || "https://images.unsplash.com/photo-1440404653325-ab127d49abc1?q=80&w=2070&auto=format&fit=crop"}
               alt={movie.title}
-              className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+              fill
+              className="object-cover transition-transform duration-700 group-hover:scale-110"
             />
             
             {/* Overlays - Always pointer-events-none */}

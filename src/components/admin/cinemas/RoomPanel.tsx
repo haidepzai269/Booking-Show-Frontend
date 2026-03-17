@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Plus, Trash2, Loader2, Armchair, AlertCircle } from "lucide-react";
 import { apiClient } from "@/lib/api";
+import { ApiResponse } from "@/types/api";
 
 import SeatDesignerModal from "./SeatDesignerModal";
 
@@ -20,26 +21,26 @@ export default function RoomPanel({ cinemaId }: { cinemaId: number }) {
   const [newRoom, setNewRoom] = useState({ name: "", capacity: "" });
   const [selectedRoomId, setSelectedRoomId] = useState<number | null>(null);
 
-  const fetchRooms = async () => {
+  const fetchRooms = useCallback(async () => {
     try {
       setLoading(true);
-      const res = (await apiClient.get(`/admin/cinemas/${cinemaId}/rooms`)) as {
-        success: boolean;
-        data: Room[];
-      };
-      if (res.success) {
-        setRooms(res.data || []);
+      const res = await apiClient.get<ApiResponse<Room[]>>(
+        `/admin/cinemas/${cinemaId}/rooms`,
+      ) as unknown as ApiResponse<Room[]>;
+      
+      if (res.success && res.data) {
+        setRooms(res.data);
       }
     } catch (error) {
       console.error(error);
     } finally {
       setLoading(false);
     }
-  };
+  }, [cinemaId]);
 
   useEffect(() => {
     fetchRooms();
-  }, [cinemaId]);
+  }, [fetchRooms]);
 
   const handleCreateRoom = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -47,10 +48,10 @@ export default function RoomPanel({ cinemaId }: { cinemaId: number }) {
 
     setCreating(true);
     try {
-      const res = (await apiClient.post(`/admin/cinemas/${cinemaId}/rooms`, {
+      const res = await apiClient.post<ApiResponse<any>>(`/admin/cinemas/${cinemaId}/rooms`, {
         name: newRoom.name,
         capacity: parseInt(newRoom.capacity),
-      })) as { success: boolean; error?: string };
+      }) as unknown as ApiResponse<any>;
 
       if (res.success) {
         setNewRoom({ name: "", capacity: "" });

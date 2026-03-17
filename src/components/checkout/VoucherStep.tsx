@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { CheckCircle, XCircle, AlertTriangle, Loader2, X } from "lucide-react";
+import { ApiResponse } from "@/types/api";
 
 interface PromotionPreview {
   promotion_id: number;
@@ -46,41 +47,35 @@ export default function VoucherStep({
 
     try {
       const { apiClient } = await import("@/lib/api");
-      const res = await apiClient.post<
-        any,
+      const res = await apiClient.post<ApiResponse<PromotionPreview>>(
+        "/promotions/validate",
         {
-          success: boolean;
-          data?: PromotionPreview;
-          error?: string;
-          code?: string;
-          data_extra?: any;
-        }
-      >("/promotions/validate", {
-        code: code.trim(),
-        order_value: orderValue,
-      });
+          code: code.trim(),
+          order_value: orderValue,
+        },
+      ) as unknown as ApiResponse<PromotionPreview>;
 
       if (res.success && res.data) {
         setStatus("success");
         onVoucherApplied(res.data);
       } else {
         // Check specific error codes
-        if ((res as any).code === "ORDER_VALUE_TOO_LOW") {
-          const minVal = (res as any).data?.min_order_value || 0;
+        if (res.code === "ORDER_VALUE_TOO_LOW") {
+          const minVal = res.data_extra?.min_order_value || 0;
           setStatus("warning");
           setWarningData({ minOrderValue: minVal, currentAmount: orderValue });
         } else {
           setStatus("error");
-          setErrorMsg((res as any).error || "Mã giảm giá không hợp lệ.");
+          setErrorMsg(res.error || "Mã giảm giá không hợp lệ.");
         }
         onVoucherApplied(null);
       }
-    } catch (err: any) {
-      const errRes = err.response?.data;
+    } catch (err: unknown) {
+      const errRes = (err as any).response?.data as ApiResponse<any>;
       if (errRes?.code === "ORDER_VALUE_TOO_LOW") {
         setStatus("warning");
         setWarningData({
-          minOrderValue: errRes.data?.min_order_value || 0,
+          minOrderValue: errRes.data_extra?.min_order_value || 0,
           currentAmount: orderValue,
         });
       } else {

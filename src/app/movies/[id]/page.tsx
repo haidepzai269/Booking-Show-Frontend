@@ -78,34 +78,33 @@ export default function MovieDetail() {
     const fetchDetail = async () => {
       try {
         const [movieRes, showtimesRes, extraRes] = await Promise.all([
-          apiClient.get<void, { success: boolean; data: Movie }>(
-            `/movies/${id}`,
-          ),
-          apiClient.get<void, { success: boolean; data: Showtime[] }>(
+          apiClient.get<{ success: boolean; data: Movie }>(`/movies/${id}`),
+          apiClient.get<{ success: boolean; data: Showtime[] }>(
             `/movies/${id}/showtimes`,
           ),
           apiClient
-            .get<
-              void,
-              { success: boolean; data: ExtraInfo }
-            >(`/movies/${id}/extra`)
+            .get<{ success: boolean; data: ExtraInfo }>(`/movies/${id}/extra`)
             .catch(() => ({ data: null })), // Bỏ qua nếu lỗi
         ]);
 
-        if (movieRes.data) setMovie(movieRes.data);
-        if (extraRes?.data) {
-          setExtraInfo(extraRes.data);
+        const mData = (movieRes as any).data || movieRes;
+        const sData = (showtimesRes as any).data || showtimesRes;
+        const eData = (extraRes as any).data || extraRes;
+
+        if (mData.data) setMovie(mData.data);
+        if (eData?.data) {
+          setExtraInfo(eData.data);
           setIsLoadingExtra(false);
         } else {
           setIsLoadingExtra(false);
         }
-        if (showtimesRes.data) {
-          setShowtimes(showtimesRes.data);
+        if (sData.data) {
+          setShowtimes(sData.data);
 
           // Lấy ngày đầu tiên có lịch chiếu làm default
-          if (showtimesRes.data.length > 0) {
+          if (sData.data.length > 0) {
             const defaultDate = format(
-              new Date(showtimesRes.data[0].start_time),
+              new Date(sData.data[0].start_time),
               "yyyy-MM-dd",
             );
             setSelectedDate(defaultDate);

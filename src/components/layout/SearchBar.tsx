@@ -5,6 +5,8 @@ import { Search, X, Film, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { apiClient } from "@/lib/api";
+import { ApiResponse } from "@/types/api";
+import NextImage from "next/image";
 
 interface Movie {
   id: number;
@@ -46,10 +48,10 @@ export default function SearchBar({
 
     setIsLoading(true);
     try {
-      const res = await apiClient.get<any, { success: boolean; data: Movie[] }>(
+      const res = await apiClient.get<ApiResponse<Movie[]>>(
         `/movies/search?q=${encodeURIComponent(q)}&limit=6`,
-      );
-      if (res.data) {
+      ) as unknown as ApiResponse<Movie[]>;
+      if (res.success && res.data) {
         setResults(res.data);
         setIsOpen(true);
       } else {
@@ -175,9 +177,11 @@ export default function SearchBar({
                     {/* Thumbnail */}
                     <div className="w-10 h-14 flex-shrink-0 rounded-lg overflow-hidden bg-zinc-800">
                       {movie.poster_url ? (
-                        <img
+                        <NextImage
                           src={movie.poster_url}
                           alt={movie.title}
+                          width={40}
+                          height={56}
                           className="w-full h-full object-cover"
                         />
                       ) : (

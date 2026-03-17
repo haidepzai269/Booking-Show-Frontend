@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Loader2, Undo2, CheckCircle2, XCircle } from "lucide-react";
 import { apiClient } from "@/lib/api";
 
@@ -49,7 +49,7 @@ export default function RefundsPage() {
   const [loading, setLoading] = useState(true);
   const limit = 15;
 
-  const fetchRefunds = async () => {
+  const fetchRefunds = useCallback(async () => {
     try {
       setLoading(true);
       const res = (await apiClient.get(
@@ -64,11 +64,11 @@ export default function RefundsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [page, limit]);
 
   useEffect(() => {
     fetchRefunds();
-  }, [page]);
+  }, [fetchRefunds]);
 
   return (
     <div className="space-y-6">

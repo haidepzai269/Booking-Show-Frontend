@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { apiClient } from "@/lib/api";
 import Link from "next/link";
+import NextImage from "next/image";
 
 export interface Cinema {
   id: number;
@@ -46,12 +47,10 @@ export default function CinemasPage() {
       if (lat !== undefined && lng !== undefined) {
         url += `?lat=${lat}&lng=${lng}`;
       }
-      const res = await apiClient.get<
-        void,
-        { success: boolean; data: Cinema[] }
-      >(url);
-      if (res.data) {
-        setCinemas(res.data);
+      const res = await apiClient.get<{ success: boolean; data: Cinema[] }>(url);
+      const responseData = (res as any).data || res;
+      if (responseData.data) {
+        setCinemas(responseData.data);
       }
     } catch (error) {
       console.error("Failed to fetch cinemas:", error);
@@ -111,10 +110,12 @@ export default function CinemasPage() {
       {/* Hero Section */}
       <div className="relative h-[40vh] min-h-[400px] flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0">
-          <img
+          <NextImage
             src="https://images.unsplash.com/photo-1517604931442-7e0c8ed2963c?q=80&w=2070&auto=format&fit=crop"
             alt="Cinemas Hero"
-            className="w-full h-full object-cover"
+            fill
+            className="object-cover"
+            priority
           />
           <div className="absolute inset-0 bg-gradient-to-t from-background via-background/80 to-transparent" />
           <div className="absolute inset-0 bg-black/40" />
@@ -329,13 +330,14 @@ export default function CinemasPage() {
                 className="group relative bg-card rounded-3xl overflow-hidden border border-white/5 hover:border-primary/30 transition-all duration-500 hover:shadow-[0_10px_40px_rgba(229,9,20,0.1)]"
               >
                 <div className="relative h-56 overflow-hidden">
-                  <img
+                  <NextImage
                     src={
                       cinema.image_url ||
                       "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?q=80&w=2070&auto=format&fit=crop"
                     }
                     alt={cinema.name}
-                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                    fill
+                    className="object-cover transition-transform duration-700 group-hover:scale-110"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-background to-transparent opacity-80" />
 

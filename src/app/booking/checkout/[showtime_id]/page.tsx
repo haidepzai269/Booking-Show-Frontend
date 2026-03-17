@@ -104,7 +104,6 @@ function CheckoutContent() {
   const [orderId, setOrderId] = useState<string | null>(null);
 
   // Data từ query params + API
-  const [selectedSeatIds, setSelectedSeatIds] = useState<number[]>([]);
   const [seatDetails, setSeatDetails] = useState<SeatInfo[]>([]);
   const [showtimeInfo, setShowtimeInfo] = useState<ShowtimeInfo | null>(null);
   const [concessions, setConcessions] = useState<Concession[]>([]);
@@ -196,7 +195,7 @@ function CheckoutContent() {
             const orderSeatIds: number[] = (order.order_seats || []).map(
               (os: OrderSeat) => os.showtime_seat_id,
             );
-            setSelectedSeatIds(orderSeatIds);
+            // setSelectedSeatIds(orderSeatIds);
 
             if (seatsRes.data) {
               const relevantSeats = seatsRes.data.filter((s: SeatAPIResponse) =>
@@ -229,7 +228,7 @@ function CheckoutContent() {
             .split(",")
             .map((id) => parseInt(id))
             .filter((id) => !isNaN(id));
-          setSelectedSeatIds(ids);
+          // setSelectedSeatIds(ids);
 
           // Load thông tin showtime + seat details song song
           const [seatsRes, stRes] = await Promise.all([

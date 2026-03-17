@@ -15,7 +15,6 @@ import {
   RefreshCw,
   Minimize2,
   Loader2,
-  Minus,
   Maximize2,
   Trash2,
 } from "lucide-react";
@@ -24,6 +23,7 @@ import { apiClient } from "@/lib/api";
 import { useAuthStore } from "@/store/authStore";
 import { v4 as uuidv4 } from "uuid";
 import { useChatStore } from "@/store/chatStore";
+import { ApiResponse, ChatMessageResponse, FAQItem } from "@/types/api";
 
 interface ChatMessage {
   id: string;
@@ -33,10 +33,7 @@ interface ChatMessage {
   timestamp: Date;
 }
 
-interface FAQItem {
-  question: string;
-  answer: string;
-}
+// Types moved to @/types/api
 
 export default function AIChatbot() {
   const { t } = useTranslation();
@@ -92,13 +89,13 @@ export default function AIChatbot() {
 
       const fetchHistory = async () => {
         try {
-          const res = await apiClient.get<any, { success: boolean; data: any[] }>(
+          const res = await apiClient.get<ApiResponse<ChatMessageResponse[]>>(
             `/chat/history?session_id=${sessionId}`,
-          );
+          ) as unknown as ApiResponse<ChatMessageResponse[]>;
           if (res.success && res.data && res.data.length > 0) {
             setChatHistory([
               WELCOME_MESSAGE,
-              ...res.data.map((msg: any) => ({
+              ...res.data.map((msg: ChatMessageResponse) => ({
                 id: msg.id || Math.random().toString(),
                 role: (msg.role === "assistant" ? "ai" : msg.role) as "user" | "ai",
                 content: msg.content,
@@ -114,8 +111,7 @@ export default function AIChatbot() {
       
       fetchHistory();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sessionId, user, mounted]);
+  }, [sessionId, user, mounted, WELCOME_MESSAGE]);
 
   // Auto scroll
   useEffect(() => {
@@ -133,10 +129,11 @@ export default function AIChatbot() {
   useEffect(() => {
     if (mounted && topFAQs.length === 0) {
       apiClient
-        .get<any, { success: boolean; data: FAQItem[] }>("/faq/top")
+        .get<ApiResponse<FAQItem[]>>("/faq/top")
         .then((res) => {
-          if (res.success && res.data && res.data.length > 0) {
-            setTopFAQs(res.data);
+          const responseData = (res as unknown) as ApiResponse<FAQItem[]>;
+          if (responseData.success && responseData.data && responseData.data.length > 0) {
+            setTopFAQs(responseData.data);
           }
         })
         .catch(console.error);
@@ -198,13 +195,8 @@ export default function AIChatbot() {
 
       try {
         const res = await apiClient.post<
-          any,
-          {
-            success: boolean;
-            data?: { answer: string; from_cache: boolean };
-            error?: string;
-          }
-        >("/faq/ask", { question: userQ, session_id: sessionId });
+          ApiResponse<{ answer: string; from_cache: boolean }>
+        >("/faq/ask", { question: userQ, session_id: sessionId }) as unknown as ApiResponse<{ answer: string; from_cache: boolean }>;
 
         if (res.success && res.data) {
           setChatHistory((prev) => [
@@ -221,13 +213,14 @@ export default function AIChatbot() {
         } else {
           throw new Error(res.error || "Không nhận được phản hồi từ AI");
         }
-      } catch (err: any) {
+      } catch (err: unknown) {
+        const errorMsg = (err as Error).message || t('chatbot.error_msg', { defaultValue: "Đã có lỗi kết nối với máy chủ AI. Xin thử lại sau." });
         setChatHistory((prev) => [
           ...prev,
           {
             id: Date.now().toString(),
             role: "ai",
-            content: err.message || t('chatbot.error_msg', { defaultValue: "Đã có lỗi kết nối với máy chủ AI. Xin thử lại sau." }),
+            content: errorMsg,
             timestamp: new Date(),
           },
         ]);
@@ -235,7 +228,7 @@ export default function AIChatbot() {
         setIsTyping(false);
       }
     },
-    [question, isOpen, isTyping, sessionId, t, WELCOME_MESSAGE]
+    [question, isOpen, isTyping, sessionId, t]
   );
 
   const formatContent = (content: string) => {

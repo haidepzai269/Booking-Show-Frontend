@@ -18,7 +18,7 @@ export default function TrailerModal({
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
+    requestAnimationFrame(() => setMounted(true));
   }, []);
 
   // Lock body scroll when modal is open

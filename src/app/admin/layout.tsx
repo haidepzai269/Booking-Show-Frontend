@@ -38,7 +38,7 @@ export default function AdminLayout({
   const [collapsed, setCollapsed] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
+    requestAnimationFrame(() => setMounted(true));
   }, []);
 
   useEffect(() => {

@@ -1,14 +1,14 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { apiClient } from "@/lib/api";
 import { useAuthStore } from "@/store/authStore";
 import StatsCard from "@/components/admin/StatsCard";
 import RecentOrdersTable from "@/components/admin/RecentOrdersTable";
-import { motion } from "framer-motion";
 import { Responsive, WidthProvider } from "react-grid-layout/legacy";
 import "react-grid-layout/css/styles.css";
 import "react-resizable/css/styles.css";
+
 import {
   DollarSign,
   ShoppingBag,
@@ -17,7 +17,6 @@ import {
   Film,
   CalendarDays,
   TrendingUp,
-  ArrowUpRight,
   Undo2,
 } from "lucide-react";
 
@@ -276,13 +275,6 @@ function formatRevShort(amount: number) {
   return `${amount}`;
 }
 
-function formatVND(amount: number) {
-  return new Intl.NumberFormat("vi-VN", {
-    style: "currency",
-    currency: "VND",
-  }).format(amount);
-}
-
 // --- Donut Chart ---
 function DonutChart({
   data,
@@ -292,7 +284,6 @@ function DonutChart({
   colors: string[];
 }) {
   const total = data.reduce((acc, curr) => acc + curr.value, 0);
-  let cumulativePercent = 0;
 
   const getCoordinatesForPercent = (percent: number) => {
     const x = Math.cos(2 * Math.PI * percent - Math.PI / 2);
@@ -300,16 +291,24 @@ function DonutChart({
     return [x, y];
   };
 
+  const dataWithPercents = useMemo(() => {
+    return data.reduce((acc: { label: string; value: number; percent: number; start: number }[], item) => {
+      const prev = acc.length > 0 ? acc[acc.length - 1] : { start: 0, percent: 0 };
+      const start = prev.start + prev.percent;
+      const percent = total > 0 ? item.value / total : 0;
+      acc.push({ ...item, percent, start });
+      return acc;
+    }, []);
+  }, [data, total]);
+
   return (
     <div className="flex items-center gap-6">
       <div className="w-24 h-24 relative">
         <svg viewBox="-1 -1 2 2" style={{ transform: "rotate(-90deg)" }}>
-          {data.map((item, index) => {
+          {dataWithPercents.map((item: { value: number; label: string; percent: number; start: number }, index: number) => {
             if (item.value === 0) return null;
-            const percent = item.value / total;
-            const [startX, startY] =
-              getCoordinatesForPercent(cumulativePercent);
-            cumulativePercent += percent;
+            const { percent, start } = item;
+            const [startX, startY] = getCoordinatesForPercent(start);
 
             // Handle when single item is 100%
             if (percent === 1) {
@@ -326,7 +325,7 @@ function DonutChart({
               );
             }
 
-            const [endX, endY] = getCoordinatesForPercent(cumulativePercent);
+            const [endX, endY] = getCoordinatesForPercent(start + percent);
             const largeArcFlag = percent > 0.5 ? 1 : 0;
             const pathData = [
               `M ${startX * 0.8} ${startY * 0.8}`, // Move
@@ -390,21 +389,20 @@ const DEFAULT_LAYOUTS = {
 export default function AdminDashboardPage() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [layouts, setLayouts] = useState<Record<string, any>>(DEFAULT_LAYOUTS);
   const [currentBreakpoint, setCurrentBreakpoint] = useState("lg");
 
   const fetchStats = async () => {
     try {
-      const res = (await apiClient.get("/admin/stats")) as {
+      const res = (await apiClient.get<void, {
         success: boolean;
         data: DashboardStats;
-      };
+      }>("/admin/stats")) ;
       if (res.success) {
         setStats(res.data);
       }
     } catch (err) {
-      setError("Không thể tải dữ liệu thống kê");
       console.error(err);
     } finally {
       setLoading(false);
@@ -440,6 +438,7 @@ export default function AdminDashboardPage() {
     return () => eventSource.close();
   }, []);
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const onLayoutChange = (currentLayout: unknown, allLayouts: any) => {
     setLayouts(allLayouts);
     localStorage.setItem("admin-dashboard-layout", JSON.stringify(allLayouts));
@@ -664,7 +663,7 @@ export default function AdminDashboardPage() {
   );
 }
 
-function WidgetWrapper({ children, title }: { children: React.ReactNode, title: string }) {
+function WidgetWrapper({ children }: { children: React.ReactNode, title: string }) {
   return (
     <div className="group/widget h-full relative">
       {/* Drag Handle Overlay */}

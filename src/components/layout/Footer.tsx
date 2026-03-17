@@ -16,7 +16,6 @@ import {
   Layers,
   Tag,
   Info,
-  Send,
   ArrowRight,
   Shield,
   HelpCircle,
@@ -24,13 +23,13 @@ import {
   Globe,
   Ticket,
   CheckCircle,
-  XCircle,
   Loader2,
   X
 } from "lucide-react";
 import { useAuthStore } from "@/store/authStore";
 import { apiClient } from "@/lib/api";
 import { toast } from "react-hot-toast";
+import { ApiResponse } from "@/types/api";
 
 export default function Footer() {
   const { t } = useTranslation();
@@ -43,6 +42,11 @@ export default function Footer() {
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
 
+  interface SubscriptionStatus {
+    subscribed: boolean;
+    email?: string;
+  }
+
   useEffect(() => {
     setMounted(true);
   }, []);
@@ -54,10 +58,12 @@ export default function Footer() {
         return;
       }
       try {
-        const res = await apiClient.get("/promotions/subscription-status") as any;
-        if (res.subscribed) {
-          setIsSubscribed(true);
-          setEmail(res.email || "");
+        const res = await apiClient.get<ApiResponse<SubscriptionStatus>>(
+          "/promotions/subscription-status",
+        ) as unknown as ApiResponse<SubscriptionStatus>;
+        if (res.success && res.data) {
+          setIsSubscribed(res.data.subscribed);
+          setEmail(res.data.email || "");
         } else {
           setIsSubscribed(false);
         }
@@ -237,16 +243,19 @@ export default function Footer() {
                         if (!email) return;
                         setIsSubscribing(true);
                         try {
-                          const res = await apiClient.post<any, {success: boolean, message: string, error?: string}>("/promotions/subscribe", { email });
+                          const res = await apiClient.post<ApiResponse<void>>(
+                            "/promotions/subscribe",
+                            { email },
+                          ) as unknown as ApiResponse<void>;
                           if (res.success) {
                             setIsSubscribed(true);
-                            setSuccessMessage(res.message);
+                            setSuccessMessage(res.message || "");
                             toast.success("Đăng ký thành công!");
                           } else {
                             toast.error(res.error || "Có lỗi xảy ra");
                           }
-                        } catch (err: any) {
-                          toast.error(err.response?.data?.error || "Không thể đăng ký lúc này");
+                        } catch (err: unknown) {
+                          toast.error((err as any).response?.data?.error || "Không thể đăng ký lúc này");
                         } finally {
                           setIsSubscribing(false);
                         }
