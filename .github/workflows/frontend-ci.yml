@@ -22,26 +22,21 @@ jobs:
       with:
         node-version: '20'
         cache: 'pnpm'
-        cache-dependency-path: './booking-show-web/pnpm-lock.yaml'
+        cache-dependency-path: './pnpm-lock.yaml'
 
     - name: Install dependencies
-      working-directory: ./booking-show-web
       run: pnpm install
 
     - name: Run Lint
-      working-directory: ./booking-show-web
       run: pnpm lint
 
     - name: Build
-      working-directory: ./booking-show-web
       run: pnpm build
 
     - name: Install Playwright Browsers
-      working-directory: ./booking-show-web
       run: pnpm exec playwright install --with-deps
 
     - name: Run Playwright tests
-      working-directory: ./booking-show-web
       run: pnpm exec playwright test
 
     - name: Upload Playwright report
@@ -49,7 +44,7 @@ jobs:
       if: always()
       with:
         name: playwright-report
-        path: ./booking-show-web/playwright-report/
+        path: ./playwright-report/
         retention-days: 30
 
   deploy:
@@ -61,11 +56,8 @@ jobs:
       - name: Install Vercel CLI
         run: npm install --global vercel@latest
       - name: Pull Vercel Project Information
-        working-directory: ./booking-show-web
         run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
       - name: Build Project Artifacts
-        working-directory: ./booking-show-web
         run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
       - name: Deploy Project Artifacts to Vercel
-        working-directory: ./booking-show-web
         run: vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}
