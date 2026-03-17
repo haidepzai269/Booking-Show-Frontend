@@ -47,7 +47,7 @@ export default function CinemasPage() {
         url += `?lat=${lat}&lng=${lng}`;
       }
       const res = await apiClient.get<
-        any,
+        void,
         { success: boolean; data: Cinema[] }
       >(url);
       if (res.data) {

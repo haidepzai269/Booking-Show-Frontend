@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { Plus, Pencil, Trash2, Megaphone, Eye, EyeOff } from "lucide-react";
+import NextImage from "next/image";
 import { apiClient } from "@/lib/api";
 
 interface Campaign {
@@ -195,12 +196,13 @@ export default function AdminCampaignsPage() {
                     {/* Title + Thumbnail */}
                     <td className="px-5 py-3.5">
                       <div className="flex items-center gap-3 max-w-xs">
-                        <div className="w-14 h-10 rounded-md bg-zinc-800 overflow-hidden shrink-0 border border-zinc-700">
+                        <div className="w-14 h-10 rounded-md bg-zinc-800 overflow-hidden shrink-0 border border-zinc-700 relative">
                           {c.thumbnail_url ? (
-                            <img
+                            <NextImage
                               src={c.thumbnail_url}
                               alt={c.title}
-                              className="w-full h-full object-cover"
+                              fill
+                              className="object-cover"
                             />
                           ) : (
                             <div className="w-full h-full flex items-center justify-center">

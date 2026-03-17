@@ -79,8 +79,8 @@ function MoviesContent() {
     const fetchAll = async () => {
       try {
         const [moviesRes, genresRes] = await Promise.all([
-          apiClient.get<any, { success: boolean; data: Movie[] }>("/movies/"),
-          apiClient.get<any, { success: boolean; data: Genre[] }>("/genres/"),
+          apiClient.get<void, { success: boolean; data: Movie[] }>("/movies/"),
+          apiClient.get<void, { success: boolean; data: Genre[] }>("/genres/"),
         ]);
         if (moviesRes.success && moviesRes.data) setAllMovies(moviesRes.data);
         if (genresRes.success && genresRes.data) setGenres(genresRes.data);

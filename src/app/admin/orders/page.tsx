@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Search, Loader2, Eye, Receipt } from "lucide-react";
 import OrderDetailModal from "@/components/admin/orders/OrderDetailModal";
 import { apiClient } from "@/lib/api";
@@ -30,7 +30,7 @@ export default function AdminOrdersPage() {
 
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
 
-  const fetchOrders = async () => {
+  const fetchOrders = useCallback(async () => {
     try {
       setLoading(true);
       const res = (await apiClient.get(
@@ -45,11 +45,11 @@ export default function AdminOrdersPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [page, search]);
 
   useEffect(() => {
     fetchOrders();
-  }, [page, search]);
+  }, [fetchOrders]);
 
   return (
     <div className="space-y-6">

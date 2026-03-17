@@ -391,7 +391,7 @@ export default function AdminDashboardPage() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [layouts, setLayouts] = useState<any>(DEFAULT_LAYOUTS);
+  const [layouts, setLayouts] = useState<Record<string, any>>(DEFAULT_LAYOUTS);
   const [currentBreakpoint, setCurrentBreakpoint] = useState("lg");
 
   const fetchStats = async () => {
@@ -440,7 +440,7 @@ export default function AdminDashboardPage() {
     return () => eventSource.close();
   }, []);
 
-  const onLayoutChange = (currentLayout: any, allLayouts: any) => {
+  const onLayoutChange = (currentLayout: unknown, allLayouts: any) => {
     setLayouts(allLayouts);
     localStorage.setItem("admin-dashboard-layout", JSON.stringify(allLayouts));
   };

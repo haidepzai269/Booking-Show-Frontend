@@ -78,15 +78,15 @@ export default function MovieDetail() {
     const fetchDetail = async () => {
       try {
         const [movieRes, showtimesRes, extraRes] = await Promise.all([
-          apiClient.get<any, { success: boolean; data: Movie }>(
+          apiClient.get<void, { success: boolean; data: Movie }>(
             `/movies/${id}`,
           ),
-          apiClient.get<any, { success: boolean; data: Showtime[] }>(
+          apiClient.get<void, { success: boolean; data: Showtime[] }>(
             `/movies/${id}/showtimes`,
           ),
           apiClient
             .get<
-              any,
+              void,
               { success: boolean; data: ExtraInfo }
             >(`/movies/${id}/extra`)
             .catch(() => ({ data: null })), // Bỏ qua nếu lỗi

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { X, Upload, Loader2, Building2 } from "lucide-react";
+import NextImage from "next/image";
 import { apiClient } from "@/lib/api";
 
 interface Cinema {
@@ -160,12 +161,13 @@ export default function CinemaFormModal({
               Ảnh đại diện rạp
             </label>
             <div className="flex items-center gap-6">
-              <div className="w-32 h-32 rounded-xl bg-zinc-800 border border-zinc-700 overflow-hidden flex items-center justify-center shrink-0">
+              <div className="w-32 h-32 rounded-xl bg-zinc-800 border border-zinc-700 overflow-hidden flex items-center justify-center shrink-0 relative">
                 {formData.image_url ? (
-                  <img
+                  <NextImage
                     src={formData.image_url}
                     alt="Preview"
-                    className="w-full h-full object-cover"
+                    fill
+                    className="object-cover"
                   />
                 ) : (
                   <Building2 className="w-8 h-8 text-zinc-600" />

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { Plus, Pencil, Trash2, Popcorn } from "lucide-react";
+import NextImage from "next/image";
 import ConcessionFormModal from "@/components/admin/concessions/ConcessionFormModal";
 import { apiClient } from "@/lib/api";
 
@@ -138,12 +139,13 @@ export default function ConcessionsPage() {
                   >
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 rounded-lg bg-zinc-800 flex items-center justify-center overflow-hidden shrink-0">
+                        <div className="w-12 h-12 rounded-lg bg-zinc-800 flex items-center justify-center overflow-hidden shrink-0 relative">
                           {c.image_url ? (
-                            <img
+                            <NextImage
                               src={c.image_url}
                               alt={c.name}
-                              className="w-full h-full object-cover"
+                              fill
+                              className="object-cover"
                             />
                           ) : (
                             <Popcorn className="w-6 h-6 text-zinc-500" />

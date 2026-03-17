@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import NextImage from "next/image";
 import { ArrowLeft, Upload, Megaphone, Save, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { apiClient } from "@/lib/api";
@@ -238,14 +239,12 @@ export default function CreateCampaignPage() {
                 className="w-full bg-zinc-800 border border-zinc-700 text-white rounded-lg px-4 py-2.5 focus:outline-none focus:border-orange-500 transition-colors placeholder:text-zinc-600 text-sm"
               />
               {form.thumbnail_url && (
-                <div className="mt-2 rounded-lg overflow-hidden border border-zinc-700 aspect-video">
-                  <img
+                <div className="mt-2 rounded-lg overflow-hidden border border-zinc-700 aspect-video relative">
+                  <NextImage
                     src={form.thumbnail_url}
                     alt="Thumbnail"
-                    className="w-full h-full object-cover"
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).style.display = "none";
-                    }}
+                    fill
+                    className="object-cover"
                   />
                 </div>
               )}
@@ -262,14 +261,12 @@ export default function CreateCampaignPage() {
                 className="w-full bg-zinc-800 border border-zinc-700 text-white rounded-lg px-4 py-2.5 focus:outline-none focus:border-orange-500 transition-colors placeholder:text-zinc-600 text-sm"
               />
               {form.banner_url && (
-                <div className="mt-2 rounded-lg overflow-hidden border border-zinc-700 aspect-video">
-                  <img
+                <div className="mt-2 rounded-lg overflow-hidden border border-zinc-700 aspect-video relative">
+                  <NextImage
                     src={form.banner_url}
                     alt="Banner"
-                    className="w-full h-full object-cover"
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).style.display = "none";
-                    }}
+                    fill
+                    className="object-cover"
                   />
                 </div>
               )}
@@ -292,10 +289,11 @@ export default function CreateCampaignPage() {
               <div className="rounded-lg overflow-hidden bg-zinc-800 border border-zinc-700">
                 <div className="aspect-video bg-zinc-700 relative">
                   {form.thumbnail_url ? (
-                    <img
+                    <NextImage
                       src={form.thumbnail_url}
                       alt=""
-                      className="w-full h-full object-cover"
+                      fill
+                      className="object-cover"
                     />
                   ) : (
                     <div className="absolute inset-0 flex items-center justify-center">

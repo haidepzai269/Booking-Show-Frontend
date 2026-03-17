@@ -7,9 +7,9 @@ import {
   Calendar,
   Clock,
   CreditCard,
-  Armchair,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
+import NextImage from "next/image";
 import { apiClient } from "@/lib/api";
 
 interface Props {
@@ -18,22 +18,41 @@ interface Props {
   orderId: string | null;
 }
 
+interface OrderDetail {
+  id: string;
+  status: string;
+  original_amount: number;
+  discount_amount: number;
+  final_amount: number;
+  User?: {
+    full_name: string;
+    email: string;
+  };
+  showtime?: {
+    start_time: string;
+    movie?: {
+      title: string;
+      poster_url: string;
+    };
+    room?: {
+      name: string;
+      cinema?: {
+        name: string;
+      };
+    };
+  };
+}
+
 export default function OrderDetailModal({ isOpen, onClose, orderId }: Props) {
-  const [order, setOrder] = useState<any>(null);
+  const [order, setOrder] = useState<OrderDetail | null>(null);
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    if (isOpen && orderId) {
-      fetchOrderDetails();
-    }
-  }, [isOpen, orderId]);
-
-  const fetchOrderDetails = async () => {
+  const fetchOrderDetails = useCallback(async () => {
     setLoading(true);
     try {
       const res = (await apiClient.get(`/admin/orders/${orderId}`)) as {
         success: boolean;
-        data: unknown;
+        data: OrderDetail;
       };
       if (res.success) {
         setOrder(res.data);
@@ -43,7 +62,13 @@ export default function OrderDetailModal({ isOpen, onClose, orderId }: Props) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [orderId]);
+
+  useEffect(() => {
+    if (isOpen && orderId) {
+      fetchOrderDetails();
+    }
+  }, [isOpen, orderId, fetchOrderDetails]);
 
   if (!isOpen) return null;
 
@@ -120,11 +145,13 @@ export default function OrderDetailModal({ isOpen, onClose, orderId }: Props) {
                   Suất chiếu
                 </h4>
                 <div className="flex gap-4">
-                  <div className="w-20 h-28 bg-zinc-800 rounded-lg overflow-hidden shrink-0">
+                  <div className="w-20 h-28 bg-zinc-800 rounded-lg overflow-hidden shrink-0 relative">
                     {order.showtime?.movie?.poster_url && (
-                      <img
+                      <NextImage
                         src={order.showtime.movie.poster_url}
-                        className="w-full h-full object-cover"
+                        alt={order.showtime.movie.title}
+                        fill
+                        className="object-cover"
                       />
                     )}
                   </div>
@@ -139,13 +166,13 @@ export default function OrderDetailModal({ isOpen, onClose, orderId }: Props) {
                     </p>
                     <p className="flex items-center gap-2">
                       <Calendar className="w-4 h-4 text-zinc-500" />{" "}
-                      {new Date(order.showtime?.start_time).toLocaleDateString(
+                      {order.showtime?.start_time && new Date(order.showtime.start_time).toLocaleDateString(
                         "vi-VN",
                       )}
                     </p>
                     <p className="flex items-center gap-2">
                       <Clock className="w-4 h-4 text-zinc-500" />{" "}
-                      {new Date(order.showtime?.start_time).toLocaleTimeString(
+                      {order.showtime?.start_time && new Date(order.showtime.start_time).toLocaleTimeString(
                         "vi-VN",
                         { hour: "2-digit", minute: "2-digit" },
                       )}
