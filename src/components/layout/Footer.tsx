@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useTranslation } from "react-i18next";
 import { motion, AnimatePresence } from "framer-motion";
+import { usePathname } from "next/navigation";
 import { 
   Facebook, 
   Twitter, 
@@ -22,17 +23,31 @@ import {
   Sparkles,
   Globe,
   Ticket,
+  CheckCircle,
+  XCircle,
+  Loader2,
+  X
 } from "lucide-react";
+import { useAuthStore } from "@/store/authStore";
+import { apiClient } from "@/lib/api";
+import { toast } from "react-hot-toast";
 
 export default function Footer() {
   const { t } = useTranslation();
+  const pathname = usePathname();
+  const { user } = useAuthStore();
   const [mounted, setMounted] = useState(false);
   const [activeTab, setActiveTab] = useState<string>("");
   const [email, setEmail] = useState("");
+  const [isSubscribing, setIsSubscribing] = useState(false);
+  const [isSubscribed, setIsSubscribed] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
 
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  if (pathname.startsWith("/admin")) return null;
 
   const toggleTab = (tab: string) => {
     setActiveTab(activeTab === tab ? "" : tab);
@@ -153,28 +168,93 @@ export default function Footer() {
             </div>
           </div>
 
-          <div className="bg-white/[0.03] border border-white/10 rounded-[2.5rem] p-8 md:p-10 backdrop-blur-xl relative group">
-            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent rounded-[2.5rem] pointer-events-none" />
-            <h4 className="text-xl font-black text-white mb-2 flex items-center gap-2 uppercase tracking-wide">
-              Đăng ký nhận ưu đãi <Sparkles className="w-5 h-5 text-primary animate-pulse" />
-            </h4>
-            <p className="text-white/40 text-sm mb-6">Nhận thông tin về các bộ phim bom tấn và hàng ngàn voucher giảm giá mỗi tuần.</p>
-            <form className="flex flex-col sm:flex-row gap-3">
-              <div className="relative flex-1 group/input">
-                 <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/20 group-focus-within/input:text-primary transition-colors" />
-                 <input 
-                  type="email" 
-                  placeholder="Email của bạn..." 
-                  className="w-full bg-black/40 border border-white/10 rounded-2xl py-4 pl-12 pr-4 text-white focus:outline-none focus:border-primary/50 focus:ring-4 focus:ring-primary/10 transition-all placeholder:text-white/20"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                 />
-              </div>
-              <button className="bg-primary hover:bg-rose-700 text-white font-black py-4 px-8 rounded-2xl transition-all shadow-[0_10px_20px_rgba(229,9,20,0.2)] active:scale-95 flex items-center justify-center gap-2 group/btn shrink-0">
-                GỬI NGAY <ArrowRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
-              </button>
-            </form>
-          </div>
+          <AnimatePresence mode="wait">
+            {!mounted ? (
+              <div className="bg-white/[0.03] border border-white/10 rounded-[2.5rem] p-8 md:p-10 backdrop-blur-xl h-[200px] animate-pulse" />
+            ) : user ? (
+              <motion.div 
+                key={isSubscribed ? "success" : "form"}
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 1.05 }}
+                className="bg-white/[0.03] border border-white/10 rounded-[2.5rem] p-8 md:p-10 backdrop-blur-xl relative group overflow-hidden"
+              >
+                <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent rounded-[2.5rem] pointer-events-none" />
+                
+                {isSubscribed ? (
+                  <div className="flex flex-col items-center justify-center text-center py-6 space-y-4">
+                    <motion.div 
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      transition={{ type: "spring", damping: 12 }}
+                      className="w-20 h-20 bg-green-500/20 rounded-full flex items-center justify-center border border-green-500/30"
+                    >
+                      <CheckCircle className="w-10 h-10 text-green-500" />
+                    </motion.div>
+                    <div className="space-y-2">
+                      <h4 className="text-2xl font-black text-green-500 uppercase tracking-wide">
+                        ĐĂNG KÝ THÀNH CÔNG!
+                      </h4>
+                      <p className="text-white/60 font-medium">
+                        {successMessage || "Hệ thống đã ghi nhớ bạn! Ưu đãi sẽ sớm đổ bộ vào hòm thư của bạn 🚀"}
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    <h4 className="text-xl font-black text-white mb-2 flex items-center gap-2 uppercase tracking-wide">
+                      Đăng ký nhận ưu đãi <Sparkles className="w-5 h-5 text-primary animate-pulse" />
+                    </h4>
+                    <p className="text-white/40 text-sm mb-6">Nhận thông tin về các bộ phim bom tấn và hàng ngàn voucher giảm giá mỗi tuần.</p>
+                    <form 
+                      className="flex flex-col sm:row gap-3"
+                      onSubmit={async (e) => {
+                        e.preventDefault();
+                        if (!email) return;
+                        setIsSubscribing(true);
+                        try {
+                          const res = await apiClient.post<any, {success: boolean, message: string, error?: string}>("/promotions/subscribe", { email });
+                          if (res.success) {
+                            setIsSubscribed(true);
+                            setSuccessMessage(res.message);
+                            toast.success("Đăng ký thành công!");
+                          } else {
+                            toast.error(res.error || "Có lỗi xảy ra");
+                          }
+                        } catch (err: any) {
+                          toast.error(err.response?.data?.error || "Không thể đăng ký lúc này");
+                        } finally {
+                          setIsSubscribing(false);
+                        }
+                      }}
+                    >
+                      <div className="relative flex-1 group/input">
+                        <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/20 group-focus-within/input:text-primary transition-colors" />
+                        <input 
+                          type="email" 
+                          required
+                          placeholder="Email của bạn..." 
+                          className="w-full bg-black/40 border border-white/10 rounded-2xl py-4 pl-12 pr-4 text-white focus:outline-none focus:border-primary/50 focus:ring-4 focus:ring-primary/10 transition-all placeholder:text-white/20"
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                        />
+                      </div>
+                      <button 
+                        disabled={isSubscribing}
+                        className="bg-primary hover:bg-rose-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-black py-4 px-8 rounded-2xl transition-all shadow-[0_10px_20px_rgba(229,9,20,0.2)] active:scale-95 flex items-center justify-center gap-2 group/btn shrink-0"
+                      >
+                        {isSubscribing ? (
+                          <Loader2 className="w-5 h-5 animate-spin" />
+                        ) : (
+                          <>GỬI NGAY <ArrowRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" /></>
+                        )}
+                      </button>
+                    </form>
+                  </>
+                )}
+              </motion.div>
+            ) : null}
+          </AnimatePresence>
         </div>
 
         {/* Middle Section: Links Grid */}
@@ -285,7 +365,3 @@ export default function Footer() {
   );
 }
 
-// Re-using the Close icon from Lucide since I redefined X
-const X = ({ className }: { className?: string }) => (
-  <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
-);

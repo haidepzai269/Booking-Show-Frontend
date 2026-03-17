@@ -42,7 +42,14 @@ export default function QuickBookingIsland() {
       return;
     }
     const handleScroll = () => {
-      if (window.scrollY > 300) {
+      const scrollY = window.scrollY;
+      const windowHeight = window.innerHeight;
+      const documentHeight = document.documentElement.scrollHeight;
+      
+      // Kiểm tra nếu cách đáy trang ít hơn 300px (vùng của Footer)
+      const isAtBottom = (scrollY + windowHeight) > (documentHeight - 300);
+
+      if (scrollY > 300 && !isAtBottom) {
         setIsVisible(true);
       } else {
         setIsVisible(false);

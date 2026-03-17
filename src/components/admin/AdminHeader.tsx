@@ -6,7 +6,8 @@ import AdminNotification from "./AdminNotification";
 import { ThemeSelector } from "./ThemeSelector";
 import { useAuthStore } from "@/store/authStore";
 import { useSidebar } from "@/app/admin/layout";
-import { Menu, PanelLeftClose, PanelLeftOpen } from "lucide-react";
+import Link from "next/link";
+import { Menu, PanelLeftClose, PanelLeftOpen, Home } from "lucide-react";
 
 const breadcrumbMap: Record<string, string> = {
   "/admin": "Dashboard",
@@ -68,6 +69,13 @@ export default function AdminHeader() {
 
       {/* Right side */}
       <div className="flex items-center gap-2">
+        <Link 
+          href="/" 
+          className="w-9 h-9 rounded-lg bg-white/5 flex items-center justify-center text-white/50 hover:text-white hover:bg-white/10 transition-all group"
+          title="Quay về trang chủ"
+        >
+          <Home size={18} className="group-hover:scale-110 transition-transform" />
+        </Link>
         <ThemeSelector />
         <AdminSearchBar />
         <AdminNotification />

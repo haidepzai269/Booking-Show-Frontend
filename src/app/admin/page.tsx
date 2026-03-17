@@ -5,6 +5,10 @@ import { apiClient } from "@/lib/api";
 import { useAuthStore } from "@/store/authStore";
 import StatsCard from "@/components/admin/StatsCard";
 import RecentOrdersTable from "@/components/admin/RecentOrdersTable";
+import { motion } from "framer-motion";
+import { Responsive, WidthProvider } from "react-grid-layout/legacy";
+import "react-grid-layout/css/styles.css";
+import "react-resizable/css/styles.css";
 import {
   DollarSign,
   ShoppingBag,
@@ -13,6 +17,8 @@ import {
   Film,
   CalendarDays,
   TrendingUp,
+  ArrowUpRight,
+  Undo2,
 } from "lucide-react";
 
 interface ChartData {
@@ -364,10 +370,29 @@ function DonutChart({
   );
 }
 
+const ResponsiveGridLayout = WidthProvider(Responsive);
+
+const DEFAULT_LAYOUTS = {
+  lg: [
+    { i: "stats-revenue", x: 0, y: 0, w: 2, h: 4 },
+    { i: "stats-orders", x: 2, y: 0, w: 2, h: 4 },
+    { i: "stats-users", x: 4, y: 0, w: 2, h: 4 },
+    { i: "stats-tickets", x: 6, y: 0, w: 2, h: 4 },
+    { i: "stats-movies", x: 8, y: 0, w: 2, h: 4 },
+    { i: "chart-revenue", x: 0, y: 4, w: 4, h: 14 },
+    { i: "table-orders", x: 4, y: 4, w: 8, h: 14 },
+    { i: "chart-user-donut", x: 0, y: 18, w: 4, h: 10 },
+    { i: "chart-order-donut", x: 4, y: 18, w: 4, h: 10 },
+    { i: "system-info", x: 8, y: 18, w: 4, h: 10 },
+  ],
+};
+
 export default function AdminDashboardPage() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [layouts, setLayouts] = useState<any>(DEFAULT_LAYOUTS);
+  const [currentBreakpoint, setCurrentBreakpoint] = useState("lg");
 
   const fetchStats = async () => {
     try {
@@ -388,65 +413,46 @@ export default function AdminDashboardPage() {
 
   useEffect(() => {
     fetchStats();
+    
+    // Load layouts from local storage
+    const savedLayouts = localStorage.getItem("admin-dashboard-layout");
+    if (savedLayouts) {
+      try {
+        setLayouts(JSON.parse(savedLayouts));
+      } catch (e) {
+        console.error("Failed to parse saved layout", e);
+      }
+    }
 
-    // Thiết lập SSE để nhận thông báo realtime
     const token = useAuthStore.getState().token;
     if (!token) return;
-
-    const apiUrl =
-      process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api/v1";
-    // backend hỗ trợ lấy token từ query param ?token=...
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api/v1";
     const sseUrl = `${apiUrl}/admin/notifications/stream?token=${token}`;
-
     const eventSource = new EventSource(sseUrl);
-
-    eventSource.onopen = () => {
-      console.log("✅ SSE Connected to Admin Hub");
-    };
-
     eventSource.addEventListener("notification", (event) => {
       try {
         const data = JSON.parse(event.data);
-        console.log("🔔 New notification:", data);
-        if (data.type === "order_completed") {
-          // Khi có đơn hàng mới, cập nhật lại toàn bộ stats
-          fetchStats();
-        }
+        if (data.type === "order_completed") fetchStats();
       } catch (e) {
         console.error("❌ Failed to parse SSE data:", e);
       }
     });
-
-    eventSource.onerror = () => {
-      // EventSource tự động reconnect — đây chỉ 'warn' để không làm rối console
-      console.warn("[SSE] Connection interrupted, reconnecting...");
-    };
-
-    return () => {
-      eventSource.close();
-    };
+    return () => eventSource.close();
   }, []);
+
+  const onLayoutChange = (currentLayout: any, allLayouts: any) => {
+    setLayouts(allLayouts);
+    localStorage.setItem("admin-dashboard-layout", JSON.stringify(allLayouts));
+  };
+
+  const onBreakpointChange = (newBreakpoint: string) => {
+    setCurrentBreakpoint(newBreakpoint);
+  };
 
   if (loading) {
     return (
       <div className="flex items-center justify-center py-32">
         <div className="w-8 h-8 border-2 border-[#e50914] border-t-transparent rounded-full animate-spin" />
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="flex items-center justify-center py-32">
-        <div className="text-center">
-          <p className="text-red-400 mb-2">{error}</p>
-          <button
-            onClick={() => window.location.reload()}
-            className="text-sm text-white/40 hover:text-white underline"
-          >
-            Thử lại
-          </button>
-        </div>
       </div>
     );
   }
@@ -458,30 +464,45 @@ export default function AdminDashboardPage() {
     year: "numeric",
   });
 
-  // Mocking data for online users and order status breakdown based on totals
   const totalUsers = stats?.total_users ?? 0;
-  const onlineUsers = Math.floor(totalUsers * 0.35); // Giả lập 35% đang online
+  const onlineUsers = Math.floor(totalUsers * 0.35);
   const offlineUsers = totalUsers - onlineUsers;
-
   const userDonutData = [
     { label: "Online", value: onlineUsers },
     { label: "Offline", value: offlineUsers },
   ];
 
-  // Giả lập trạng thái đơn hàng (để biểu đồ thứ 2 có tính thực tế)
   const totalOrders = stats?.total_orders ?? 0;
   const completedOrders = Math.floor(totalOrders * 0.8);
   const cancelledOrders = Math.floor(totalOrders * 0.15);
   const otherOrders = totalOrders - completedOrders - cancelledOrders;
-
   const orderDonutData = [
     { label: "Hoàn tất", value: completedOrders },
     { label: "Đã hủy", value: cancelledOrders },
     { label: "Khác", value: otherOrders },
   ];
 
+  // Chỉ cho phép kéo thả/resize ở màn hình lg (laptop/desktop)
+  const isLaptop = currentBreakpoint === "lg";
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 min-h-screen">
+      <style jsx global>{`
+        .react-grid-placeholder {
+          background: rgba(229, 9, 20, 0.1) !important;
+          border-radius: 1rem !important;
+          border: 2px dashed rgba(229, 9, 20, 0.3) !important;
+          opacity: 0.5 !important;
+        }
+        .react-resizable-handle {
+          opacity: ${isLaptop ? 0.3 : 0};
+          transition: opacity 0.2s;
+        }
+        .react-grid-item:hover .react-resizable-handle {
+          opacity: ${isLaptop ? 1 : 0};
+        }
+      `}</style>
+      
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -490,123 +511,172 @@ export default function AdminDashboardPage() {
           </h1>
           <p className="text-[var(--text-secondary)] text-sm mt-0.5">{today}</p>
         </div>
-        <div className="flex items-center gap-2 text-sm text-[var(--text-secondary)] bg-white/5 px-3 py-1.5 rounded-lg border border-[var(--border-color)]">
-          <TrendingUp size={14} className="text-green-400" />
-          <span>Cập nhật theo thời gian thực</span>
+        <div className="flex items-center gap-4">
+          {isLaptop && (
+            <button 
+              onClick={() => {
+                setLayouts(DEFAULT_LAYOUTS);
+                localStorage.removeItem("admin-dashboard-layout");
+              }}
+              className="text-xs text-white/40 hover:text-white transition-colors flex items-center gap-2"
+            >
+              <Undo2 size={14} /> Khôi phục mặc định
+            </button>
+          )}
+          <div className="flex items-center gap-2 text-sm text-[var(--text-secondary)] bg-white/5 px-3 py-1.5 rounded-lg border border-[var(--border-color)]">
+            <TrendingUp size={14} className="text-green-400" />
+            <span>Cập nhật thời gian thực</span>
+          </div>
         </div>
       </div>
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
-        <StatsCard
-          title="Tổng doanh thu"
-          value={stats?.total_revenue ?? 0}
-          prefix="₫"
-          icon={<DollarSign size={18} />}
-          color="red"
-        />
-        <StatsCard
-          title="Tổng đơn hàng"
-          value={stats?.total_orders ?? 0}
-          icon={<ShoppingBag size={18} />}
-          color="blue"
-        />
-        <StatsCard
-          title="Người dùng"
-          value={stats?.total_users ?? 0}
-          icon={<Users size={18} />}
-          color="green"
-        />
-        <StatsCard
-          title="Vé đã bán"
-          value={stats?.total_tickets ?? 0}
-          icon={<Ticket size={18} />}
-          color="purple"
-        />
-        <StatsCard
-          title="Phim hoạt động"
-          value={stats?.total_movies ?? 0}
-          icon={<Film size={18} />}
-          color="gold"
-        />
-      </div>
+      <ResponsiveGridLayout
+        className="layout -mx-2"
+        layouts={layouts}
+        breakpoints={{ lg: 1024, md: 768, sm: 480, xs: 0 }}
+        cols={{ lg: 12, md: 12, sm: 1, xs: 1 }}
+        rowHeight={30}
+        draggableHandle=".drag-handle"
+        isDraggable={isLaptop}
+        isResizable={isLaptop}
+        onLayoutChange={onLayoutChange}
+        onBreakpointChange={onBreakpointChange}
+        margin={[16, 16]}
+      >
+        <div key="stats-revenue">
+          <WidgetWrapper title="Doanh thu">
+            <StatsCard
+              title="Tổng doanh thu"
+              value={stats?.total_revenue ?? 0}
+              prefix="₫"
+              icon={<DollarSign size={18} />}
+              color="red"
+            />
+          </WidgetWrapper>
+        </div>
+        <div key="stats-orders">
+          <WidgetWrapper title="Đơn hàng">
+            <StatsCard
+              title="Tổng đơn hàng"
+              value={stats?.total_orders ?? 0}
+              icon={<ShoppingBag size={18} />}
+              color="blue"
+            />
+          </WidgetWrapper>
+        </div>
+        <div key="stats-users">
+          <WidgetWrapper title="Người dùng">
+            <StatsCard
+              title="Người dùng"
+              value={stats?.total_users ?? 0}
+              icon={<Users size={18} />}
+              color="green"
+            />
+          </WidgetWrapper>
+        </div>
+        <div key="stats-tickets">
+          <WidgetWrapper title="Vé">
+            <StatsCard
+              title="Vé đã bán"
+              value={stats?.total_tickets ?? 0}
+              icon={<Ticket size={18} />}
+              color="purple"
+            />
+          </WidgetWrapper>
+        </div>
+        <div key="stats-movies">
+          <WidgetWrapper title="Phim">
+            <StatsCard
+              title="Phim hoạt động"
+              value={stats?.total_movies ?? 0}
+              icon={<Film size={18} />}
+              color="gold"
+            />
+          </WidgetWrapper>
+        </div>
 
-      {/* Charts & Table Row 1 (Revenue & Recent Orders) */}
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-        {/* Revenue Chart */}
-        <div className="xl:col-span-1 bg-white/[0.03] border border-white/5 rounded-2xl p-5">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h2 className="text-white font-semibold text-sm">
-                Doanh thu 7 ngày
-              </h2>
-              <p className="text-white/40 text-xs mt-0.5">
-                Tháng này:{" "}
-                <span className="text-[#f5c518] font-medium">
-                  {formatVND(stats?.monthly_revenue ?? 0)}
-                </span>
-              </p>
+        <div key="chart-revenue">
+          <WidgetWrapper title="Diễn biến doanh thu">
+            <div className="bg-white/[0.03] border border-white/5 rounded-2xl p-5 flex flex-col h-full overflow-hidden">
+              <div className="flex items-center justify-between mb-4 shrink-0">
+                <h2 className="text-white font-semibold text-sm">Doanh thu 7 ngày</h2>
+                <CalendarDays size={16} className="text-white/30" />
+              </div>
+              <div className="flex-1 min-h-0 flex items-end">
+                {stats?.chart_data && <MiniRevenueChart data={stats.chart_data} />}
+              </div>
             </div>
-            <CalendarDays size={16} className="text-white/30" />
-          </div>
-          {stats?.chart_data && <MiniRevenueChart data={stats.chart_data} />}
+          </WidgetWrapper>
         </div>
 
-        {/* Recent Orders */}
-        <div className="xl:col-span-2 bg-white/[0.03] border border-white/5 rounded-2xl p-5">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-white font-semibold text-sm">
-              Đơn hàng gần đây
-            </h2>
-            <span className="text-white/30 text-xs">
-              {stats?.recent_orders?.length ?? 0} đơn mới nhất
-            </span>
-          </div>
-          <RecentOrdersTable orders={stats?.recent_orders ?? []} />
+        <div key="table-orders">
+          <WidgetWrapper title="Đơn hàng gần đây">
+            <div className="bg-white/[0.03] border border-white/5 rounded-2xl p-5 h-full overflow-hidden flex flex-col">
+              <div className="flex items-center justify-between mb-4 shrink-0">
+                <h2 className="text-white font-semibold text-sm">Đơn hàng gần đây</h2>
+                <span className="text-white/30 text-xs">{stats?.recent_orders?.length ?? 0} mới nhất</span>
+              </div>
+              <div className="flex-1 overflow-auto custom-scrollbar">
+                <RecentOrdersTable orders={stats?.recent_orders ?? []} />
+              </div>
+            </div>
+          </WidgetWrapper>
         </div>
+
+        <div key="chart-user-donut">
+          <WidgetWrapper title="Người dùng">
+            <div className="bg-white/[0.03] border border-white/5 rounded-2xl p-5 h-full flex flex-col justify-center">
+              <div className="flex items-center justify-between mb-6 shrink-0">
+                <h2 className="text-white font-semibold text-sm">Trạng thái người dùng</h2>
+                <Users size={16} className="text-[#4ade80]" />
+              </div>
+              <DonutChart data={userDonutData} colors={["#4ade80", "#3f3f46"]} />
+            </div>
+          </WidgetWrapper>
+        </div>
+
+        <div key="chart-order-donut">
+          <WidgetWrapper title="Đơn hàng">
+            <div className="bg-white/[0.03] border border-white/5 rounded-2xl p-5 h-full flex flex-col justify-center">
+              <div className="flex items-center justify-between mb-6 shrink-0">
+                <h2 className="text-white font-semibold text-sm">Trạng thái đơn hàng</h2>
+                <ShoppingBag size={16} className="text-[#60a5fa]" />
+              </div>
+              <DonutChart data={orderDonutData} colors={["#60a5fa", "#f87171", "#fbbf24"]} />
+            </div>
+          </WidgetWrapper>
+        </div>
+
+        <div key="system-info">
+          <WidgetWrapper title="Hệ thống">
+            <div className="bg-gradient-to-br from-[#e50914]/20 to-[#b80710]/5 border border-[#e50914]/20 rounded-2xl p-5 h-full flex flex-col justify-center items-center text-center">
+              <h2 className="text-white font-bold text-lg mb-2">Quản trị Hệ thống</h2>
+              <p className="text-white/70 text-xs mb-4">Các tính năng cấu hình nâng cao đã được kích hoạt.</p>
+              <div className="flex space-x-2">
+                <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                <span className="text-green-500 text-[10px] font-semibold uppercase">Hệ thống ổn định</span>
+              </div>
+            </div>
+          </WidgetWrapper>
+        </div>
+      </ResponsiveGridLayout>
+    </div>
+  );
+}
+
+function WidgetWrapper({ children, title }: { children: React.ReactNode, title: string }) {
+  return (
+    <div className="group/widget h-full relative">
+      {/* Drag Handle Overlay */}
+      <div className="drag-handle absolute top-2 right-2 opacity-0 group-hover/widget:opacity-100 transition-opacity z-10 cursor-grab active:cursor-grabbing p-1 bg-white/10 rounded-md backdrop-blur-sm hidden lg:flex items-center gap-1">
+        <div className="grid grid-cols-2 gap-0.5">
+          {[...Array(6)].map((_, i) => (
+            <div key={i} className="w-0.5 h-0.5 bg-white/60 rounded-full" />
+          ))}
+        </div>
+        <span className="text-[10px] text-white/60 font-medium select-none">Di chuyển</span>
       </div>
-
-      {/* Charts Row 2 (Donut Charts for Users & Orders) */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-        <div className="bg-white/[0.03] border border-white/5 rounded-2xl p-5">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-white font-semibold text-sm">
-              Trạng thái người dùng
-            </h2>
-            <Users size={16} className="text-[#4ade80]" />
-          </div>
-          <DonutChart data={userDonutData} colors={["#4ade80", "#3f3f46"]} />
-        </div>
-
-        <div className="bg-white/[0.03] border border-white/5 rounded-2xl p-5">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-white font-semibold text-sm">
-              Trạng thái đơn hàng
-            </h2>
-            <ShoppingBag size={16} className="text-[#60a5fa]" />
-          </div>
-          <DonutChart
-            data={orderDonutData}
-            colors={["#60a5fa", "#f87171", "#fbbf24"]}
-          />
-        </div>
-
-        <div className="bg-gradient-to-br from-[#e50914]/20 to-[#b80710]/5 border border-[#e50914]/20 rounded-2xl p-5 flex flex-col justify-center items-center text-center">
-          <h2 className="text-white font-bold text-lg mb-2">
-            Quản trị Hệ thống
-          </h2>
-          <p className="text-white/70 text-sm mb-4">
-            Các tính năng cấu hình nâng cao đã được kích hoạt trong phiên bản
-            này.
-          </p>
-          <div className="flex space-x-2">
-            <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-            <span className="text-green-500 text-xs font-semibold">
-              Hệ thống ổn định
-            </span>
-          </div>
-        </div>
-      </div>
+      {children}
     </div>
   );
 }
