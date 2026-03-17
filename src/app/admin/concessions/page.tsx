@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Plus, Pencil, Trash2, Popcorn } from "lucide-react";
 import ConcessionFormModal from "@/components/admin/concessions/ConcessionFormModal";
 import { apiClient } from "@/lib/api";
@@ -27,7 +27,7 @@ export default function ConcessionsPage() {
     null,
   );
 
-  const fetchConcessions = async () => {
+  const fetchConcessions = useCallback(async () => {
     try {
       setLoading(true);
       const res = (await apiClient.get(
@@ -42,11 +42,11 @@ export default function ConcessionsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [page, search]);
 
   useEffect(() => {
     fetchConcessions();
-  }, [page, search]);
+  }, [fetchConcessions]);
 
   const handleDelete = async (id: number) => {
     if (!confirm("Bạn có chắc chắn muốn xóa đồ ăn này?")) return;

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, Fragment } from "react";
+import { useState, useEffect, useCallback, Fragment } from "react";
 import {
   Plus,
   MapPin,
@@ -38,7 +38,7 @@ export default function CinemasPage() {
   // Expanded Row State for Rooms
   const [expandedCinemaId, setExpandedCinemaId] = useState<number | null>(null);
 
-  const fetchCinemas = async () => {
+  const fetchCinemas = useCallback(async () => {
     try {
       setLoading(true);
       const res = (await apiClient.get(
@@ -53,11 +53,11 @@ export default function CinemasPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [page, search]);
 
   useEffect(() => {
     fetchCinemas();
-  }, [page, search]);
+  }, [fetchCinemas]);
 
   const handleDelete = async (id: number) => {
     if (

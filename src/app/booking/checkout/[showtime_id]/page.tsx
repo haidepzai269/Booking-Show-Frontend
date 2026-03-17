@@ -50,6 +50,42 @@ interface PromotionPreview {
 type Gateway = "VNPAY" | "ZALOPAY" | "PAYOS";
 type Step = 1 | 2 | 3;
 
+interface OrderSeat {
+  showtime_seat_id: number;
+}
+
+interface Order {
+  id: string;
+  expires_at: string;
+  showtime_id: number;
+  showtime?: {
+    id: number;
+  };
+  order_seats: OrderSeat[];
+}
+
+interface SeatAPIResponse {
+  id: number;
+  row_char: string;
+  seat_number: number;
+  price: number;
+  type: string;
+}
+
+interface ShowtimeAPIResponse {
+  movie?: {
+    title: string;
+    poster_url?: string;
+  };
+  room?: {
+    name: string;
+    cinema?: {
+      name: string;
+    };
+  };
+  start_time: string;
+}
+
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 const DEFAULT_EXPIRES_AT = new Date(Date.now() + 10 * 60 * 1000).toISOString();
 
@@ -133,8 +169,8 @@ function CheckoutContent() {
         if (orderIdParam) {
           // === Tiếp tục từ orders/my: Load order cũ ===
           const orderRes = await apiClient.get<
-            any,
-            { success: boolean; data: any }
+            void,
+            { success: boolean; data: Order }
           >(`/orders/${orderIdParam}`);
           if (!orderRes.success || !orderRes.data) {
             router.push("/orders/my");
@@ -148,26 +184,26 @@ function CheckoutContent() {
           const stId = order.showtime?.id || order.showtime_id;
           if (stId) {
             const [seatsRes, stRes] = await Promise.all([
-              apiClient.get<any, { success: boolean; data: any[] }>(
+              apiClient.get<void, { success: boolean; data: SeatAPIResponse[] }>(
                 `/showtimes/${stId}/seats`,
               ),
-              apiClient.get<any, { success: boolean; data: any }>(
+              apiClient.get<void, { success: boolean; data: ShowtimeAPIResponse }>(
                 `/showtimes/${stId}`,
               ),
             ]);
 
             // Lấy seat IDs từ order_seats trong order
             const orderSeatIds: number[] = (order.order_seats || []).map(
-              (os: any) => os.showtime_seat_id,
+              (os: OrderSeat) => os.showtime_seat_id,
             );
             setSelectedSeatIds(orderSeatIds);
 
             if (seatsRes.data) {
-              const relevantSeats = seatsRes.data.filter((s: any) =>
+              const relevantSeats = seatsRes.data.filter((s: SeatAPIResponse) =>
                 orderSeatIds.includes(s.id),
               );
               setSeatDetails(
-                relevantSeats.map((s: any) => ({
+                relevantSeats.map((s: SeatAPIResponse) => ({
                   id: s.id,
                   row_char: s.row_char,
                   seat_number: s.seat_number,
@@ -197,20 +233,20 @@ function CheckoutContent() {
 
           // Load thông tin showtime + seat details song song
           const [seatsRes, stRes] = await Promise.all([
-            apiClient.get<any, { success: boolean; data: any[] }>(
+            apiClient.get<void, { success: boolean; data: SeatAPIResponse[] }>(
               `/showtimes/${showtimeId}/seats`,
             ),
-            apiClient.get<any, { success: boolean; data: any }>(
+            apiClient.get<void, { success: boolean; data: ShowtimeAPIResponse }>(
               `/showtimes/${showtimeId}`,
             ),
           ]);
 
           if (seatsRes.data) {
-            const relevantSeats = seatsRes.data.filter((s: any) =>
+            const relevantSeats = seatsRes.data.filter((s: SeatAPIResponse) =>
               ids.includes(s.id),
             );
             setSeatDetails(
-              relevantSeats.map((s: any) => ({
+              relevantSeats.map((s: SeatAPIResponse) => ({
                 id: s.id,
                 row_char: s.row_char,
                 seat_number: s.seat_number,
@@ -232,8 +268,8 @@ function CheckoutContent() {
 
           // Tạo Order ngay trong DB — không có concessions/voucher ở bước này
           const orderRes = await apiClient.post<
-            any,
-            { success: boolean; data?: any; error?: string }
+            { showtime_id: number; showtime_seat_ids: number[]; concession_items: unknown[] },
+            { success: boolean; data?: Order; error?: string }
           >("/orders", {
             showtime_id: parseInt(showtimeId),
             showtime_seat_ids: ids,
@@ -261,9 +297,10 @@ function CheckoutContent() {
           // Không có params → về trang chủ
           router.push("/");
         }
-      } catch (err: any) {
+      } catch (err: unknown) {
+        const error = err as { response?: { data?: { error?: string } } };
         setGlobalError(
-          err.response?.data?.error ||
+          error.response?.data?.error ||
             "Đã có lỗi xảy ra khi khởi tạo đơn hàng.",
         );
       } finally {
@@ -291,7 +328,7 @@ function CheckoutContent() {
   // Fetch danh sách concessions
   useEffect(() => {
     apiClient
-      .get<any, { success: boolean; data: Concession[] }>("/concessions/")
+      .get<void, { success: boolean; data: Concession[] }>("/concessions/")
       .then((res) => {
         if (res.data) setConcessions(res.data);
       })
@@ -337,7 +374,7 @@ function CheckoutContent() {
       setPromotionPreview(preview);
       if (!orderId) return;
       try {
-        const res = await apiClient.put<any, { success: boolean; data?: any }>(
+        const res = await apiClient.put<{ code: string }, { success: boolean; data?: { discount_amount?: number; final_amount?: number } }>(
           `/orders/${orderId}/voucher`,
           {
             code: preview?.code || "",
@@ -351,8 +388,8 @@ function CheckoutContent() {
               preview
                 ? {
                     ...preview,
-                    discount_amount: updated.discount_amount,
-                    final_amount: updated.final_amount,
+                    discount_amount: updated.discount_amount || 0,
+                    final_amount: updated.final_amount ?? preview.final_amount,
                   }
                 : null,
             );
@@ -376,8 +413,8 @@ function CheckoutContent() {
 
     try {
       const payRes = await apiClient.post<
-        any,
-        { success: boolean; data?: any; error?: string }
+        { order_id: string; gateway: Gateway },
+        { success: boolean; data?: { payment_url?: string }; error?: string }
       >("/payments/initiate", {
         order_id: orderId,
         gateway,
@@ -389,9 +426,10 @@ function CheckoutContent() {
         setGlobalError(payRes.error || "Không nhận được URL thanh toán.");
         setIsSubmitting(false);
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { error?: string } } };
       setGlobalError(
-        err.response?.data?.error || "Đã có lỗi xảy ra. Vui lòng thử lại.",
+        error.response?.data?.error || "Đã có lỗi xảy ra. Vui lòng thử lại.",
       );
       setIsSubmitting(false);
     }
