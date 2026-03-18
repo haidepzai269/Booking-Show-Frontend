@@ -1,18 +1,16 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Mail, Lock, Loader2, ArrowRight } from "lucide-react";
 import AuthSplitLayout from "@/components/auth/AuthSplitLayout";
 import { useAuthStore } from "@/store/authStore";
 import OAuthButtons from "@/components/auth/OAuthButtons";
-import { useEffect } from "react";
-import { useSearchParams } from "next/navigation";
 import { apiClient } from "@/lib/api";
 import { ApiResponse } from "@/types/api";
 
-export default function LoginPage() {
+function LoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { login, setAuth, loading, error } = useAuthStore();
@@ -167,5 +165,17 @@ export default function LoginPage() {
         </Link>
       </div>
     </AuthSplitLayout>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex justify-center items-center min-h-screen bg-black">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    }>
+      <LoginContent />
+    </Suspense>
   );
 }
