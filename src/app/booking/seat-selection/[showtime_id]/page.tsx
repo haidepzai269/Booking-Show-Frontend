@@ -233,23 +233,121 @@ const SeatIconPureSvg = ({
   );
 };
 
-const ProgressStepper = ({ step }: { step: number }) => {
-  const steps = ["1. Chọn Ghế", "2. Combo Bắp Nước", "3. Thanh Toán"];
-  return (
-    <div className="w-full bg-black/60 py-2 border-b border-white/5 flex justify-center gap-4 sm:gap-12">
-      {steps.map((s, i) => (
-        <div key={i} className="flex items-center gap-2">
-          <div
-            className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${i + 1 <= step ? "bg-primary text-white" : "bg-zinc-800 text-zinc-500 border border-zinc-700"}`}
-          >
-            {i + 1}
-          </div>
 
-          {i < steps.length - 1 && (
-            <div className="hidden sm:block w-8 h-[1px] bg-zinc-800 ml-2"></div>
-          )}
+const SeatSelectionSkeleton = () => {
+  return (
+    <div className="w-full relative flex flex-col min-h-screen pb-32 overflow-hidden selection:bg-primary/30">
+      {/* IMMERSIVE BACKGROUND LAYERS */}
+      <div className="absolute inset-0 z-0 pointer-events-none">
+        <div className="absolute inset-0 bg-[#050505]"></div>
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,_#1a0505_0%,_transparent_50%)] opacity-40"></div>
+        <div
+          className="absolute inset-0 opacity-[0.03]"
+          style={{
+            backgroundImage: "radial-gradient(#ffffff 1px, transparent 1px)",
+            backgroundSize: "40px 40px",
+          }}
+        ></div>
+        <div className="absolute inset-0 opacity-[0.2] mix-blend-soft-light pointer-events-none bg-[url('https://grainy-gradients.vercel.app/noise.svg')]"></div>
+        <div className="absolute inset-y-0 left-0 w-24 sm:w-64 bg-gradient-to-r from-red-950/40 via-red-900/10 to-transparent z-0 pointer-events-none hidden md:block">
+          <div className="absolute inset-0 opacity-30" style={{ backgroundImage: 'repeating-linear-gradient(90deg, transparent, transparent 20px, rgba(0,0,0,0.3) 21px, rgba(0,0,0,0.3) 40px)' }}></div>
         </div>
-      ))}
+        <div className="absolute inset-y-0 right-0 w-24 sm:w-64 bg-gradient-to-l from-red-950/40 via-red-900/10 to-transparent z-0 pointer-events-none hidden md:block">
+          <div className="absolute inset-0 opacity-30" style={{ backgroundImage: 'repeating-linear-gradient(-90deg, transparent, transparent 20px, rgba(0,0,0,0.3) 21px, rgba(0,0,0,0.3) 40px)' }}></div>
+        </div>
+      </div>
+
+      {/* HEADER SKELETON */}
+      <div className="w-full z-50 sticky top-0">
+        <div className="w-full bg-black/40 border-b border-white/5 backdrop-blur-2xl">
+          <div className="max-w-7xl mx-auto px-6 py-4 flex items-center gap-6">
+            <div className="p-2.5 rounded-xl border border-white/5 w-10 h-10 bg-white/5 animate-pulse" />
+            <div className="flex-1">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="w-20 h-5 bg-primary/20 rounded-md animate-pulse" />
+                <div className="w-48 sm:w-64 h-6 sm:h-8 bg-white/10 rounded-md animate-pulse" />
+              </div>
+              <div className="flex items-center gap-3 overflow-hidden">
+                <div className="w-24 h-3 bg-white/5 rounded-full animate-pulse shrink-0" />
+                <span className="w-1 h-1 bg-zinc-800 rounded-full shrink-0" />
+                <div className="w-20 h-3 bg-white/5 rounded-full animate-pulse shrink-0" />
+                <span className="w-1 h-1 bg-zinc-800 rounded-full shrink-0" />
+                <div className="w-32 h-3 bg-white/5 rounded-full animate-pulse shrink-0" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="flex-1 w-full flex flex-col items-center justify-center max-w-7xl mx-auto relative z-10 px-4 pt-4 pb-40 sm:pb-32">
+        {/* SCREEN SKELETON */}
+        <div className="w-full max-w-5xl mt-8 mb-16 sm:mb-24 relative flex flex-col items-center group">
+          <div className="absolute -top-12 left-1/2 -translate-x-1/2 w-[140%] h-[300px] bg-gradient-to-b from-white/5 via-white/5 to-transparent blur-[120px] rounded-full opacity-20 pointer-events-none animate-pulse"></div>
+          <div className="w-full max-w-4xl flex flex-col items-center relative">
+            <div className="relative w-full h-[150px] overflow-hidden flex flex-col items-center opacity-70">
+                <div className="w-[120%] h-[300px] border-[12px] border-zinc-800/60 rounded-[100%] absolute -top-[260px] bg-white/5 backdrop-blur-sm"></div>
+                <div className="mt-16 flex flex-col items-center gap-2">
+                  <div className="w-32 h-3 bg-white/10 rounded-full animate-pulse" />
+                  <div className="w-24 h-[1px] bg-gradient-to-r from-transparent via-zinc-700 to-transparent"></div>
+                </div>
+            </div>
+          </div>
+        </div>
+
+        {/* SEATS SKELETON */}
+        <div className="w-full max-w-7xl px-4 flex flex-col items-center justify-center gap-2 sm:gap-5 min-w-[max-content] mx-auto pb-4">
+          {['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'].map((row, rowIndex) => (
+            <div 
+              key={row} 
+              className="flex items-center gap-2 sm:gap-6" 
+              style={{ opacity: 1 - rowIndex * 0.05 }}
+            >
+              <div className="w-6 sm:w-10 text-center text-zinc-800 font-black text-[10px] sm:text-sm">{row}</div>
+              <div className="flex gap-1 sm:gap-3">
+                {Array.from({ length: 12 }).map((_, seatIndex) => (
+                  <div 
+                    key={seatIndex} 
+                    className="w-8 h-8 sm:w-12 sm:h-12 relative flex items-center justify-center"
+                  >
+                     <div 
+                        className="w-[70%] h-[80%] border border-white/10 rounded-t-lg rounded-b-sm animate-pulse bg-white/5 shadow-inner"
+                        style={{ animationDelay: `${(rowIndex * 12 + seatIndex) * 0.03}s` }}
+                     />
+                  </div>
+                ))}
+              </div>
+              <div className="w-6 sm:w-10 text-center text-zinc-800 font-black text-[10px] sm:text-sm">{row}</div>
+            </div>
+          ))}
+        </div>
+
+        {/* LEGEND SKELETON */}
+        <div className="flex flex-wrap gap-4 sm:gap-8 justify-center items-center mt-12 mb-6 sm:mb-12">
+            {[1, 2, 3, 4, 5].map((i) => (
+               <div key={i} className="flex gap-2 items-center">
+                  <div className="w-5 h-5 rounded-full bg-white/5 animate-pulse" />
+                  <div className="w-16 h-3 rounded-full bg-white/5 animate-pulse" />
+               </div>
+            ))}
+        </div>
+      </div>
+      
+      {/* BOTTOM ACTION BAR SKELETON */}
+      <div className="fixed bottom-0 left-0 right-0 bg-black/80 backdrop-blur-2xl border-t border-white/10 z-[150] transition-all duration-300">
+        <div className="max-w-7xl mx-auto px-4 sm:px-8 py-3 sm:py-4 flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-6">
+          <div className="flex flex-col items-center sm:items-start w-full sm:w-auto gap-1">
+            <div className="w-20 h-2 sm:h-3 rounded-full bg-white/5 animate-pulse" />
+            <div className="w-32 h-5 sm:h-7 rounded-md bg-white/5 animate-pulse" />
+          </div>
+          <div className="flex items-center justify-between sm:justify-end gap-6 w-full sm:w-auto border-t sm:border-t-0 pt-3 sm:pt-0 border-white/5">
+             <div className="flex flex-col gap-1 items-start sm:items-end w-full sm:w-auto">
+                <div className="w-20 h-2 sm:h-3 rounded-full bg-white/5 animate-pulse" />
+                <div className="w-32 sm:w-40 h-6 sm:h-8 rounded-md bg-white/5 animate-pulse" />
+             </div>
+             <div className="hidden sm:block w-full sm:w-40 h-10 sm:h-12 rounded-full bg-white/5 animate-pulse" />
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
@@ -465,11 +563,7 @@ export default function SeatSelection() {
   };
 
   if (!isMounted || loading)
-    return (
-      <div className="flex justify-center items-center py-40">
-        <Loader2 className="w-12 h-12 text-primary animate-spin" />
-      </div>
-    );
+    return <SeatSelectionSkeleton />;
 
   return (
     <div className="w-full relative flex flex-col min-h-screen pb-32 overflow-hidden selection:bg-primary/30">
@@ -542,7 +636,6 @@ export default function SeatSelection() {
             </div>
           </div>
         </div>
-        <ProgressStepper step={1} />
       </div>
 
       <div className="flex-1 w-full flex flex-col items-center justify-center max-w-7xl mx-auto relative z-10 px-4 pt-4 pb-40 sm:pb-32">
@@ -769,13 +862,13 @@ export default function SeatSelection() {
       </div>
 
       {/* BOTTOM ACTION BAR STICKY */}
-      <div className="fixed bottom-0 left-0 right-0 bg-zinc-900/95 backdrop-blur-xl border-t border-zinc-800/50 z-[150] transition-all duration-300">
-        <div className="max-w-7xl mx-auto px-4 sm:px-8 py-4 sm:py-6 flex flex-col sm:flex-row items-center justify-between gap-4 sm:gap-6">
+      <div className="fixed bottom-0 left-0 right-0 bg-black/80 backdrop-blur-2xl border-t border-white/10 z-[150] transition-all duration-300">
+        <div className="max-w-7xl mx-auto px-4 sm:px-8 py-3 sm:py-4 flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-6">
           <div className="flex flex-col items-center sm:items-start w-full sm:w-auto">
-            <div className="text-zinc-500 text-[10px] sm:text-xs mb-1 uppercase font-bold tracking-widest">
+            <div className="text-white/40 text-[10px] sm:text-xs mb-0.5 uppercase font-bold tracking-widest">
               Ghế đã chọn
             </div>
-            <div className="text-zinc-100 font-bold text-sm sm:text-lg flex flex-wrap justify-center sm:justify-start gap-1 sm:gap-2 max-h-12 overflow-y-auto no-scrollbar">
+            <div className="text-white font-bold text-sm sm:text-base flex flex-wrap justify-center sm:justify-start gap-1 sm:gap-2 max-h-12 overflow-y-auto no-scrollbar">
               {selectedSeatIds.length === 0
                 ? "—"
                 : selectedSeatIds
@@ -787,14 +880,14 @@ export default function SeatSelection() {
             </div>
           </div>
 
-          <div className="flex items-center justify-between sm:justify-end gap-6 w-full sm:w-auto border-t sm:border-t-0 pt-4 sm:pt-0 border-zinc-800">
+          <div className="flex items-center justify-between sm:justify-end gap-6 w-full sm:w-auto border-t sm:border-t-0 pt-3 sm:pt-0 border-white/5">
             <div className="text-left sm:text-right">
-              <div className="text-zinc-500 text-[10px] sm:text-xs mb-1 uppercase font-bold tracking-widest">
+              <div className="text-white/40 text-[10px] sm:text-xs mb-0.5 uppercase font-bold tracking-widest">
                 Tổng cộng
               </div>
-              <div className="text-primary font-black text-xl sm:text-3xl flex items-baseline gap-1">
+              <div className="text-primary font-black text-lg sm:text-2xl flex items-baseline gap-1">
                 {totalPrice.toLocaleString("vi-VN")}{" "}
-                <span className="text-[10px] sm:text-sm font-bold opacity-80 uppercase">
+                <span className="text-[10px] sm:text-xs font-bold opacity-80 uppercase">
                   VNĐ
                 </span>
               </div>
@@ -803,18 +896,18 @@ export default function SeatSelection() {
             <button
               disabled={selectedSeatIds.length === 0 || isLocking}
               onClick={handleLockAndCheckout}
-              className={`flex items-center justify-center gap-2 sm:gap-3 px-6 sm:px-10 py-3 sm:py-5 rounded-lg sm:rounded-xl font-black text-sm sm:text-lg transition-all active:scale-95 flex-1 sm:flex-none
+              className={`flex items-center justify-center gap-2 sm:gap-3 px-6 sm:px-8 py-2.5 sm:py-3.5 rounded-full font-black text-xs sm:text-sm transition-all active:scale-95 flex-1 sm:flex-none uppercase tracking-wide
               ${
                 selectedSeatIds.length === 0
-                  ? "bg-zinc-800 text-zinc-600 border border-zinc-700/50 cursor-not-allowed"
+                  ? "bg-white/5 text-white/30 border border-white/10 cursor-not-allowed"
                   : "bg-primary hover:bg-rose-700 text-white shadow-[0_10px_30px_rgba(229,9,20,0.4)]"
               }`}
             >
               {isLocking ? (
-                <Loader2 className="w-5 h-5 sm:w-6 sm:h-6 animate-spin" />
+                <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" />
               ) : (
                 <>
-                  <CheckCircle className="w-5 h-5 sm:w-6 sm:h-6" />
+                  <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5" />
                   <span className="whitespace-nowrap">Tiếp Tục</span>
                 </>
               )}
