@@ -255,7 +255,7 @@ export default function Footer() {
                             toast.error(res.error || "Có lỗi xảy ra");
                           }
                         } catch (err: unknown) {
-                          toast.error((err as any).response?.data?.error || "Không thể đăng ký lúc này");
+                          toast.error((err as { response?: { data?: { error?: string } } }).response?.data?.error || "Không thể đăng ký lúc này");
                         } finally {
                           setIsSubscribing(false);
                         }

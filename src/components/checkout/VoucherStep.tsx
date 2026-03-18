@@ -61,7 +61,7 @@ export default function VoucherStep({
       } else {
         // Check specific error codes
         if (res.code === "ORDER_VALUE_TOO_LOW") {
-          const minVal = res.data_extra?.min_order_value || 0;
+          const minVal = (res.data_extra as { min_order_value?: number })?.min_order_value || 0;
           setStatus("warning");
           setWarningData({ minOrderValue: minVal, currentAmount: orderValue });
         } else {
@@ -71,11 +71,11 @@ export default function VoucherStep({
         onVoucherApplied(null);
       }
     } catch (err: unknown) {
-      const errRes = (err as any).response?.data as ApiResponse<any>;
+      const errRes = (err as { response?: { data?: ApiResponse<PromotionPreview> } }).response?.data;
       if (errRes?.code === "ORDER_VALUE_TOO_LOW") {
         setStatus("warning");
         setWarningData({
-          minOrderValue: errRes.data_extra?.min_order_value || 0,
+          minOrderValue: (errRes.data_extra as { min_order_value?: number })?.min_order_value || 0,
           currentAmount: orderValue,
         });
       } else {

@@ -3,7 +3,17 @@ import { persist } from 'zustand/middleware';
 import { apiClient } from '@/lib/api';
 import { ApiResponse, User } from '@/types/api';
 
-// Moved User to @/types/api
+// Raw user shape returned from backend before mapping to User interface
+interface RawUser {
+  id: number;
+  email: string;
+  full_name: string;
+  role: string;
+  theme?: string;
+  language?: string;
+  rank?: string;
+  total_spending?: number;
+}
 
 interface AuthState {
   token: string | null;
@@ -31,10 +41,10 @@ export const useAuthStore = create<AuthState>()(
       login: async (email, password) => {
         set({ loading: true, error: null });
         try {
-          const res = await apiClient.post<ApiResponse<{access_token: string, user: any}>>("/auth/login", {
+          const res = await apiClient.post<ApiResponse<{access_token: string, user: RawUser}>>("/auth/login", {
             email,
             password
-          }) as unknown as ApiResponse<{access_token: string, user: any}>;
+          }) as unknown as ApiResponse<{access_token: string, user: RawUser}>;
           
           if (res.success && res.data) {
             const rawUser = res.data.user;
@@ -77,7 +87,7 @@ export const useAuthStore = create<AuthState>()(
       verifyMagicLink: async (token) => {
         set({ loading: true, error: null });
         try {
-          const res = await apiClient.post<ApiResponse<{access_token: string, user: any}>>("/auth/magic-link/verify", { token }) as unknown as ApiResponse<{access_token: string, user: any}>;
+          const res = await apiClient.post<ApiResponse<{access_token: string, user: RawUser}>>("/auth/magic-link/verify", { token }) as unknown as ApiResponse<{access_token: string, user: RawUser}>;
           if (res.success && res.data) {
             const rawUser = res.data.user;
             const user: User = {

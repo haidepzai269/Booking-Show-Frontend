@@ -4,7 +4,7 @@ export interface ApiResponse<T> {
   message?: string;
   error?: string;
   code?: string;
-  data_extra?: any;
+  data_extra?: unknown;
 }
 
 export interface User {
