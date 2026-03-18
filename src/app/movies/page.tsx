@@ -8,8 +8,6 @@ import {
   Search,
   Ticket,
   Clock,
-  Star,
-  Flame,
   Play,
   ChevronLeft,
   ChevronRight,
@@ -17,7 +15,6 @@ import {
   X,
   Film,
   Calendar,
-  TrendingUp,
 } from "lucide-react";
 import { apiClient } from "@/lib/api";
 import Header from "@/components/layout/Header";

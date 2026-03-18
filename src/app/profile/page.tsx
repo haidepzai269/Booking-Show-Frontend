@@ -1,28 +1,18 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/authStore";
 import { apiClient } from "@/lib/api";
 import Link from "next/link";
-import { ApiResponse, User as UserType } from "@/types/api";
+import { ApiResponse } from "@/types/api";
 import {
   User,
-  Mail,
-  Phone,
   Shield,
   Ticket,
   ShoppingBag,
   DollarSign,
-  Edit2,
-  Check,
-  X,
-  Key,
-  History,
-  Loader2,
   CalendarDays,
-  CheckCircle2,
-  AlertCircle,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import MembershipCard from "@/components/profile/MembershipCard";
@@ -54,6 +44,30 @@ interface Movie {
   id: number;
   poster_url: string;
   title: string;
+}
+
+interface Order {
+  id: string;
+  status: "PENDING" | "COMPLETED" | "CANCELLED";
+  final_amount: number;
+  original_amount: number;
+  discount_amount: number;
+  created_at: string;
+  expires_at: string;
+  showtime: {
+    id: number;
+    start_time: string;
+    movie: { title: string; poster_url: string };
+    room: {
+      name: string;
+      cinema: { name: string; city: string };
+    };
+  };
+}
+
+interface HomeMoviesData {
+  hot: Movie[];
+  best_selling: Movie[];
 }
 
 function formatVND(amount: number) {
@@ -95,13 +109,9 @@ export default function ProfilePage() {
 
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [saveStatus, setSaveStatus] = useState<"idle" | "success" | "error">(
-    "idle",
-  );
   const [form, setForm] = useState({ full_name: "", phone: "" });
-  const [orders, setOrders] = useState<any[]>([]); // Sẽ định nghĩa type cụ thể sau nếu cần, tạm thời giữ để tránh break UI phức tạp
+  const [orders, setOrders] = useState<Order[]>([]);
   const [loadingOrders, setLoadingOrders] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const [page, setPage] = useState(1);
@@ -109,78 +119,7 @@ export default function ProfilePage() {
   const [activeTab, setActiveTab] = useState("overview");
   const [bannerPosters, setBannerPosters] = useState<string[]>([]);
 
-  useEffect(() => {
-    if (!_hasHydrated) return; // Chờ Hydration xong mới kiểm tra Auth
-
-    if (!authUser) {
-      router.push("/login");
-      return;
-    }
-    fetchProfile();
-    fetchBannerPosters();
-    // fetchOrders(); // Không fetch ngay trên mount để tránh lag ban đầu
-  }, [authUser, _hasHydrated]);
-
-  // Fetch orders when switching to bookings tab if not loaded
-  useEffect(() => {
-    if (activeTab === "bookings" && orders.length === 0) {
-      fetchOrders(1);
-    }
-  }, [activeTab]);
-
-  const fetchOrders = async (targetPage: number, append = false) => {
-    if (loadingOrders || (append && loadingMore)) return;
-    
-    if (append) setLoadingMore(true);
-    else setLoadingOrders(true);
-
-    try {
-      const res = await apiClient.get<{ success: boolean; data: any[]; pagination: any }>(
-        `/orders/my?page=${targetPage}&limit=10`
-      );
-      const responseData = res as unknown as ApiResponse<any>;
-      if (responseData.success) {
-        if (append) {
-          setOrders(prev => [...prev, ...responseData.data]);
-        } else {
-          setOrders(responseData.data);
-        }
-        setPage(targetPage);
-        setHasMore(responseData.data.length === 10);
-      }
-    } catch (err) {
-      console.error("Failed to fetch orders", err);
-    } finally {
-      setLoadingOrders(false);
-      setLoadingMore(false);
-    }
-  };
-
-  const handleLoadMore = () => {
-    fetchOrders(page + 1, true);
-  };
-  const fetchBannerPosters = async () => {
-    try {
-      const res = await apiClient.get<{ success: boolean; data: { hot: Movie[]; best_selling: Movie[] } }>(
-        "/movies/home"
-      );
-      const responseData = res as unknown as ApiResponse<any>;
-      if (responseData.success && responseData.data) {
-        const all = [...(responseData.data.hot || []), ...(responseData.data.best_selling || [])];
-        const unique = Array.from(new Map(all.map((m) => [m.id, m])).values());
-        setBannerPosters(
-          unique
-            .slice(0, 8)
-            .map((m) => m.poster_url)
-            .filter(Boolean),
-        );
-      }
-    } catch {
-      // fallback: banner vẫn render với overlay tối
-    }
-  };
-
-  const fetchProfile = async () => {
+  const fetchProfile = useCallback(async () => {
     setLoading(true);
     try {
       const res = (await apiClient.get("/users/me")) as {
@@ -199,46 +138,102 @@ export default function ProfilePage() {
     } finally {
       setLoading(false);
     }
+  }, []);
+
+  const fetchBannerPosters = useCallback(async () => {
+    try {
+      const res = await apiClient.get<{ success: boolean; data: HomeMoviesData }>(
+        "/movies/home"
+      );
+      const responseData = res as unknown as ApiResponse<HomeMoviesData>;
+      if (responseData.success && responseData.data) {
+        const all = [...(responseData.data.hot || []), ...(responseData.data.best_selling || [])];
+        const unique = Array.from(new Map(all.map((m) => [m.id, m])).values());
+        setBannerPosters(
+          unique
+            .slice(0, 8)
+            .map((m) => m.poster_url)
+            .filter(Boolean),
+        );
+      }
+    } catch {
+      // fallback: banner vẫn render với overlay tối
+    }
+  }, []);
+
+  const fetchOrders = useCallback(async (targetPage: number, append = false) => {
+    if (loadingOrders || (append && loadingMore)) return;
+    
+    if (append) setLoadingMore(true);
+    else setLoadingOrders(true);
+
+    try {
+      const res = await apiClient.get<{ success: boolean; data: Order[]; pagination: { total: number; page: number; limit: number } }>(
+        `/orders/my?page=${targetPage}&limit=10`
+      );
+      const responseData = res as unknown as ApiResponse<Order[]>;
+      if (responseData.success) {
+        if (append) {
+          setOrders(prev => [...prev, ...responseData.data]);
+        } else {
+          setOrders(responseData.data);
+        }
+        setPage(targetPage);
+        setHasMore(responseData.data.length === 10);
+      }
+    } catch (err) {
+      console.error("Failed to fetch orders", err);
+    } finally {
+      setLoadingOrders(false);
+      setLoadingMore(false);
+    }
+  }, [loadingOrders, loadingMore]);
+
+  useEffect(() => {
+    if (!_hasHydrated) return; // Chờ Hydration xong mới kiểm tra Auth
+
+    if (!authUser) {
+      router.push("/login");
+      return;
+    }
+    fetchProfile();
+    fetchBannerPosters();
+  }, [authUser, _hasHydrated, router, fetchProfile, fetchBannerPosters]);
+
+  // Fetch orders when switching to bookings tab if not loaded
+  useEffect(() => {
+    if (activeTab === "bookings" && orders.length === 0) {
+      fetchOrders(1);
+    }
+  }, [activeTab, orders.length, fetchOrders]);
+
+  const handleLoadMore = () => {
+    fetchOrders(page + 1, true);
   };
 
   const handleSave = async (updatedData?: { full_name: string; phone: string }) => {
     const dataToSave = updatedData || form;
     if (!dataToSave.full_name.trim()) return;
     setSaving(true);
-    setSaveStatus("idle");
     try {
       const res = await apiClient.put<{ success: boolean }>("/users/me", {
         full_name: dataToSave.full_name,
         phone: dataToSave.phone,
       });
-      const responseData = (res as any).data || res;
+      const responseData = (res as unknown as { data?: { success: boolean } }).data || (res as unknown as { success: boolean });
 
       if (responseData.success) {
-        setSaveStatus("success");
-        setEditing(false);
         // Cập nhật authStore để tên ở Header cũng cập nhật
         if (authUser && token) {
           setAuth(token, { ...authUser, fullName: dataToSave.full_name });
         }
         await fetchProfile();
-        setTimeout(() => setSaveStatus("idle"), 3000);
       }
     } catch {
-      setSaveStatus("error");
+      // handle error silently
     } finally {
       setSaving(false);
     }
-  };
-
-  const handleCancel = () => {
-    if (profile) {
-      setForm({
-        full_name: profile.user.full_name,
-        phone: profile.user.phone || "",
-      });
-    }
-    setEditing(false);
-    setSaveStatus("idle");
   };
 
   if (loading) {

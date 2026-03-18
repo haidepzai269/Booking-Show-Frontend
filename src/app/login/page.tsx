@@ -38,7 +38,17 @@ export default function LoginPage() {
       } }>("/users/me", {
         headers: { Authorization: `Bearer ${token}` }
       }).then((res) => {
-        const responseData = res as unknown as ApiResponse<any>;
+        const responseData = res as unknown as ApiResponse<{
+          id: number;
+          email: string;
+          full_name?: string;
+          fullName?: string;
+          role: string;
+          theme?: string;
+          language?: string;
+          rank?: string;
+          total_spending?: number;
+        }>;
         if (responseData.success && responseData.data) {
           const rawUser = responseData.data;
           const user = {

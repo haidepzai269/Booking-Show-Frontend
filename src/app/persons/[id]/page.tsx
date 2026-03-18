@@ -5,8 +5,9 @@ import { useParams } from "next/navigation";
 import { apiClient } from "@/lib/api";
 import { motion } from "framer-motion";
 import Header from "@/components/layout/Header";
-import { Calendar, MapPin, Star, User } from "lucide-react";
+import { Calendar, MapPin, User } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 
 interface Person {
   id: number;
@@ -38,10 +39,10 @@ export default function PersonDetail() {
     const fetchData = async () => {
       try {
         const [personRes, homeMoviesRes] = await Promise.all([
-          apiClient.get<any, { success: boolean; data: Person }>(
+          apiClient.get<void, { success: boolean; data: Person }>(
             `/persons/${id}`,
           ),
-          apiClient.get<any, { success: boolean; data: any }>(`/movies/home`),
+          apiClient.get<void, { success: boolean; data: { hot: Movie[]; best_selling: Movie[] } }>(`/movies/home`),
         ]);
 
         if (personRes.success) {
@@ -106,13 +107,15 @@ export default function PersonDetail() {
               animate={{ opacity: 1, scale: 1 }}
               className="relative aspect-[2/3] rounded-3xl overflow-hidden border border-white/10 shadow-2xl group"
             >
-              <img
+              <Image
                 src={
                   person.profile_path ||
                   "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?q=80&w=500&auto=format&fit=crop"
                 }
                 alt={person.name}
-                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                fill
+                className="object-cover transition-transform duration-700 group-hover:scale-105"
+                unoptimized
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-60"></div>
             </motion.div>
@@ -206,7 +209,7 @@ export default function PersonDetail() {
                 </div>
 
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                  {suggestedMovies.map((movie, idx) => (
+                  {suggestedMovies.map((movie) => (
                     <motion.div
                       key={movie.id}
                       whileHover={{ y: -10 }}
@@ -214,13 +217,15 @@ export default function PersonDetail() {
                     >
                       <Link href={`/movies/${movie.id}`}>
                         <div className="relative aspect-[2/3] rounded-2xl overflow-hidden border border-white/10 mb-4">
-                          <img
+                          <Image
                             src={
                               movie.poster_url ||
                               "https://images.unsplash.com/photo-1485846234645-a62644ef7467?q=80&w=500&auto=format&fit=crop"
                             }
                             alt={movie.title}
-                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                            fill
+                            className="object-cover transition-transform duration-500 group-hover:scale-110"
+                            unoptimized
                           />
                           <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-0 group-hover:opacity-80 transition-opacity flex items-end p-4">
                             <span className="text-xs font-bold bg-primary px-2 py-1 rounded">

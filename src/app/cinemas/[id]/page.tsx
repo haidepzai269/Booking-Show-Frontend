@@ -7,7 +7,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   MapPin,
   Clock,
-  ChevronLeft,
   Ticket,
   Building2,
   Film,
@@ -15,10 +14,10 @@ import {
   Calendar,
   Loader2,
   MonitorPlay,
-  ChevronRight,
   ArrowLeft,
 } from "lucide-react";
 import { apiClient } from "@/lib/api";
+import Image from "next/image";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 interface Cinema {
@@ -173,7 +172,7 @@ export default function CinemaDetailPage() {
         setLoadingMovies(false);
       }
     },
-    [cinemaId],
+    [cinemaId, days],
   );
 
   useEffect(() => {
@@ -209,13 +208,15 @@ export default function CinemaDetailPage() {
       {/* ── HERO BANNER ──────────────────────────────────────────────────────── */}
       <div className="relative h-[45vh] min-h-[340px] overflow-hidden">
         {/* Background */}
-        <img
+        <Image
           src={
             cinema.image_url ||
             "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?q=80&w=2070&auto=format&fit=crop"
           }
           alt={cinema.name}
+          fill
           className="absolute inset-0 w-full h-full object-cover"
+          unoptimized
         />
         <div className="absolute inset-0 bg-gradient-to-t from-background via-background/70 to-black/20" />
         <div className="absolute inset-0 bg-gradient-to-r from-background/60 to-transparent" />
@@ -423,14 +424,16 @@ export default function CinemaDetailPage() {
                           href={`/movies/${movie.movie_id}`}
                           className="flex-shrink-0"
                         >
-                          <div className="w-20 h-28 sm:w-24 sm:h-36 rounded-xl overflow-hidden bg-zinc-800 group">
-                            <img
+                          <div className="w-20 h-28 sm:w-24 sm:h-36 rounded-xl overflow-hidden bg-zinc-800 group relative">
+                            <Image
                               src={
                                 movie.poster_url ||
                                 "https://images.unsplash.com/photo-1440404653325-ab127d49abc1?q=80&w=400&auto=format&fit=crop"
                               }
                               alt={movie.title}
-                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                              fill
+                              className="object-cover group-hover:scale-105 transition-transform duration-500"
+                              unoptimized
                             />
                           </div>
                         </Link>
