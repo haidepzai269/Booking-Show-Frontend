@@ -128,7 +128,7 @@ function OrderCard({
   const room = order.showtime?.room;
   const showtimeId = order.showtime?.id;
   const isPending = order.status === "PENDING";
-  const isExpired = isPending && (expiredOrderIds.has(order.id) || new Date(order.expires_at).getTime() < Date.now());
+  const isExpired = isPending && expiredOrderIds.has(order.id);
 
   return (
     <motion.div
@@ -259,8 +259,18 @@ export default function MyOrdersPage() {
           "/orders/my"
         );
         // Kiểm tra đúng kiểu trả về của apiClient (thường axios bọc trong data)
-        const responseData = res as unknown as ApiResponse<any>;
+        const responseData = res as unknown as ApiResponse<OrderData[]>;
         if (responseData.success && responseData.data) {
+          const now = Date.now();
+          const alreadyExpired = new Set<string>();
+          responseData.data.forEach((o) => {
+            if (o.status === "PENDING" && o.expires_at && new Date(o.expires_at).getTime() < now) {
+              alreadyExpired.add(o.id);
+            }
+          });
+          if (alreadyExpired.size > 0) {
+            setExpiredOrderIds(alreadyExpired);
+          }
           setOrders(responseData.data);
         }
       } catch (err) {
