@@ -1,9 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { useAuthStore } from "@/store/authStore";
 import { ThemeType, themes } from "@/lib/themeConfig";
-import { apiClient } from "@/lib/api";
 
 interface ThemeContextType {
   currentTheme: ThemeType;
@@ -21,7 +19,6 @@ export const useTheme = () => {
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const { user } = useAuthStore();
   const [currentTheme, setCurrentTheme] = useState<ThemeType>("dark");
 
   // Theme logic simplified - always dark after settings removal

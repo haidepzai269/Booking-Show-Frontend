@@ -15,7 +15,7 @@ import {
 import { apiClient } from "@/lib/api";
 import Link from "next/link";
 import { format } from "date-fns";
-import { vi } from "date-fns/locale";
+import Image from "next/image";
 import Header from "@/components/layout/Header";
 
 interface TicketData {
@@ -57,7 +57,7 @@ export default function MyTicketsPage() {
   useEffect(() => {
     const fetchTickets = async () => {
       try {
-        const res = (await apiClient.get("/tickets/my")) as any;
+        const res = (await apiClient.get("/tickets/my")) as { success: boolean; data: TicketData[] };
         if (res?.success) {
           setTickets(res.data || []);
         }
@@ -140,13 +140,15 @@ export default function MyTicketsPage() {
                   >
                     {/* Poster Section (Left) */}
                     <div className="sm:w-48 h-48 sm:h-auto shrink-0 relative">
-                      <img
+                      <Image
                         src={
                           movie?.poster_url ||
                           "https://images.unsplash.com/photo-1440404653325-ab127d49abc1"
                         }
-                        alt={movie?.title}
-                        className="w-full h-full object-cover"
+                        alt={movie?.title || "Movie"}
+                        fill
+                        className="object-cover"
+                        unoptimized
                       />
                       <div className="absolute inset-0 bg-gradient-to-r from-transparent to-[#1f1f1f] hidden sm:block"></div>
                       <div className="absolute inset-0 bg-gradient-to-t from-[#1f1f1f] to-transparent sm:hidden"></div>

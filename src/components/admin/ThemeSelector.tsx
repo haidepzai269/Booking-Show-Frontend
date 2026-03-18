@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
-import { ThemeType, themes } from "@/lib/themeConfig";
+import { ThemeType } from "@/lib/themeConfig";
 import { useTheme } from "./ThemeProvider";
 import { Palette, Check } from "lucide-react";
 

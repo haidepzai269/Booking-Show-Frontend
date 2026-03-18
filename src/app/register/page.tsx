@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Mail, Lock, User, Loader2, ArrowRight, CheckCircle2, AlertCircle, Fingerprint } from "lucide-react";
+import { Mail, Lock, User, Loader2, ArrowRight, CheckCircle2, AlertCircle } from "lucide-react";
 import AuthSplitLayout from "@/components/auth/AuthSplitLayout";
 import { apiClient } from "@/lib/api";
 import { ApiResponse } from "@/types/api";
@@ -26,7 +26,7 @@ export default function RegisterPage() {
   const [emailStatus, setEmailStatus] = useState<"idle" | "valid" | "invalid">("idle");
 
   // Logic kiểm tra trùng lặp với Debounce
-  const checkAvailability = useCallback(
+  const checkAvailabilityRef = useRef(
     debounce(async (value: string, type: "fullname" | "email") => {
       if (!value || value.length < (type === "fullname" ? 3 : 5)) {
         if (type === "fullname") setFullNameStatus("idle");
@@ -55,9 +55,10 @@ export default function RegisterPage() {
         if (type === "fullname") setCheckingFullName(false);
         else setCheckingEmail(false);
       }
-    }, 500),
-    []
+    }, 500)
   );
+
+  const checkAvailability = checkAvailabilityRef.current;
 
   useEffect(() => {
     checkAvailability(fullName, "fullname");
@@ -88,7 +89,7 @@ export default function RegisterPage() {
       }
     } catch (err: unknown) {
       setError(
-        (err as any).response?.data?.error ||
+        (err as { response?: { data?: { error?: string } } }).response?.data?.error ||
           "Đăng ký thất bại, vui lòng kiểm tra lại thông tin.",
       );
     } finally {

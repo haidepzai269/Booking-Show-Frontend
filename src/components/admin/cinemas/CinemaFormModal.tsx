@@ -323,7 +323,7 @@ export default function CinemaFormModal({
               </div>
             </div>
             <p className="text-xs text-zinc-600 mt-1.5">
-              Nhập tọa độ để hỗ trợ tính năng "Tìm rạp gần bạn nhất" cho người
+              Nhập tọa độ để hỗ trợ tính năng &quot;Tìm rạp gần bạn nhất&quot; cho người
               dùng.
             </p>
           </div>

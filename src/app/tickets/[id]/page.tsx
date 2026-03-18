@@ -75,7 +75,7 @@ export default function TicketBoardingPass() {
           setError(res.error || "Không tìm thấy vé");
         }
       } catch (err: unknown) {
-        setError((err as any).response?.data?.error || "Lỗi tải dữ liệu vé");
+        setError((err as { response?: { data?: { error?: string } } }).response?.data?.error || "Lỗi tải dữ liệu vé");
       } finally {
         setLoading(false);
       }

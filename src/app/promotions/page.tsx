@@ -10,6 +10,7 @@ import {
   RefreshCw,
   WifiOff,
 } from "lucide-react";
+import Image from "next/image";
 
 const API_BASE =
   process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api/v1";
@@ -89,10 +90,12 @@ function CampaignCard({ c }: { c: Campaign }) {
       {/* Thumbnail */}
       <div className="relative aspect-[16/9] bg-zinc-800 overflow-hidden">
         {c.thumbnail_url ? (
-          <img
+          <Image
             src={c.thumbnail_url}
             alt={c.title}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+            fill
+            className="object-cover group-hover:scale-105 transition-transform duration-500"
+            unoptimized
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center">

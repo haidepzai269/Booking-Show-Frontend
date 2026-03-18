@@ -38,7 +38,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
         ? { email: formData.email, password: formData.password }
         : { ...formData, role: "USER" };
 
-      const res = await apiClient.post<ApiResponse<any>>(endpoint, payload) as unknown as ApiResponse<any>;
+      const res = await apiClient.post<ApiResponse<{ access_token: string; user: { id: number; email: string; full_name: string; role: string } }>>(endpoint, payload) as unknown as ApiResponse<{ access_token: string; user: { id: number; email: string; full_name: string; role: string } }>;
 
       if (res.success) {
         if (!isLogin) {
@@ -47,14 +47,21 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
           setError("Đăng ký thành công! Hãy đăng nhập lại.");
         } else {
           // Login
-          setAuth(res.data.access_token, res.data.user);
+          setAuth(res.data.access_token, {
+            id: res.data.user.id,
+            email: res.data.user.email,
+            fullName: res.data.user.full_name,
+            role: res.data.user.role,
+            theme: "dark",
+            language: "vi",
+          });
           onClose(); // Tắt modal
         }
       } else {
         setError(res.error || "Có lỗi xảy ra");
       }
     } catch (err: unknown) {
-      const errorMsg = (err as any).response?.data?.error || "Không thể kết nối Server.";
+      const errorMsg = (err as { response?: { data?: { error?: string } } }).response?.data?.error || "Không thể kết nối Server.";
       setError(errorMsg);
     } finally {
       setLoading(false);

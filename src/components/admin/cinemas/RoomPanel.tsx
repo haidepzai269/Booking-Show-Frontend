@@ -48,10 +48,10 @@ export default function RoomPanel({ cinemaId }: { cinemaId: number }) {
 
     setCreating(true);
     try {
-      const res = await apiClient.post<ApiResponse<any>>(`/admin/cinemas/${cinemaId}/rooms`, {
+      const res = await apiClient.post<ApiResponse<{ id: number; name: string }>>(`/admin/cinemas/${cinemaId}/rooms`, {
         name: newRoom.name,
         capacity: parseInt(newRoom.capacity),
-      }) as unknown as ApiResponse<any>;
+      }) as unknown as ApiResponse<{ id: number; name: string }>;
 
       if (res.success) {
         setNewRoom({ name: "", capacity: "" });

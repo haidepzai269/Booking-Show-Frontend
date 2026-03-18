@@ -14,6 +14,7 @@ import {
   WifiOff,
   RefreshCw,
 } from "lucide-react";
+import Image from "next/image";
 
 const API_BASE =
   process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api/v1";
@@ -190,10 +191,12 @@ export default function CampaignDetailPage({
       {/* Hero Banner */}
       <div className="relative w-full h-[40vh] sm:h-[50vh] max-h-[500px] bg-zinc-900 overflow-hidden">
         {campaign.banner_url || campaign.thumbnail_url ? (
-          <img
+          <Image
             src={campaign.banner_url || campaign.thumbnail_url}
             alt={campaign.title}
-            className="w-full h-full object-cover"
+            fill
+            className="object-cover"
+            unoptimized
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-orange-950/50 to-pink-950/30">
