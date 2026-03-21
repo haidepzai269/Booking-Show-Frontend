@@ -28,33 +28,63 @@ function ToastNotification({
   notif: AdminNotification;
   onClose: () => void;
 }) {
+  const duration = 8000;
+  const [progress, setProgress] = useState(100);
+
   useEffect(() => {
-    const timer = setTimeout(onClose, 5000);
-    return () => clearTimeout(timer);
+    const startTime = Date.now();
+    const interval = setInterval(() => {
+      const elapsed = Date.now() - startTime;
+      const remaining = Math.max(0, 100 - (elapsed / duration) * 100);
+      setProgress(remaining);
+      if (elapsed >= duration) {
+        clearInterval(interval);
+        onClose();
+      }
+    }, 50);
+
+    return () => clearInterval(interval);
   }, [onClose]);
 
   return (
-    <div className="flex items-start gap-3 bg-[var(--bg-sidebar)] border border-[var(--primary)]/30 rounded-xl p-4 shadow-2xl w-80 animate-slide-in-right">
-      <div className="w-9 h-9 bg-[var(--primary)]/20 rounded-lg flex items-center justify-center shrink-0 mt-0.5">
-        <Ticket size={16} className="text-[var(--primary)]" />
+    <div className="relative group overflow-hidden flex items-start gap-4 bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl p-4 shadow-[0_20px_50px_rgba(0,0,0,0.3)] w-[340px] animate-slide-in-right transform transition-all hover:scale-[1.02] hover:bg-white/15">
+      {/* Glow effect */}
+      <div className="absolute -inset-1 bg-gradient-to-r from-[var(--primary)]/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity blur-xl rounded-2xl" />
+      
+      <div className="relative w-11 h-11 bg-[var(--primary)]/20 border border-[var(--primary)]/30 rounded-xl flex items-center justify-center shrink-0 mt-0.5">
+        <div className="absolute inset-0 bg-[var(--primary)]/10 animate-pulse rounded-xl" />
+        <Ticket size={20} className="text-[var(--primary)] relative z-10" />
       </div>
-      <div className="flex-1 min-w-0">
-        <p className="text-white text-sm font-medium leading-tight">
-          🎟️ {notif.user_name} vừa mua {notif.seats} vé
+      
+      <div className="relative flex-1 min-w-0">
+        <p className="text-white text-[15px] font-semibold leading-tight tracking-tight">
+          {notif.user_name}
         </p>
-        <p className="text-white/50 text-xs mt-0.5 truncate">
-          📽️ {notif.movie_title}
+        <p className="text-white/80 text-sm mt-1 leading-snug">
+          Vừa mua <span className="text-[var(--primary)] font-bold">{notif.seats} vé</span>
         </p>
-        <p className="text-[var(--primary)] text-xs font-medium mt-1">
-          +{notif.amount.toLocaleString("vi-VN")}đ
-        </p>
+        <div className="flex items-center gap-2 mt-2">
+          <div className="px-2 py-0.5 bg-white/5 rounded-md border border-white/10">
+             <p className="text-white/40 text-[10px] uppercase font-bold tracking-wider truncate max-w-[120px]">
+              {notif.movie_title}
+            </p>
+          </div>
+          <p className="text-green-400 text-sm font-bold bg-green-400/10 px-2 py-0.5 rounded-md border border-green-400/20">
+            +{notif.amount.toLocaleString("vi-VN")}đ
+          </p>
+        </div>
       </div>
+
       <button
         onClick={onClose}
-        className="text-white/30 hover:text-white shrink-0 mt-0.5 transition-colors"
+        className="relative w-8 h-8 flex items-center justify-center text-white/30 hover:text-white hover:bg-white/10 rounded-full transition-all shrink-0 -mr-2 -mt-2"
       >
-        <X size={14} />
+        <X size={16} />
       </button>
+
+      {/* Progress Bar */}
+      <div className="absolute bottom-0 left-0 h-1 bg-gradient-to-r from-transparent via-[var(--primary)]/50 to-[var(--primary)] transition-all ease-linear" 
+           style={{ width: `${progress}%` }} />
     </div>
   );
 }
@@ -93,7 +123,7 @@ export default function AdminNotification() {
     <>
       {/* Toast Portal – góc phải dưới */}
       {toastQueue.length > 0 && (
-        <div className="fixed bottom-6 right-6 z-[9999] flex flex-col gap-3 pointer-events-none">
+        <div className="fixed bottom-4 right-6 z-[9999] flex flex-col gap-3 pointer-events-none">
           {toastQueue.slice(-3).map((n) => (
             <div key={n.id} className="pointer-events-auto">
               <ToastNotification notif={n} onClose={() => dismissToast(n.id)} />

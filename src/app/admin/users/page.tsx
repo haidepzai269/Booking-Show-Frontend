@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { Search, Loader2, Users, ShieldAlert } from "lucide-react";
+import TableSkeleton from "@/components/admin/TableSkeleton";
 import { apiClient } from "@/lib/api";
 
 interface User {
@@ -104,15 +105,7 @@ export default function UsersPage() {
             </thead>
             <tbody className="divide-y divide-zinc-800">
               {loading ? (
-                <tr>
-                  <td
-                    colSpan={4}
-                    className="px-6 py-8 text-center text-zinc-500"
-                  >
-                    <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2" />
-                    Đang tải dữ liệu...
-                  </td>
-                </tr>
+                <TableSkeleton rows={10} cols={4} />
               ) : users.length === 0 ? (
                 <tr>
                   <td
@@ -172,7 +165,8 @@ export default function UsersPage() {
 
         <div className="p-4 border-t border-zinc-800 flex justify-between items-center text-sm text-zinc-400">
           <div>
-            Hiển thị {users.length} / {total} user
+            Hiển thị {total > 0 ? (page - 1) * limit + 1 : 0} -{" "}
+            {Math.min(page * limit, total)} / {total} user
           </div>
           <div className="flex gap-2">
             <button

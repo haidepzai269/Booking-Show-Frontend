@@ -36,14 +36,32 @@ export function useAdminNotifications() {
 
       const BASE_URL =
         process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api/v1";
-      const url = `${BASE_URL}/admin/notifications/stream?token=${token}`;
+      const url = `${BASE_URL}/admin/notifications/stream?token=${token}&t=${Date.now()}`;
+      console.log("📡 Attempting SSE connection with token:", token.substring(0, 10) + "...");
       const es = new EventSource(url);
 
       esRef.current = es;
 
+      es.onopen = () => {
+        console.log("✅ SSE Connected successfully");
+      };
+
       es.addEventListener("notification", (e) => {
         try {
-          const data = JSON.parse(e.data) as Omit<
+          const rawData = JSON.parse(e.data);
+          console.log("🔔 SSE Received:", rawData);
+          
+          if (rawData.type === "room_updated") {
+             // Dispatch a custom event for room updates
+             window.dispatchEvent(new CustomEvent("room-updated", { detail: rawData }));
+             return;
+          }
+
+          if (rawData.type !== "order_completed") {
+            return;
+          }
+
+          const data = rawData as Omit<
             AdminNotification,
             "id" | "read"
           >;

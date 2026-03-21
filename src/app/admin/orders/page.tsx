@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { Search, Loader2, Eye, Receipt } from "lucide-react";
 import OrderDetailModal from "@/components/admin/orders/OrderDetailModal";
+import TableSkeleton from "@/components/admin/TableSkeleton";
 import { apiClient } from "@/lib/api";
 
 interface Order {
@@ -92,15 +93,7 @@ export default function AdminOrdersPage() {
             </thead>
             <tbody className="divide-y divide-zinc-800">
               {loading ? (
-                <tr>
-                  <td
-                    colSpan={6}
-                    className="px-6 py-8 text-center text-zinc-500"
-                  >
-                    <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2" />
-                    Đang tải dữ liệu...
-                  </td>
-                </tr>
+                <TableSkeleton rows={10} cols={6} />
               ) : orders.length === 0 ? (
                 <tr>
                   <td
@@ -173,7 +166,8 @@ export default function AdminOrdersPage() {
 
         <div className="p-4 border-t border-zinc-800 flex justify-between items-center text-sm text-zinc-400">
           <div>
-            Hiển thị {orders.length} / {total} đơn hàng
+            Hiển thị {total > 0 ? (page - 1) * limit + 1 : 0} -{" "}
+            {Math.min(page * limit, total)} / {total} đơn hàng
           </div>
           <div className="flex gap-2">
             <button

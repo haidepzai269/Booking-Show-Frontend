@@ -17,6 +17,7 @@ import {
   CheckCircle2,
   XCircle,
 } from "lucide-react";
+import TableSkeleton from "@/components/admin/TableSkeleton";
 
 interface Showtime {
   id: number;
@@ -414,8 +415,12 @@ export default function AdminShowtimesPage() {
       {/* Table */}
       <div className="bg-white/[0.03] border border-white/5 rounded-2xl overflow-hidden">
         {loading ? (
-          <div className="flex items-center justify-center py-20">
-            <Loader2 size={24} className="animate-spin text-[#e50914]" />
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <tbody className="divide-y divide-white/[0.03]">
+                <TableSkeleton rows={10} cols={7} />
+              </tbody>
+            </table>
           </div>
         ) : !showtimes?.length ? (
           <div className="flex flex-col items-center justify-center py-20 gap-3">
@@ -540,7 +545,8 @@ export default function AdminShowtimesPage() {
         {totalPages > 1 && (
           <div className="flex items-center justify-between px-5 py-3.5 border-t border-white/5">
             <span className="text-white/30 text-xs">
-              Trang {page} / {totalPages}
+              Hiển thị {total > 0 ? (page - 1) * limit + 1 : 0} -{" "}
+              {Math.min(page * limit, total)} / {total} suất chiếu
             </span>
             <div className="flex items-center gap-1.5">
               <button

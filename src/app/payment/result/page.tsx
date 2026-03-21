@@ -147,8 +147,11 @@ function PaymentResultContent() {
 
   if (status === "loading") {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-background gap-6">
-        <div className="relative">
+      <div 
+        className="flex flex-col items-center justify-center min-h-screen bg-background gap-6"
+        suppressHydrationWarning
+      >
+        <div className="relative" suppressHydrationWarning>
           <div className="w-24 h-24 rounded-full border-4 border-primary/20 border-t-primary animate-spin" />
           <div className="absolute inset-0 flex items-center justify-center">
             <Loader2 className="w-8 h-8 text-primary animate-spin" />
@@ -163,7 +166,10 @@ function PaymentResultContent() {
 
   if (status === "success") {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-background px-6">
+      <div 
+        className="flex flex-col items-center justify-center min-h-screen bg-background px-6"
+        suppressHydrationWarning
+      >
         {/* Confetti effect via CSS */}
         <div className="relative flex flex-col items-center gap-8 max-w-md w-full">
           {/* Success Icon */}
@@ -259,8 +265,11 @@ function PaymentResultContent() {
 
   if (status === "cancelled") {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-background px-6">
-        <div className="relative flex flex-col items-center gap-8 max-w-md w-full">
+      <div 
+        className="flex flex-col items-center justify-center min-h-screen bg-background px-6"
+        suppressHydrationWarning
+      >
+        <div className="relative flex flex-col items-center gap-8 max-w-md w-full" suppressHydrationWarning>
           <div className="w-32 h-32 rounded-full bg-yellow-500/10 flex items-center justify-center border-2 border-yellow-500/30 shadow-[0_0_60px_rgba(234,179,8,0.2)]">
             <XCircle className="w-16 h-16 text-yellow-400" />
           </div>
@@ -294,8 +303,11 @@ function PaymentResultContent() {
 
   // Failed
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-background px-6">
-      <div className="relative flex flex-col items-center gap-8 max-w-md w-full">
+    <div 
+      className="flex flex-col items-center justify-center min-h-screen bg-background px-6"
+      suppressHydrationWarning
+    >
+      <div className="relative flex flex-col items-center gap-8 max-w-md w-full" suppressHydrationWarning>
         <div className="w-32 h-32 rounded-full bg-red-500/10 flex items-center justify-center border-2 border-red-500/30 shadow-[0_0_60px_rgba(239,68,68,0.2)]">
           <XCircle className="w-16 h-16 text-red-400" />
         </div>

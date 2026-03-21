@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { Plus, Pencil, Trash2, Loader2, AlertCircle } from "lucide-react";
 import PromotionFormModal from "@/components/admin/promotions/PromotionFormModal";
+import TableSkeleton from "@/components/admin/TableSkeleton";
 import { apiClient } from "@/lib/api";
 
 interface Promotion {
@@ -120,15 +121,7 @@ export default function PromotionsPage() {
             </thead>
             <tbody className="divide-y divide-zinc-800">
               {loading ? (
-                <tr>
-                  <td
-                    colSpan={7}
-                    className="px-6 py-8 text-center text-zinc-500"
-                  >
-                    <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2" />
-                    Đang tải dữ liệu...
-                  </td>
-                </tr>
+                <TableSkeleton rows={8} cols={7} />
               ) : promotions.length === 0 ? (
                 <tr>
                   <td
@@ -235,7 +228,8 @@ export default function PromotionsPage() {
 
         <div className="p-4 border-t border-zinc-800 flex justify-between items-center text-sm text-zinc-400">
           <div>
-            Hiển thị {promotions.length} / {total} voucher
+            Hiển thị {total > 0 ? (page - 1) * limit + 1 : 0} -{" "}
+            {Math.min(page * limit, total)} / {total} voucher
           </div>
           <div className="flex gap-2">
             <button

@@ -8,6 +8,7 @@ import {
   Loader2,
   GripHorizontal,
   Move,
+  Sparkles,
 } from "lucide-react";
 import { apiClient } from "@/lib/api";
 import { ApiResponse } from "@/types/api";
@@ -42,9 +43,38 @@ export default function SeatDesignerModal({ isOpen, onClose, roomId }: Props) {
   } | null>(null);
   const [isSnapEnabled, setIsSnapEnabled] = useState(true);
   const [lastMousePos, setLastMousePos] = useState({ x: 0, y: 0 });
+  const [activeLayout, setActiveLayout] = useState<string | null>(null);
   const [isControlsCollapsed, setIsControlsCollapsed] = useState(false);
+  const [aiPrompt, setAiPrompt] = useState("");
+  const [loadingAI, setLoadingAI] = useState(false);
 
   const svgRef = useRef<SVGSVGElement>(null);
+
+  const getRows = (currentSeats: Seat[]) => {
+    return Array.from(new Set(currentSeats.map((s) => s.row_char))).sort();
+  };
+
+  const calculateSquareLayout = (currentSeats: Seat[]) => {
+    const rows = getRows(currentSeats);
+    const spacingX = 50;
+    const spacingY = 50;
+    const startX = 200; // Dịch sang phải một chút cho đẹp
+    const startY = 150;
+
+    const newSeats = [...currentSeats];
+    rows.forEach((row, rIdx) => {
+      const rowSeats = newSeats
+        .filter((s) => s.row_char === row)
+        .sort((a, b) => a.seat_number - b.seat_number);
+
+      rowSeats.forEach((s, sIdx) => {
+        s.x = startX + sIdx * spacingX;
+        s.y = startY + rIdx * spacingY;
+        s.angle = 0;
+      });
+    });
+    return newSeats;
+  };
 
   const fetchSeats = useCallback(async () => {
     if (!roomId) return;
@@ -55,17 +85,26 @@ export default function SeatDesignerModal({ isOpen, onClose, roomId }: Props) {
       ) as unknown as ApiResponse<Seat[]>;
       
       if (res.success && res.data) {
-        // Nếu data rỗng hoặc toàn bộ seat là "hidden", khởi tạo grid mới
         if (
           res.data.length === 0 ||
           res.data.every((s) => s.type === "hidden")
         ) {
           setSeats([]);
         } else {
-          const mapped = res.data.map((s, i) => ({
+          let mapped = res.data.map((s, i) => ({
             ...s,
             id: s.id || i,
+            x: Number(s.x) || 0,
+            y: Number(s.y) || 0,
+            angle: Number(s.angle) || 0,
           }));
+
+          const needsAutoLayout = mapped.every(s => s.x === 0 && s.y === 0);
+          if (needsAutoLayout) {
+            mapped = calculateSquareLayout(mapped);
+            setActiveLayout("square");
+          }
+
           setSeats(mapped);
         }
       }
@@ -127,6 +166,7 @@ export default function SeatDesignerModal({ isOpen, onClose, roomId }: Props) {
 
     if (id !== undefined) {
       setDraggedSeatId(id);
+      setActiveLayout(null); // Khi di chuyển ghế, hủy trạng thái layout mẫu
       if (!selectedIds.includes(id)) {
         if (e.ctrlKey || e.shiftKey) {
           setSelectedIds((prev) => [...prev, id]);
@@ -202,6 +242,7 @@ export default function SeatDesignerModal({ isOpen, onClose, roomId }: Props) {
   };
 
   const rotateSelected = (delta: number) => {
+    setActiveLayout(null);
     setSeats((prev) =>
       prev.map((s) =>
         selectedIds.includes(s.id)
@@ -212,6 +253,7 @@ export default function SeatDesignerModal({ isOpen, onClose, roomId }: Props) {
   };
 
   const alignHorizontal = () => {
+    setActiveLayout(null);
     if (selectedIds.length < 2) return;
     const selectedSeats = seats.filter((s) => selectedIds.includes(s.id));
     const avgY = selectedSeats.reduce((acc, s) => acc + s.y, 0) / selectedSeats.length;
@@ -225,6 +267,7 @@ export default function SeatDesignerModal({ isOpen, onClose, roomId }: Props) {
   };
 
   const alignVertical = () => {
+    setActiveLayout(null);
     if (selectedIds.length < 2) return;
     const selectedSeats = seats.filter((s) => selectedIds.includes(s.id));
     const avgX = selectedSeats.reduce((acc, s) => acc + s.x, 0) / selectedSeats.length;
@@ -237,22 +280,148 @@ export default function SeatDesignerModal({ isOpen, onClose, roomId }: Props) {
     );
   };
 
-  const autoGridLayout = () => {
+  const applySquareLayout = () => {
     if (seats.length === 0) return;
-    const cols = 15;
-    const spacingX = 50;
+    setActiveLayout("square");
+    const rows = getRows(seats);
+    const standardSpacingX = 50;
     const spacingY = 50;
-    const startX = 150;
+    const centerX = 500;
     const startY = 150;
 
-    setSeats((prev) =>
-      prev.map((s, i) => ({
-        ...s,
-        x: startX + (i % cols) * spacingX,
-        y: startY + Math.floor(i / cols) * spacingY,
-        angle: 0,
-      })),
-    );
+    // Tìm số ghế lớn nhất để xác định chiều rộng chuẩn của "khối vuông"
+    const maxRowSeats = Math.max(...rows.map(r => seats.filter(s => s.row_char === r).length));
+    const targetWidth = (maxRowSeats - 1) * standardSpacingX;
+
+    setSeats((prev) => {
+      const newSeats = [...prev];
+      rows.forEach((row, rIdx) => {
+        const rowSeats = newSeats
+          .filter((s) => s.row_char === row)
+          .sort((a, b) => a.seat_number - b.seat_number);
+
+        // Tính toán khoảng cách ghế cho hàng này để lấp đầy targetWidth
+        // Giúp các hàng ít ghế hơn vẫn trải dài bằng hàng nhiều ghế -> tạo khối vuông
+        const rowSpacingX = rowSeats.length > 1 
+          ? targetWidth / (rowSeats.length - 1)
+          : 0;
+
+        const rowStartX = centerX - targetWidth / 2;
+
+        rowSeats.forEach((s, sIdx) => {
+          s.x = rowSeats.length > 1 
+            ? rowStartX + sIdx * rowSpacingX
+            : centerX; // Nếu chỉ có 1 ghế thì đặt ở giữa
+          s.y = startY + rIdx * spacingY;
+          s.angle = 0;
+        });
+      });
+      return newSeats;
+    });
+  };
+
+  const applyLadderLayout = () => {
+    if (seats.length === 0) return;
+    setActiveLayout("ladder");
+    const rows = getRows(seats);
+    const standardSpacingX = 50;
+    const spacingY = 50;
+    const centerX = 500;
+    const startY = 150;
+
+    const maxRowSeats = Math.max(...rows.map(r => seats.filter(s => s.row_char === r).length));
+    const maxWidth = (maxRowSeats - 1) * standardSpacingX;
+
+    setSeats((prev) => {
+      const newSeats = [...prev];
+      rows.forEach((row, rIdx) => {
+        const rowSeats = newSeats
+          .filter((s) => s.row_char === row)
+          .sort((a, b) => a.seat_number - b.seat_number);
+
+        // Hiệu ứng hình thang: Chiều rộng hàng tăng dần từ 60% đến 100% maxWidth
+        const rowWidthFactor = rows.length > 1 
+          ? 0.6 + (rIdx / (rows.length - 1)) * 0.4
+          : 1;
+        
+        const targetRowWidth = maxWidth * rowWidthFactor;
+        const rowSpacingX = rowSeats.length > 1 
+          ? targetRowWidth / (rowSeats.length - 1)
+          : 0;
+
+        const rowStartX = centerX - targetRowWidth / 2;
+
+        rowSeats.forEach((s, sIdx) => {
+          s.x = rowSeats.length > 1 
+            ? rowStartX + sIdx * rowSpacingX
+            : centerX;
+          s.y = startY + rIdx * spacingY;
+          s.angle = 0;
+        });
+      });
+      return newSeats;
+    });
+  };
+
+  const applyArchLayout = () => {
+    if (seats.length === 0) return;
+    setActiveLayout("arch");
+    const rows = getRows(seats);
+    const centerX = 500;
+    const centerY = -100;
+    const baseRadius = 350;
+    const spacingY = 60;
+    const span = Math.PI / 2.5; // Khoảng 72 độ
+
+    setSeats((prev) => {
+      const newSeats = [...prev];
+      rows.forEach((row, rIdx) => {
+        const rowSeats = newSeats
+          .filter((s) => s.row_char === row)
+          .sort((a, b) => a.seat_number - b.seat_number);
+
+        const r = baseRadius + rIdx * spacingY;
+        const startAngle = (Math.PI - span) / 2;
+        const step = rowSeats.length > 1 ? span / (rowSeats.length - 1) : 0;
+
+        rowSeats.forEach((s, sIdx) => {
+          const angle = startAngle + sIdx * step;
+          s.x = centerX + r * Math.cos(angle);
+          s.y = centerY + r * Math.sin(angle);
+          s.angle = ((angle - Math.PI / 2) * 180) / Math.PI;
+        });
+      });
+      return newSeats;
+    });
+  };
+
+  const handleAIGenerate = async () => {
+    if (!aiPrompt.trim() || !roomId) return;
+    try {
+      setLoadingAI(true);
+      setActiveLayout(null);
+      const res = await apiClient.post<ApiResponse<Seat[]>>(
+        `/admin/rooms/${roomId}/seats/ai-layout`,
+        { prompt: aiPrompt },
+      ) as unknown as ApiResponse<Seat[]>;
+      
+      if (res.success && res.data) {
+        setSeats(res.data.map(s => ({
+          ...s,
+          x: Number(s.x),
+          y: Number(s.y),
+          angle: Number(s.angle)
+        })));
+        setAiPrompt(""); // Clear prompt sau khi xong
+      } else {
+        alert("AI không thể xử lý yêu cầu này. Hãy thử mô tả rõ ràng hơn.");
+      }
+    } catch (error) {
+      console.error("AI Generation failed:", error);
+      alert("Đã có lỗi xảy ra khi gọi AI.");
+    } finally {
+      setLoadingAI(false);
+    }
   };
 
   if (!isOpen) return null;
@@ -277,13 +446,13 @@ export default function SeatDesignerModal({ isOpen, onClose, roomId }: Props) {
               <div className="flex items-center gap-1 bg-zinc-800/50 p-1 rounded-xl border border-white/5">
                 <button
                   onClick={alignHorizontal}
-                  className="px-3 py-1.5 hover:bg-white/10 text-zinc-300 text-[10px] font-bold rounded-lg transition-colors border border-transparent hover:border-white/10"
+                  className="px-2 py-1.5 hover:bg-white/10 text-zinc-300 text-[10px] font-bold rounded-lg transition-colors border border-transparent hover:border-white/10"
                 >
                   Căn Ngang
                 </button>
                 <button
                   onClick={alignVertical}
-                  className="px-3 py-1.5 hover:bg-white/10 text-zinc-300 text-[10px] font-bold rounded-lg transition-colors border border-transparent hover:border-white/10"
+                  className="px-2 py-1.5 hover:bg-white/10 text-zinc-300 text-[10px] font-bold rounded-lg transition-colors border border-transparent hover:border-white/10"
                 >
                   Căn Dọc
                 </button>
@@ -297,13 +466,57 @@ export default function SeatDesignerModal({ isOpen, onClose, roomId }: Props) {
                 </button>
               </div>
             )}
-            <button
-              onClick={autoGridLayout}
-              className="px-3 py-1.5 bg-blue-600/20 hover:bg-blue-600/30 text-blue-400 text-[10px] font-bold rounded-xl border border-blue-500/30 transition-all flex items-center gap-1.5"
-            >
-              <RotateCcw className="w-3 h-3" />
-              Xếp Lưới Tự Động
-            </button>
+            
+            <div className="flex items-center gap-2 bg-zinc-800/30 p-1 rounded-xl border border-white/5">
+               <span className="text-[9px] font-bold text-zinc-500 uppercase px-2">Xếp nhanh</span>
+               <button
+                 onClick={() => applySquareLayout()}
+                 className={`px-3 py-1.5 text-[10px] font-bold rounded-lg transition-all ${
+                   activeLayout === "square" ? "bg-red-600 text-white shadow-lg shadow-red-900/40" : "hover:bg-white/5 text-zinc-300"
+                 }`}
+               >
+                 Vuông
+               </button>
+               <button
+                 onClick={() => applyLadderLayout()}
+                 className={`px-3 py-1.5 text-[10px] font-bold rounded-lg transition-all ${
+                   activeLayout === "ladder" ? "bg-red-600 text-white shadow-lg shadow-red-900/40" : "hover:bg-white/5 text-zinc-300"
+                 }`}
+               >
+                 Thang
+               </button>
+               <button
+                 onClick={() => applyArchLayout()}
+                 className={`px-3 py-1.5 text-[10px] font-bold rounded-lg transition-all ${
+                   activeLayout === "arch" ? "bg-red-600 text-white shadow-lg shadow-red-900/40" : "hover:bg-white/5 text-zinc-300"
+                 }`}
+               >
+                 Vòm
+               </button>
+            </div>
+
+            {/* AI Designer Input */}
+            <div className="flex items-center gap-2 bg-indigo-900/20 p-1 rounded-xl border border-indigo-500/20 ml-2">
+               <div className="flex items-center gap-2 px-2">
+                 <Sparkles className="w-3 h-3 text-indigo-400 animate-pulse" />
+                 <input 
+                   type="text"
+                   value={aiPrompt}
+                   onChange={(e) => setAiPrompt(e.target.value)}
+                   onKeyDown={(e) => e.key === "Enter" && handleAIGenerate()}
+                   placeholder="AI Designer: 'Xếp hình thoi', 'Chia 2 block'..."
+                   className="bg-transparent border-none outline-none text-[11px] text-indigo-100 placeholder:text-indigo-400/50 w-64"
+                   disabled={loadingAI}
+                 />
+               </div>
+               <button
+                 onClick={handleAIGenerate}
+                 disabled={loadingAI || !aiPrompt.trim()}
+                 className="bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white px-3 py-1.5 rounded-lg text-[10px] font-bold transition-all flex items-center gap-2 shadow-lg shadow-indigo-900/40"
+               >
+                 {loadingAI ? <Loader2 className="w-3 h-3 animate-spin" /> : "Gửi lệnh"}
+               </button>
+            </div>
           </div>
 
           <div className="flex items-center gap-4">
@@ -341,11 +554,7 @@ export default function SeatDesignerModal({ isOpen, onClose, roomId }: Props) {
 
         <div className="flex-1 overflow-hidden bg-[#0c0c0c] relative h-full">
           <div
-            className="absolute inset-0 opacity-[0.03] pointer-events-none"
-            style={{
-              backgroundImage: "radial-gradient(#fff 1px, transparent 1px)",
-              backgroundSize: "20px 20px",
-            }}
+            className="absolute inset-0 pointer-events-none"
           ></div>
 
           {loading ? (
@@ -363,6 +572,16 @@ export default function SeatDesignerModal({ isOpen, onClose, roomId }: Props) {
               onMouseLeave={handleMouseUp}
             >
               <defs>
+                {/* Lưới phụ 20px (khớp với snap) */}
+                <pattern id="subgrid" width="20" height="20" patternUnits="userSpaceOnUse">
+                  <path d="M 20 0 L 0 0 0 20" fill="none" stroke="rgba(255,255,255,0.03)" strokeWidth="0.5"/>
+                </pattern>
+                {/* Lưới chính 100px */}
+                <pattern id="grid" width="100" height="100" patternUnits="userSpaceOnUse">
+                  <rect width="100" height="100" fill="url(#subgrid)"/>
+                  <path d="M 100 0 L 0 0 0 100" fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="1"/>
+                </pattern>
+
                 <linearGradient
                   id="screenGrad"
                   x1="0%"
@@ -374,6 +593,10 @@ export default function SeatDesignerModal({ isOpen, onClose, roomId }: Props) {
                   <stop offset="100%" stopColor="#fff" stopOpacity="0" />
                 </linearGradient>
               </defs>
+
+              {/* Vẽ lưới nền */}
+              <rect width="1000" height="800" fill="url(#grid)" />
+
               <path
                 d="M 200,60 Q 500,30 800,60"
                 fill="none"

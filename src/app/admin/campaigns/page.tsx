@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { Plus, Pencil, Trash2, Megaphone, Eye, EyeOff } from "lucide-react";
 import NextImage from "next/image";
+import TableSkeleton from "@/components/admin/TableSkeleton";
 import { apiClient } from "@/lib/api";
 
 interface Campaign {
@@ -164,17 +165,7 @@ export default function AdminCampaignsPage() {
             </thead>
             <tbody className="divide-y divide-zinc-800/50">
               {loading ? (
-                <tr>
-                  <td
-                    colSpan={6}
-                    className="px-5 py-12 text-center text-zinc-500"
-                  >
-                    <div className="flex flex-col items-center gap-3">
-                      <div className="w-6 h-6 border-2 border-orange-500 border-t-transparent rounded-full animate-spin" />
-                      <span>Đang tải...</span>
-                    </div>
-                  </td>
-                </tr>
+                <TableSkeleton rows={8} cols={6} />
               ) : campaigns.length === 0 ? (
                 <tr>
                   <td

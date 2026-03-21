@@ -13,6 +13,7 @@ import {
 import NextImage from "next/image";
 import CinemaFormModal from "@/components/admin/cinemas/CinemaFormModal";
 import RoomPanel from "@/components/admin/cinemas/RoomPanel";
+import TableSkeleton from "@/components/admin/TableSkeleton";
 import { apiClient } from "@/lib/api";
 
 interface Cinema {
@@ -135,14 +136,7 @@ export default function CinemasPage() {
             </thead>
             <tbody className="divide-y divide-zinc-800">
               {loading ? (
-                <tr>
-                  <td
-                    colSpan={5}
-                    className="px-6 py-8 text-center text-zinc-500"
-                  >
-                    Đang tải dữ liệu...
-                  </td>
-                </tr>
+                <TableSkeleton rows={8} cols={5} />
               ) : cinemas.length === 0 ? (
                 <tr>
                   <td
@@ -248,7 +242,8 @@ export default function CinemasPage() {
         {/* Pagination (Simplified for now) */}
         <div className="p-4 border-t border-zinc-800 flex justify-between items-center text-sm text-zinc-400">
           <div>
-            Hiển thị {cinemas.length} / {total} rạp
+            Hiển thị {total > 0 ? (page - 1) * limit + 1 : 0} -{" "}
+            {Math.min(page * limit, total)} / {total} rạp
           </div>
           <div className="flex gap-2">
             <button

@@ -5,6 +5,7 @@ import { apiClient } from "@/lib/api";
 import { useAuthStore } from "@/store/authStore";
 import StatsCard from "@/components/admin/StatsCard";
 import RecentOrdersTable from "@/components/admin/RecentOrdersTable";
+import DashboardSkeleton from "@/components/admin/DashboardSkeleton";
 import { Responsive, WidthProvider } from "react-grid-layout/legacy";
 import "react-grid-layout/css/styles.css";
 import "react-resizable/css/styles.css";
@@ -430,7 +431,9 @@ export default function AdminDashboardPage() {
     eventSource.addEventListener("notification", (event) => {
       try {
         const data = JSON.parse(event.data);
-        if (data.type === "order_completed") fetchStats();
+        if (data.type === "order_completed" || data.type === "order_cancelled") {
+          fetchStats();
+        }
       } catch (e) {
         console.error("❌ Failed to parse SSE data:", e);
       }
@@ -449,11 +452,7 @@ export default function AdminDashboardPage() {
   };
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center py-32">
-        <div className="w-8 h-8 border-2 border-[#e50914] border-t-transparent rounded-full animate-spin" />
-      </div>
-    );
+    return <DashboardSkeleton />;
   }
 
   const today = new Date().toLocaleDateString("vi-VN", {

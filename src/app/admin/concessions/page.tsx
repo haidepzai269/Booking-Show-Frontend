@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { Plus, Pencil, Trash2, Popcorn } from "lucide-react";
 import NextImage from "next/image";
 import ConcessionFormModal from "@/components/admin/concessions/ConcessionFormModal";
+import TableSkeleton from "@/components/admin/TableSkeleton";
 import { apiClient } from "@/lib/api";
 
 interface Concession {
@@ -114,14 +115,7 @@ export default function ConcessionsPage() {
             </thead>
             <tbody className="divide-y divide-zinc-800">
               {loading ? (
-                <tr>
-                  <td
-                    colSpan={5}
-                    className="px-6 py-8 text-center text-zinc-500"
-                  >
-                    Đang tải dữ liệu...
-                  </td>
-                </tr>
+                <TableSkeleton rows={8} cols={5} />
               ) : concessions.length === 0 ? (
                 <tr>
                   <td
@@ -203,7 +197,8 @@ export default function ConcessionsPage() {
 
         <div className="p-4 border-t border-zinc-800 flex justify-between items-center text-sm text-zinc-400">
           <div>
-            Hiển thị {concessions.length} / {total} sản phẩm
+            Hiển thị {total > 0 ? (page - 1) * limit + 1 : 0} -{" "}
+            {Math.min(page * limit, total)} / {total} sản phẩm
           </div>
           <div className="flex gap-2">
             <button
