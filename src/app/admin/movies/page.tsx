@@ -296,7 +296,7 @@ export default function AdminMoviesPage() {
         )}
 
         {/* Pagination */}
-        {totalPages > 1 && (
+        {data && totalPages > 1 && (
           <div className="flex items-center justify-between px-5 py-3.5 border-t border-white/5">
             <span className="text-white/30 text-xs">
               Hiển thị {data.total > 0 ? (page - 1) * limit + 1 : 0} -{" "}
