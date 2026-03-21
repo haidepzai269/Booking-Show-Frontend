@@ -199,7 +199,7 @@ export default function AdminSearchBar() {
             loading ? "✨ AI đang phân tích..." : "Tìm phim, user, đơn hàng..."
           }
           className={`bg-transparent border-none outline-none text-sm text-white placeholder:text-white/30 transition-all duration-300 flex-1 ${
-            isExpanded ? "opacity-100" : "opacity-0 w-0"
+            isExpanded ? "opacity-100" : "opacity-0 max-w-0 p-0"
           }`}
         />
 

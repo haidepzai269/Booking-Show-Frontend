@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useMemo } from "react";
 import { Bell, X, Ticket, CheckCheck, Trash2, ChevronDown, Loader2 } from "lucide-react";
 import { useAdminNotifications } from "@/hooks/useAdminNotifications";
 import type { AdminNotification } from "@/hooks/useAdminNotifications";
+import OrderDetailModal from "@/components/admin/orders/OrderDetailModal";
 
 function formatRelativeTime(isoStr: string): string {
   try {
@@ -117,6 +118,7 @@ function ToastNotification({
 
 export default function AdminNotification() {
   const [isOpen, setIsOpen] = useState(false);
+  const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const { 
     notifications, 
@@ -228,7 +230,8 @@ export default function AdminNotification() {
                     {items.map((n) => (
                       <div
                         key={n.id}
-                        className={`group relative p-4 border-b border-white/5 hover:bg-white/[0.04] transition-colors ${
+                        onClick={() => setSelectedOrderId(n.order_id)}
+                        className={`group relative p-4 border-b border-white/5 hover:bg-white/[0.04] transition-colors cursor-pointer ${
                           !n.is_read ? "bg-[var(--primary)]/[0.02]" : "opacity-80"
                         }`}
                       >
@@ -315,6 +318,12 @@ export default function AdminNotification() {
           )}
         </div>
       </div>
+
+      <OrderDetailModal
+        isOpen={!!selectedOrderId}
+        onClose={() => setSelectedOrderId(null)}
+        orderId={selectedOrderId}
+      />
     </>
   );
 }

@@ -9,6 +9,7 @@ import {
   CreditCard,
 } from "lucide-react";
 import { useEffect, useState, useCallback } from "react";
+import { createPortal } from "react-dom";
 import NextImage from "next/image";
 import { apiClient } from "@/lib/api";
 
@@ -46,6 +47,11 @@ interface OrderDetail {
 export default function OrderDetailModal({ isOpen, onClose, orderId }: Props) {
   const [order, setOrder] = useState<OrderDetail | null>(null);
   const [loading, setLoading] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const fetchOrderDetails = useCallback(async () => {
     setLoading(true);
@@ -70,10 +76,10 @@ export default function OrderDetailModal({ isOpen, onClose, orderId }: Props) {
     }
   }, [isOpen, orderId, fetchOrderDetails]);
 
-  if (!isOpen) return null;
+  if (!isOpen || !mounted) return null;
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+  return createPortal(
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
       <div className="bg-zinc-900 border border-zinc-800 rounded-2xl w-full max-w-2xl overflow-y-auto max-h-[90vh] shadow-2xl relative">
         <button
           onClick={onClose}
@@ -234,6 +240,7 @@ export default function OrderDetailModal({ isOpen, onClose, orderId }: Props) {
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

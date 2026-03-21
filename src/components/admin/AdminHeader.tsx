@@ -80,7 +80,7 @@ export default function AdminHeader() {
         <AdminSearchBar />
         <AdminNotification />
         <div className="w-px h-6 bg-white/10 hidden sm:block" />
-        <div className="hidden sm:flex items-center gap-2.5 cursor-pointer">
+        <Link href="/profile" className="hidden sm:flex items-center gap-2.5 cursor-pointer hover:opacity-80 transition-opacity">
           <div className="w-8 h-8 bg-gradient-to-br from-[var(--primary)]/30 to-[var(--primary)]/10 rounded-full flex items-center justify-center">
             <span className="text-[var(--primary)] text-xs font-bold uppercase">
               {user?.fullName?.charAt(0) || "A"}
@@ -106,7 +106,7 @@ export default function AdminHeader() {
               {user.rank}
             </span>
           )}
-        </div>
+        </Link>
       </div>
     </header>
   );
