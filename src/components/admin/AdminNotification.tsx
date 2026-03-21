@@ -1,7 +1,5 @@
-"use client";
-
-import { useState, useRef, useEffect } from "react";
-import { Bell, X, Ticket, CheckCheck } from "lucide-react";
+import { useState, useRef, useEffect, useMemo } from "react";
+import { Bell, X, Ticket, CheckCheck, Trash2, ChevronDown, Loader2 } from "lucide-react";
 import { useAdminNotifications } from "@/hooks/useAdminNotifications";
 import type { AdminNotification } from "@/hooks/useAdminNotifications";
 
@@ -18,6 +16,34 @@ function formatRelativeTime(isoStr: string): string {
   } catch {
     return "vừa xong";
   }
+}
+
+// Nhóm thông báo theo ngày
+function groupNotifications(notifs: AdminNotification[]) {
+  const groups: { [key: string]: AdminNotification[] } = {
+    "Hôm nay": [],
+    "Hôm qua": [],
+    "Trước đó": [],
+  };
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const yesterday = new Date(today);
+  yesterday.setDate(yesterday.getDate() - 1);
+
+  notifs.forEach((n) => {
+    const d = new Date(n.created_at);
+    d.setHours(0, 0, 0, 0);
+    if (d.getTime() === today.getTime()) {
+      groups["Hôm nay"].push(n);
+    } else if (d.getTime() === yesterday.getTime()) {
+      groups["Hôm qua"].push(n);
+    } else {
+      groups["Trước đó"].push(n);
+    }
+  });
+
+  return groups;
 }
 
 // Toast popup hiện ở góc phải dưới
@@ -92,8 +118,18 @@ function ToastNotification({
 export default function AdminNotification() {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const { notifications, unreadCount, markAllRead, toastQueue, dismissToast } =
-    useAdminNotifications();
+  const { 
+    notifications, 
+    unreadCount, 
+    markAllRead, 
+    toastQueue, 
+    dismissToast,
+    deleteNotification,
+    clearAll,
+    loadMore,
+    hasMore,
+    loading 
+  } = useAdminNotifications();
 
   // Click outside đóng dropdown
   useEffect(() => {
@@ -112,18 +148,18 @@ export default function AdminNotification() {
   const handleOpen = () => {
     setIsOpen(!isOpen);
     if (!isOpen && unreadCount > 0) {
-      // Đánh dấu đã đọc khi mở dropdown
-      setTimeout(markAllRead, 1000);
+      setTimeout(markAllRead, 1500);
     }
   };
 
-  const formatTime = formatRelativeTime;
+  const grouped = useMemo(() => groupNotifications(notifications), [notifications]);
+  const hasNotifications = notifications.length > 0;
 
   return (
     <>
-      {/* Toast Portal – góc phải dưới */}
+      {/* Toast Portal */}
       {toastQueue.length > 0 && (
-        <div className="fixed bottom-4 right-6 z-[9999] flex flex-col gap-3 pointer-events-none">
+        <div className="fixed top-20 right-4 z-[9999] flex lg:hidden flex-col gap-3 pointer-events-none">
           {toastQueue.slice(-3).map((n) => (
             <div key={n.id} className="pointer-events-auto">
               <ToastNotification notif={n} onClose={() => dismissToast(n.id)} />
@@ -153,76 +189,127 @@ export default function AdminNotification() {
           }`}
         >
           {/* Header */}
-          <div className="p-4 border-b border-white/5 flex items-center justify-between">
-            <h3 className="text-white font-medium text-sm">Thông báo</h3>
-            <div className="flex items-center gap-2">
-              {unreadCount > 0 && (
-                <span className="text-xs bg-[var(--primary)]/20 text-[var(--primary)] font-medium px-2 py-0.5 rounded-full">
-                  {unreadCount} mới
-                </span>
-              )}
+          <div className="p-4 border-b border-white/5 flex items-center justify-between bg-white/[0.02]">
+            <div>
+              <h3 className="text-white font-medium text-sm">Thông báo</h3>
+              <p className="text-[10px] text-white/30 uppercase font-bold tracking-wider mt-0.5">
+                {unreadCount} chưa đọc
+              </p>
             </div>
+            {hasNotifications && (
+              <button
+                onClick={() => {
+                   if(confirm("Xóa toàn bộ thông báo?")) clearAll();
+                }}
+                className="p-1.5 text-white/20 hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-all"
+                title="Xóa tất cả"
+              >
+                <Trash2 size={16} />
+              </button>
+            )}
           </div>
 
           {/* List */}
-          <div className="max-h-[360px] overflow-y-auto">
-            {notifications.length === 0 ? (
-              <div className="p-8 text-center">
-                <Bell size={24} className="text-white/20 mx-auto mb-2" />
-                <p className="text-white/40 text-sm">Chưa có thông báo nào</p>
+          <div className="max-h-[420px] overflow-y-auto scrollbar-thin scrollbar-thumb-white/10">
+            {!hasNotifications ? (
+              <div className="p-12 text-center">
+                <div className="w-12 h-12 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-3">
+                  <Bell size={20} className="text-white/10" />
+                </div>
+                <p className="text-white/30 text-sm">Chưa có thông báo nào</p>
               </div>
             ) : (
-              notifications.map((n) => (
-                <div
-                  key={n.id}
-                  className={`p-4 border-b border-white/5 hover:bg-white/5 cursor-pointer transition-colors ${
-                    !n.read ? "bg-white/[0.03]" : "opacity-70"
-                  }`}
-                >
-                  <div className="flex gap-3">
-                    <div className="w-8 h-8 bg-[var(--primary)]/15 rounded-lg flex items-center justify-center shrink-0 mt-0.5">
-                      <Ticket size={14} className="text-[var(--primary)]" />
+              Object.entries(grouped).map(([title, items]) => (
+                items.length > 0 && (
+                  <div key={title}>
+                    <div className="px-4 py-2 bg-white/[0.03] border-b border-white/5">
+                      <span className="text-[10px] font-bold text-white/40 uppercase tracking-widest">{title}</span>
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm text-white/90 leading-snug">
-                        <span className="font-medium text-white">
-                          {n.user_name}
-                        </span>{" "}
-                        vừa mua{" "}
-                        <span className="text-[var(--primary)] font-medium">
-                          {n.seats} vé
-                        </span>
-                      </p>
-                      <p className="text-xs text-white/50 truncate mt-0.5">
-                        📽️ {n.movie_title}
-                      </p>
-                      <div className="flex items-center justify-between mt-1">
-                        <span className="text-xs text-green-400 font-medium">
-                          +{n.amount.toLocaleString("vi-VN")}đ
-                        </span>
-                        <span className="text-[10px] text-white/30">
-                          {formatTime(n.created_at)}
-                        </span>
+                    {items.map((n) => (
+                      <div
+                        key={n.id}
+                        className={`group relative p-4 border-b border-white/5 hover:bg-white/[0.04] transition-colors ${
+                          !n.is_read ? "bg-[var(--primary)]/[0.02]" : "opacity-80"
+                        }`}
+                      >
+                        <div className="flex gap-3">
+                          <div className="w-8 h-8 bg-[var(--primary)]/15 rounded-lg flex items-center justify-center shrink-0 mt-0.5 group-hover:scale-110 transition-transform">
+                            <Ticket size={14} className="text-[var(--primary)]" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm text-white/90 leading-snug">
+                              <span className="font-semibold text-white">
+                                {n.user_name}
+                              </span>{" "}
+                              vừa mua{" "}
+                              <span className="text-[var(--primary)] font-bold">
+                                {n.seats} vé
+                              </span>
+                            </p>
+                            <p className="text-[11px] text-white/40 truncate mt-0.5 italic">
+                              📽️ {n.movie_title}
+                            </p>
+                            <div className="flex items-center justify-between mt-1.5">
+                              <span className="text-xs text-green-400 font-bold bg-green-400/10 px-1.5 py-0.5 rounded">
+                                +{n.amount.toLocaleString("vi-VN")}đ
+                              </span>
+                              <span className="text-[10px] text-white/20 font-medium">
+                                {formatRelativeTime(n.created_at)}
+                              </span>
+                            </div>
+                          </div>
+                          <div className="flex flex-col items-end gap-2">
+                             {!n.is_read && (
+                                <div className="w-2 h-2 rounded-full bg-[var(--primary)] shadow-[0_0_8px_var(--primary)]" />
+                              )}
+                              <button 
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  deleteNotification(n.id);
+                                }}
+                                className="opacity-0 group-hover:opacity-100 p-1.5 text-white/10 hover:text-red-400 hover:bg-red-400/10 rounded transition-all"
+                              >
+                                <Trash2 size={12} />
+                              </button>
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                    {!n.read && (
-                      <div className="w-2 h-2 rounded-full bg-[var(--primary)] mt-2 shrink-0" />
-                    )}
+                    ))}
                   </div>
-                </div>
+                )
               ))
+            )}
+
+            {/* Load More Button */}
+            {hasMore && hasNotifications && (
+              <div className="p-3 text-center border-t border-white/5">
+                <button
+                  onClick={loadMore}
+                  disabled={loading}
+                  className="w-full py-2 flex items-center justify-center gap-2 text-xs font-semibold text-white/40 hover:text-white hover:bg-white/5 rounded-lg transition-all disabled:opacity-50"
+                >
+                  {loading ? (
+                    <Loader2 size={14} className="animate-spin" />
+                  ) : (
+                    <>
+                      <ChevronDown size={14} />
+                      Xem thêm thông báo cũ
+                    </>
+                  )}
+                </button>
+              </div>
             )}
           </div>
 
           {/* Footer */}
-          {notifications.length > 0 && (
-            <div className="p-3 bg-white/[0.02] border-t border-white/5 text-center">
+          {hasNotifications && (
+            <div className="p-3 bg-white/[0.04] border-t border-white/5 flex items-center justify-center">
               <button
                 onClick={markAllRead}
-                className="text-xs font-medium text-white/40 hover:text-white transition-colors flex items-center gap-1.5 mx-auto"
+                className="text-[11px] font-bold text-white/40 hover:text-white transition-colors flex items-center gap-2 px-3 py-1.5 rounded-full hover:bg-white/5"
               >
-                <CheckCheck size={12} />
-                Đánh dấu tất cả đã đọc
+                <CheckCheck size={14} />
+                ĐÁNH DẤU TẤT CẢ ĐÃ ĐỌC
               </button>
             </div>
           )}

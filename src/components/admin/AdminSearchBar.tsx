@@ -4,6 +4,7 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import {
   Search,
   X,
+  ArrowLeft,
   Film,
   Users,
   ShoppingCart,
@@ -141,13 +142,32 @@ export default function AdminSearchBar() {
   return (
     <div
       ref={containerRef}
-      className="relative flex justify-end items-center h-9"
+      className={`flex items-center h-9 ${
+        isExpanded 
+          ? "fixed inset-x-0 top-0 h-16 z-[60] bg-[#0a0a0a]/95 backdrop-blur-md px-4 sm:relative sm:inset-auto sm:h-9 sm:bg-transparent sm:z-auto sm:px-0 sm:w-auto" 
+          : "relative justify-end"
+      }`}
     >
-      {/* Search Input */}
+      {/* Nút Quay lại (Chỉ dành cho Mobile khi đang search) */}
+      {isExpanded && (
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            setIsExpanded(false);
+            setQuery("");
+            setShowDropdown(false);
+          }}
+          className="sm:hidden w-10 h-10 -ml-2 rounded-full flex items-center justify-center text-white/60 hover:text-white hover:bg-white/5 transition-colors shrink-0"
+        >
+          <ArrowLeft size={20} />
+        </button>
+      )}
+
+      {/* Search Input Container */}
       <div
-        className={`flex items-center h-9 transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] overflow-hidden rounded-lg ${
+        className={`flex items-center h-10 sm:h-9 transition-all duration-300 ease-out overflow-hidden rounded-xl sm:rounded-lg ${
           isExpanded
-            ? "w-[260px] sm:w-[320px] bg-white/10 px-3 shadow-lg border border-white/20"
+            ? "flex-1 sm:w-[320px] bg-white/10 px-3.5 shadow-lg border border-white/20"
             : "w-9 bg-white/5 justify-center cursor-pointer hover:bg-white/10 text-white/40 hover:text-white border border-transparent"
         }`}
         onClick={() => {
@@ -178,7 +198,7 @@ export default function AdminSearchBar() {
           placeholder={
             loading ? "✨ AI đang phân tích..." : "Tìm phim, user, đơn hàng..."
           }
-          className={`bg-transparent border-none outline-none text-sm text-white placeholder:text-white/30 transition-all duration-500 flex-1 ${
+          className={`bg-transparent border-none outline-none text-sm text-white placeholder:text-white/30 transition-all duration-300 flex-1 ${
             isExpanded ? "opacity-100" : "opacity-0 w-0"
           }`}
         />
@@ -192,7 +212,7 @@ export default function AdminSearchBar() {
               setShowDropdown(false);
               inputRef.current?.focus();
             }}
-            className="text-white/40 hover:text-white ml-2 shrink-0"
+            className="text-white/40 hover:text-white ml-2 shrink-0 p-1"
           >
             <X size={14} />
           </button>
@@ -201,7 +221,7 @@ export default function AdminSearchBar() {
 
       {/* Dropdown Results */}
       {isExpanded && showDropdown && (
-        <div className="absolute right-0 top-11 w-[320px] sm:w-[400px] bg-[#1a1a1a] border border-white/10 rounded-xl shadow-2xl z-50 overflow-hidden">
+        <div className="absolute right-0 sm:right-0 top-16 sm:top-11 w-screen sm:w-[400px] left-0 sm:left-auto bg-[#1a1a1a] border-t sm:border border-white/10 sm:rounded-xl shadow-2xl z-50 overflow-hidden">
           {/* Header với AI badge */}
           {results?.ai_used && (
             <div className="px-4 py-2 bg-gradient-to-r from-[#e50914]/10 to-purple-500/10 border-b border-white/5 flex items-center gap-2">

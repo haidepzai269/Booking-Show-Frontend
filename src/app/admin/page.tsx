@@ -9,6 +9,7 @@ import DashboardSkeleton from "@/components/admin/DashboardSkeleton";
 import { Responsive, WidthProvider } from "react-grid-layout/legacy";
 import "react-grid-layout/css/styles.css";
 import "react-resizable/css/styles.css";
+import { motion, AnimatePresence } from "framer-motion";
 
 import {
   DollarSign,
@@ -19,6 +20,7 @@ import {
   CalendarDays,
   TrendingUp,
   Undo2,
+  X,
 } from "lucide-react";
 
 interface ChartData {
@@ -393,6 +395,7 @@ export default function AdminDashboardPage() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [layouts, setLayouts] = useState<Record<string, any>>(DEFAULT_LAYOUTS);
   const [currentBreakpoint, setCurrentBreakpoint] = useState("lg");
+  const [latestNotif, setLatestNotif] = useState<any>(null);
 
   const fetchStats = async () => {
     try {
@@ -423,23 +426,41 @@ export default function AdminDashboardPage() {
       }
     }
 
-    const token = useAuthStore.getState().token;
-    if (!token) return;
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api/v1";
-    const sseUrl = `${apiUrl}/admin/notifications/stream?token=${token}`;
-    const eventSource = new EventSource(sseUrl);
-    eventSource.addEventListener("notification", (event) => {
-      try {
-        const data = JSON.parse(event.data);
-        if (data.type === "order_completed" || data.type === "order_cancelled") {
-          fetchStats();
-        }
-      } catch (e) {
-        console.error("❌ Failed to parse SSE data:", e);
+    // 🔔 Lắng nghe thông báo Admin từ Hook (thông qua Custom Event)
+    const handleAdminNotification = (e: any) => {
+      console.log("📈 Dashboard received notification signal, refreshing stats...");
+      fetchStats();
+      if (e.detail) {
+        setLatestNotif(e.detail);
       }
-    });
-    return () => eventSource.close();
+    };
+
+    window.addEventListener("admin-notification" as any, handleAdminNotification);
+    window.addEventListener("room-updated" as any, handleAdminNotification);
+
+    return () => {
+      window.removeEventListener("admin-notification" as any, handleAdminNotification);
+      window.removeEventListener("room-updated" as any, handleAdminNotification);
+    };
   }, []);
+
+  // ⏱️ Tự động ẩn thông báo sau 10 giây
+  useEffect(() => {
+    if (latestNotif) {
+      const timer = setTimeout(() => {
+        setLatestNotif(null);
+      }, 10000);
+      return () => clearTimeout(timer);
+    }
+  }, [latestNotif]);
+
+  const sendTestNotification = async () => {
+    try {
+      await apiClient.post("/admin/notifications/test");
+    } catch (err) {
+      console.error("Failed to send test notification", err);
+    }
+  };
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const onLayoutChange = (currentLayout: unknown, allLayouts: any) => {
@@ -509,7 +530,51 @@ export default function AdminDashboardPage() {
           </h1>
           <p className="text-[var(--text-secondary)] text-sm mt-0.5">{today}</p>
         </div>
-        <div className="flex items-center gap-4">
+        
+        {/* Real-time Notification Frame (Desktop only) */}
+        <div className="flex-1 max-w-md mx-6 h-12 relative hidden lg:block">
+          <AnimatePresence mode="wait">
+            {isLaptop && latestNotif && (
+              <motion.div
+                key={latestNotif.id}
+                initial={{ opacity: 0, y: -20, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.9, y: 10 }}
+                transition={{ duration: 0.4, ease: [0.23, 1, 0.32, 1] }}
+                className="absolute inset-0 z-10"
+              >
+                <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-xl px-4 py-2 flex items-center gap-3 group hover:bg-white/10 transition-all cursor-default shadow-lg shadow-black/20 h-full">
+                  <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center shrink-0">
+                    <Ticket size={14} className="text-primary animate-pulse" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-white text-[11px] font-bold truncate leading-tight">
+                      {latestNotif.user_name}
+                    </p>
+                    <p className="text-white/40 text-[9px] truncate">
+                      Vừa mua {latestNotif.seats} vé • {latestNotif.movie_title}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="px-2 py-0.5 bg-green-500/10 border border-green-500/20 rounded-md shrink-0">
+                      <span className="text-green-400 text-[10px] font-bold">
+                        +{latestNotif.amount?.toLocaleString("vi-VN")}đ
+                      </span>
+                    </div>
+                    <button 
+                      onClick={() => setLatestNotif(null)}
+                      className="p-1 hover:bg-white/10 rounded-full transition-all opacity-40 hover:opacity-100 hover:rotate-90"
+                    >
+                      <X size={12} className="text-white" />
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+
+        <div className="flex items-center gap-2 sm:gap-4">
           {isLaptop && (
             <button 
               onClick={() => {
@@ -518,13 +583,29 @@ export default function AdminDashboardPage() {
               }}
               className="text-xs text-white/40 hover:text-white transition-colors flex items-center gap-2"
             >
-              <Undo2 size={14} /> Khôi phục mặc định
+              <Undo2 size={14} /> <span className="hidden xl:inline">Khôi phục mặc định</span>
             </button>
           )}
-          <div className="flex items-center gap-2 text-sm text-[var(--text-secondary)] bg-white/5 px-3 py-1.5 rounded-lg border border-[var(--border-color)]">
-            <TrendingUp size={14} className="text-green-400" />
-            <span>Cập nhật thời gian thực</span>
+          
+          <div 
+             className="flex items-center gap-2 text-sm text-[var(--text-secondary)] bg-white/5 p-1.5 sm:px-3 sm:py-1.5 rounded-lg border border-[var(--border-color)] group"
+             title="Cập nhật thời gian thực"
+          >
+            <div className="relative flex items-center justify-center">
+              <TrendingUp size={14} className="text-green-400 relative z-10" />
+              <span className="absolute inset-0 bg-green-400/20 rounded-full animate-ping scale-150 opacity-75" />
+            </div>
+            <span className="hidden sm:inline">Real-time</span>
           </div>
+          
+          <button 
+            onClick={sendTestNotification}
+            className="flex items-center gap-2 text-xs font-bold text-white bg-primary/20 hover:bg-primary/40 px-3 py-1.5 rounded-lg border border-primary/30 transition-all active:scale-95 shrink-0"
+            title="Kiểm tra đường truyền Real-time"
+          >
+            <span className="hidden sm:inline">Gửi Test Toast</span>
+            <span className="sm:hidden">Test</span>
+          </button>
         </div>
       </div>
 
