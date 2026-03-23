@@ -20,6 +20,8 @@ import {
   Users,
   Undo2,
   ChevronLeft,
+  MessageSquare,
+  ShieldBan,
 } from "lucide-react";
 
 interface NavItem {
@@ -50,12 +52,10 @@ const navItems: NavItem[] = [
     label: "Chiến dịch",
     icon: <Megaphone size={18} />,
   },
-  {
-    href: "/admin/orders",
-    label: "Đơn hàng",
-    icon: <ShoppingCart size={18} />,
-  },
+  { href: "/admin/orders", label: "Đơn hàng", icon: <ShoppingCart size={18} /> },
   { href: "/admin/users", label: "Người dùng", icon: <Users size={18} /> },
+  { href: "/admin/reviews", label: "Đánh giá", icon: <MessageSquare size={18} /> },
+  { href: "/admin/blacklisted-words", label: "Từ ngữ cấm", icon: <ShieldBan size={18} /> },
   { href: "/admin/refunds", label: "Hoàn tiền", icon: <Undo2 size={18} /> },
 ];
 

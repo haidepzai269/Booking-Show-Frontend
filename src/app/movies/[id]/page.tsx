@@ -14,6 +14,7 @@ import MovieBanner from "@/components/movie-detail/MovieBanner";
 import MovieInfo from "@/components/movie-detail/MovieInfo";
 import CastCarousel from "@/components/movie-detail/CastCarousel";
 import RelatedMovies from "@/components/movie-detail/RelatedMovies";
+import MovieReviews from "@/components/movie-detail/MovieReviews";
 
 interface ExtraInfo {
   rating: number;
@@ -275,6 +276,9 @@ export default function MovieDetail() {
               BookingShow
             </h2>
           </div>
+
+          {/* Đánh Giá & Nhận Xét */}
+          <MovieReviews movieId={movie.id} />
 
           {/* Phim Tương Tự */}
           <RelatedMovies currentMovie={movie} />

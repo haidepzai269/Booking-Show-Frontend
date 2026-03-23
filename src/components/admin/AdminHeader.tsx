@@ -20,6 +20,8 @@ const breadcrumbMap: Record<string, string> = {
   "/admin/orders": "Đơn hàng",
   "/admin/users": "Người dùng",
   "/admin/refunds": "Hoàn tiền",
+  "/admin/blacklisted-words": "Từ ngữ cấm",
+  "/admin/reviews": "Đánh giá",
 };
 
 function getBreadcrumb(pathname: string): string {

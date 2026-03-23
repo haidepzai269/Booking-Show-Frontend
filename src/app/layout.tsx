@@ -14,6 +14,10 @@ const outfit = Outfit({
 export const metadata: Metadata = {
   title: "Booking Show - Trải nghiệm điện ảnh đỉnh cao",
   description: "Đặt vé xem phim trực tuyến siêu tốc!",
+  icons: {
+    icon: "/icons/icon-512x512.png",
+    apple: "/icons/icon-192x192.png",
+  },
 };
 
 export default function RootLayout({
