@@ -30,6 +30,9 @@ interface MovieFormData {
   poster_url: string;
   trailer_url: string;
   genre_ids: number[];
+  is_hot: boolean;
+  is_best_selling: boolean;
+  is_featured: boolean;
 }
 
 interface MovieFormProps {
@@ -57,6 +60,9 @@ export default function MovieForm({ mode, initialData }: MovieFormProps) {
     poster_url: initialData?.poster_url || "",
     trailer_url: initialData?.trailer_url || "",
     genre_ids: initialData?.genre_ids || [],
+    is_hot: (initialData as any)?.is_hot || false,
+    is_best_selling: (initialData as any)?.is_best_selling || false,
+    is_featured: (initialData as any)?.is_featured || false,
   });
 
   const [uploading, setUploading] = useState(false);
@@ -341,6 +347,57 @@ export default function MovieForm({ mode, initialData }: MovieFormProps) {
                 </span>
               )}
             </div>
+          </div>
+
+          {/* Special Tags (Featured, Hot, Best Selling) */}
+          <div className="pt-4 border-t border-white/5 space-y-4">
+            <label className={labelClass}>Thuộc tính đặc biệt (Trang chủ)</label>
+            <div className="flex flex-wrap gap-6">
+              <label className="flex items-center gap-3 cursor-pointer group">
+                <input
+                  type="checkbox"
+                  checked={form.is_featured}
+                  onChange={(e) =>
+                    setForm((p) => ({ ...p, is_featured: e.target.checked }))
+                  }
+                  className="w-5 h-5 rounded-lg border-2 border-white/10 bg-white/5 checked:bg-[#e50914] checked:border-[#e50914] transition-all cursor-pointer appearance-none relative checked:after:content-['✓'] after:absolute after:inset-0 after:flex after:items-center after:justify-center after:text-white after:text-xs"
+                />
+                <span className="text-sm font-semibold text-white/50 group-hover:text-white transition-colors">
+                  🔥 Phim nổi bật (Banner lớn)
+                </span>
+              </label>
+
+              <label className="flex items-center gap-3 cursor-pointer group">
+                <input
+                  type="checkbox"
+                  checked={form.is_hot}
+                  onChange={(e) =>
+                    setForm((p) => ({ ...p, is_hot: e.target.checked }))
+                  }
+                  className="w-5 h-5 rounded-lg border-2 border-white/10 bg-white/5 checked:bg-orange-500 checked:border-orange-500 transition-all cursor-pointer appearance-none relative checked:after:content-['✓'] after:absolute after:inset-0 after:flex after:items-center after:justify-center after:text-white after:text-xs"
+                />
+                <span className="text-sm font-semibold text-white/50 group-hover:text-white transition-colors">
+                  ⚡ Phim Hot
+                </span>
+              </label>
+
+              <label className="flex items-center gap-3 cursor-pointer group">
+                <input
+                  type="checkbox"
+                  checked={form.is_best_selling}
+                  onChange={(e) =>
+                    setForm((p) => ({ ...p, is_best_selling: e.target.checked }))
+                  }
+                  className="w-5 h-5 rounded-lg border-2 border-white/10 bg-white/5 checked:bg-blue-500 checked:border-blue-500 transition-all cursor-pointer appearance-none relative checked:after:content-['✓'] after:absolute after:inset-0 after:flex after:items-center after:justify-center after:text-white after:text-xs"
+                />
+                <span className="text-sm font-semibold text-white/50 group-hover:text-white transition-colors">
+                  💰 Bán chạy
+                </span>
+              </label>
+            </div>
+            <p className="text-[11px] text-white/30 italic">
+              * Phim được đánh dấu sẽ luôn xuất hiện ở đầu các danh mục tương ứng trên trang chủ.
+            </p>
           </div>
         </div>
       </div>

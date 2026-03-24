@@ -14,12 +14,43 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useChatStore } from "@/store/chatStore";
+import { apiClient } from "@/lib/api";
 
 export default function QuickBookingIsland() {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
   const { setOpen, isOpen } = useChatStore();
   const pathname = usePathname();
+
+  const [movies, setMovies] = useState<any[]>([]);
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  useEffect(() => {
+    const fetchNowShowing = async () => {
+      try {
+        const res = await apiClient.get<any>("/movies/now-showing");
+        if (res && res.data) {
+          setMovies(res.data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch now showing movies:", error);
+      }
+    };
+    fetchNowShowing();
+  }, []);
+
+  useEffect(() => {
+    if (movies.length <= 3) return;
+    
+    const interval = setInterval(() => {
+      setCurrentIndex((prev) => {
+        const next = prev + 3;
+        return next >= movies.length ? 0 : next;
+      });
+    }, 5000); // 5s đổi bộ 3 mới
+
+    return () => clearInterval(interval);
+  }, [movies.length]);
 
   // Danh sách các route ẩn QuickBookingIsland
   const hiddenRoutes = [
@@ -134,52 +165,75 @@ export default function QuickBookingIsland() {
                   </button>
                 </div>
 
-                <div className="grid grid-cols-1 gap-3">
-                  <Link
-                    href="/movies"
-                    className="flex items-center gap-4 p-3 bg-white/5 hover:bg-white/10 rounded-2xl border border-white/5 transition-all group"
+                {movies.length > 0 ? (
+                  <motion.div 
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="grid grid-cols-3 gap-3"
                   >
-                    <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all">
-                      <Ticket className="w-5 h-5" />
-                    </div>
-                    <div className="flex flex-col text-left">
-                      <span className="text-xs font-black text-white">
-                        Chọn Phim & Rạp
-                      </span>
-                      <span className="text-[10px] text-white/40">
-                        Tìm suất chiếu gần bạn nhất
-                      </span>
-                    </div>
-                  </Link>
-
-                  <div className="flex gap-2">
-                    <div className="flex-1 p-3 bg-white/5 rounded-2xl border border-white/5 flex flex-col gap-1 items-center justify-center opacity-50 cursor-not-allowed">
-                      <MapPin className="w-4 h-4 text-white/40" />
-                      <span className="text-[10px] font-bold text-white/40">
-                        Vị trí
-                      </span>
-                    </div>
-                    <div className="flex-1 p-3 bg-white/5 rounded-2xl border border-white/5 flex flex-col gap-1 items-center justify-center opacity-50 cursor-not-allowed">
-                      <Calendar className="w-4 h-4 text-white/40" />
-                      <span className="text-[10px] font-bold text-white/40">
-                        Ngày xem
-                      </span>
-                    </div>
-                    <div className="flex-1 p-3 bg-white/5 rounded-2xl border border-white/5 flex flex-col gap-1 items-center justify-center opacity-50 cursor-not-allowed">
-                      <Clock className="w-4 h-4 text-white/40" />
-                      <span className="text-[10px] font-bold text-white/40">
-                        Suất chiếu
-                      </span>
-                    </div>
+                    <AnimatePresence mode="wait">
+                      {movies.slice(currentIndex, currentIndex + 3).map((movie) => (
+                        <motion.div
+                          key={movie.id}
+                          initial={{ opacity: 0, scale: 0.8, y: 10 }}
+                          animate={{ opacity: 1, scale: 1, y: 0 }}
+                          exit={{ opacity: 0, scale: 0.8, y: -10 }}
+                          transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                        >
+                          <Link
+                            href={`/movies/${movie.id}`}
+                            className="flex flex-col gap-2 group cursor-pointer"
+                          >
+                            <div className="relative aspect-[2/3] rounded-xl overflow-hidden border border-white/10 group-hover:border-primary/50 transition-all shadow-lg group-hover:shadow-primary/20 bg-white/5 flex items-center justify-center">
+                              {movie.poster_url ? (
+                                <img
+                                  src={movie.poster_url}
+                                  alt={movie.title}
+                                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                                />
+                              ) : (
+                                <Sparkles className="w-8 h-8 text-white/10 animate-pulse" />
+                              )}
+                              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-2">
+                                <span className="text-[8px] font-black text-white uppercase tracking-tighter">Đặt ngay</span>
+                              </div>
+                            </div>
+                            <span className="text-[10px] font-bold text-white/70 group-hover:text-white transition-colors line-clamp-1 text-center">
+                              {movie.title}
+                            </span>
+                          </Link>
+                        </motion.div>
+                      ))}
+                    </AnimatePresence>
+                  </motion.div>
+                ) : (
+                  <div className="grid grid-cols-1 gap-3">
+                    <Link
+                      href="/movies"
+                      className="flex items-center gap-4 p-3 bg-white/5 hover:bg-white/10 rounded-2xl border border-white/5 transition-all group"
+                    >
+                      <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all">
+                        <Ticket className="w-5 h-5" />
+                      </div>
+                      <div className="flex flex-col text-left">
+                        <span className="text-xs font-black text-white">
+                          Chọn Phim & Rạp
+                        </span>
+                        <span className="text-[10px] text-white/40">
+                          Tìm suất chiếu gần bạn nhất
+                        </span>
+                      </div>
+                    </Link>
                   </div>
+                )}
 
-                  <Link
-                    href="/movies"
-                    className="w-full py-4 bg-primary hover:bg-rose-700 text-white rounded-2xl font-black text-sm transition-all shadow-[0_10px_20px_rgba(229,9,20,0.3)] flex items-center justify-center gap-2"
-                  >
-                    KHÁM PHÁ NGAY
-                  </Link>
-                </div>
+                <Link
+                  href="/movies"
+                  className="w-full py-4 bg-primary hover:bg-rose-700 text-white rounded-[1.25rem] font-black text-sm transition-all shadow-[0_10px_20px_rgba(229,9,20,0.3)] flex items-center justify-center gap-2 group"
+                >
+                  <Sparkles className="w-4 h-4 animate-pulse" />
+                  KHÁM PHÁ TẤT CẢ PHIM
+                </Link>
               </div>
             )}
           </motion.div>

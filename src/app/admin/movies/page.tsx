@@ -43,6 +43,7 @@ export default function AdminMoviesPage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [onlyActive, setOnlyActive] = useState(false);
+  const [filter, setFilter] = useState("");
   const [page, setPage] = useState(1);
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const limit = 15;
@@ -55,6 +56,7 @@ export default function AdminMoviesPage() {
         limit: limit.toString(),
         ...(search && { q: search }),
         ...(onlyActive && { active: "true" }),
+        ...(filter && { filter }),
       });
       const res = (await apiClient.get(`/admin/movies?${params}`)) as {
         success: boolean;
@@ -66,7 +68,7 @@ export default function AdminMoviesPage() {
     } finally {
       setLoading(false);
     }
-  }, [page, search, onlyActive]);
+  }, [page, search, onlyActive, filter]);
 
   useEffect(() => {
     fetchMovies();
@@ -147,13 +149,32 @@ export default function AdminMoviesPage() {
             {onlyActive ? <CheckCircle2 size={14} /> : <XCircle size={14} />}
             Chỉ hiện active
           </button>
-          <button
-            onClick={fetchMovies}
-            className="w-10 h-10 bg-white/5 border border-white/10 rounded-xl flex items-center justify-center text-white/40 hover:text-white hover:border-white/20 transition-all"
-          >
-            <RefreshCw size={15} className={loading ? "animate-spin" : ""} />
-          </button>
         </div>
+      </div>
+
+      {/* Quick Filters */}
+      <div className="flex gap-2 bg-white/5 p-1.5 rounded-2xl w-fit border border-white/5">
+        {[
+          { id: "", label: "Tất cả" },
+          { id: "hot", label: "Phim Hot" },
+          { id: "coming_soon", label: "Sắp chiếu" },
+          { id: "best_selling", label: "Bán chạy" },
+        ].map((item) => (
+          <button
+            key={item.id}
+            onClick={() => {
+              setFilter(item.id);
+              setPage(1);
+            }}
+            className={`px-5 py-2 text-xs font-bold rounded-xl transition-all ${
+              filter === item.id
+                ? "bg-[#e50914] text-white shadow-lg shadow-red-900/20"
+                : "text-white/40 hover:text-white hover:bg-white/5"
+            }`}
+          >
+            {item.label}
+          </button>
+        ))}
       </div>
 
       {/* Table */}
