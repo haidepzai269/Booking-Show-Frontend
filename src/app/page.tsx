@@ -21,6 +21,7 @@ import { apiClient } from "@/lib/api";
 import NextImage from "next/image";
 import Header from "@/components/layout/Header";
 import TrailerModal from "@/components/movie-detail/TrailerModal";
+import MovieSlider from "@/components/home/MovieSlider";
 
 interface Genre {
   id: number;
@@ -381,7 +382,7 @@ export default function Home() {
         {loading || !mounted ? (
           <LoadingSkeleton />
         ) : (
-          <MovieGrid
+          <MovieSlider
             movies={hotMovies}
             badgeColor="primary"
             onPlayTrailer={(url) => {
@@ -393,7 +394,7 @@ export default function Home() {
       </div>
 
       {/* PHIM BÁN CHẠY NHẤT SECTION */}
-      <div className="max-w-7xl mx-auto w-full px-6 mt-16">
+      <div className="max-w-7xl mx-auto w-full px-6 mt-24">
         <div className="flex items-end justify-between mb-10 border-b border-border pb-4">
           <h2 className="text-3xl font-black text-white uppercase tracking-tight flex items-center gap-3">
             <TrendingUp className="w-8 h-8 text-secondary" /> Phim{" "}
@@ -410,7 +411,7 @@ export default function Home() {
         {loading || !mounted ? (
           <LoadingSkeleton />
         ) : (
-          <MovieGrid
+          <MovieSlider
             movies={bestSellingMovies}
             badgeColor="secondary"
             onPlayTrailer={(url) => {
@@ -598,94 +599,3 @@ function LoadingSkeleton() {
   );
 }
 
-function MovieGrid({
-  movies,
-  badgeColor = "primary",
-  onPlayTrailer,
-}: {
-  movies: Movie[];
-  badgeColor?: "primary" | "secondary";
-  onPlayTrailer: (url: string) => void;
-}) {
-  const isPrimary = badgeColor === "primary";
-  const badgeClass = isPrimary
-    ? "text-primary border-primary"
-    : "text-black bg-secondary border-secondary font-black";
-  
-  if (movies.length === 0)
-    return <div className="text-gray-500 py-10 text-center w-full">Chưa có dữ liệu phim.</div>;
-
-  return (
-    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 md:gap-8">
-      {movies.map((movie, index) => (
-        <motion.div
-          key={`${movie.id}-${index}`}
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5, delay: index * 0.1 }}
-          className="relative group aspect-[2/3] w-full"
-        >
-          {/* Main Clickable Area */}
-          <Link 
-            href={`/movies/${movie.id}`} 
-            className="block w-full h-full relative overflow-hidden rounded-2xl bg-card border border-white/5 shadow-2xl z-30 transition-transform duration-500 group-hover:scale-[1.02] group-hover:border-primary/50"
-          >
-            {/* Poster Image */}
-            <NextImage
-              src={movie.poster_url || "https://images.unsplash.com/photo-1440404653325-ab127d49abc1?q=80&w=2070&auto=format&fit=crop"}
-              alt={movie.title}
-              fill
-              className="object-cover transition-transform duration-700 group-hover:scale-110"
-            />
-            
-            {/* Overlays - Always pointer-events-none */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent opacity-80 z-10 pointer-events-none" />
-            
-            {/* Movie Info */}
-            <div className="absolute bottom-0 left-0 right-0 p-5 z-20 pointer-events-none">
-              <div className="flex items-center gap-2 mb-2">
-                <span className={`px-2 py-0.5 rounded text-[10px] font-black border uppercase ${badgeClass}`}>
-                  {(movie.genres && movie.genres.length > 0) ? movie.genres[0].name : "2D"}
-                </span>
-                {movie.rating && (
-                  <span className="flex items-center gap-1 text-[10px] font-bold text-secondary">
-                    <Star className="w-3 h-3 fill-current" /> {movie.rating.toFixed(1)}
-                  </span>
-                )}
-              </div>
-              <h3 className="text-white font-black text-lg md:text-xl uppercase italic leading-tight line-clamp-2 drop-shadow-lg">
-                {movie.title}
-              </h3>
-              <div className="flex items-center gap-2 mt-2 text-[10px] text-gray-400 font-bold">
-                <Clock className="w-3 h-3" /> {movie.duration_minutes} Phút
-              </div>
-            </div>
-
-            {/* Hover Icon overlay */}
-            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-black/40 backdrop-blur-[2px] z-15 pointer-events-none">
-                <div className="p-4 rounded-full bg-primary text-white shadow-xl transform scale-75 group-hover:scale-100 transition-transform duration-500">
-                  <Ticket className="w-6 h-6" />
-                </div>
-            </div>
-          </Link>
-
-          {/* Independent Trailer Button */}
-          {movie.trailer_url && (
-            <button
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                onPlayTrailer(movie.trailer_url);
-              }}
-              className="absolute top-4 right-4 z-40 p-3 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white hover:bg-primary hover:border-primary transition-all hover:scale-110 active:scale-90 shadow-2xl"
-              title="Xem Trailer"
-            >
-              <Play className="w-5 h-5 fill-current" />
-            </button>
-          )}
-        </motion.div>
-      ))}
-    </div>
-  );
-}
