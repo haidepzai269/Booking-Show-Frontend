@@ -4,16 +4,6 @@ import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { Home, Ticket, MoveLeft } from "lucide-react";
-import type { Metadata } from "next";
-
-export const metadata: Metadata = {
-  title: "404 - Không Tìm Thấy Trang | Booking Show",
-  description: "Rất tiếc, trang bạn đang tìm kiếm không tồn tại hoặc đã được di dời.",
-  robots: {
-    index: false,
-    follow: true,
-  },
-};
 
 export default function NotFound() {
   return (
