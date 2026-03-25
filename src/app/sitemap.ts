@@ -46,25 +46,25 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticPages: MetadataRoute.Sitemap = [
     {
       url: SITE_URL,
-      lastModified: new Date(),
+      lastModified: new Date().toISOString().split("T")[0],
       changeFrequency: "daily",
       priority: 1.0,
     },
     {
       url: `${SITE_URL}/movies`,
-      lastModified: new Date(),
+      lastModified: new Date().toISOString().split("T")[0],
       changeFrequency: "daily",
       priority: 0.9,
     },
     {
       url: `${SITE_URL}/cinemas`,
-      lastModified: new Date(),
+      lastModified: new Date().toISOString().split("T")[0],
       changeFrequency: "weekly",
       priority: 0.8,
     },
     {
       url: `${SITE_URL}/promotions`,
-      lastModified: new Date(),
+      lastModified: new Date().toISOString().split("T")[0],
       changeFrequency: "daily",
       priority: 0.7,
     },
@@ -73,7 +73,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Trang chi tiết từng phim
   const moviePages: MetadataRoute.Sitemap = movies.map((movie) => ({
     url: `${SITE_URL}/movies/${movie.id}`,
-    lastModified: movie.updated_at ? new Date(movie.updated_at) : new Date(),
+    lastModified: (movie.updated_at ? new Date(movie.updated_at) : new Date())
+      .toISOString()
+      .split("T")[0],
     changeFrequency: "weekly" as const,
     priority: 0.8,
   }));
@@ -81,7 +83,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Trang chi tiết từng rạp
   const cinemaPages: MetadataRoute.Sitemap = cinemas.map((cinema) => ({
     url: `${SITE_URL}/cinemas/${cinema.id}`,
-    lastModified: cinema.updated_at ? new Date(cinema.updated_at) : new Date(),
+    lastModified: (cinema.updated_at ? new Date(cinema.updated_at) : new Date())
+      .toISOString()
+      .split("T")[0],
     changeFrequency: "weekly" as const,
     priority: 0.7,
   }));
