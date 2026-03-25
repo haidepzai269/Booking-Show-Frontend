@@ -1,6 +1,6 @@
 import { MetadataRoute } from "next";
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://booking-show.vercel.app";
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://bookingshows.vercel.app";
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api/v1";
 
 interface Movie {

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import HomeClient from "./HomeClient";
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://booking-show.vercel.app";
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://bookingshows.vercel.app";
 
 export const metadata: Metadata = {
   title: "Trang Chủ - Đặt Vé Xem Phim Online",
